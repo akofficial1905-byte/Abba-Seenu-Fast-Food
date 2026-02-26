@@ -543,6 +543,31 @@
     const ordersList  = document.getElementById("ordersList");
     const historyList = document.getElementById("historyList");
 
+    // Address + GPS line
+    function renderOrderDetails(o) {
+      if (o.orderType === "dinein") {
+        return o.tableNumber
+          ? `<div class="order-card-meta text-gray-300 mt-1">Table: ${o.tableNumber}</div>`
+          : "";
+      } else {
+        if (!o.address && !(o.location && o.location.lat && o.location.lng)) return "";
+        let html = `<div class="order-card-meta text-gray-300 mt-1">📍 ${o.address || "—"}`;
+        if (o.location && o.location.lat && o.location.lng) {
+          html += `<br><span class="text-[11px] text-amber-300">
+            Captured GPS: ${o.location.lat.toFixed(5)}, ${o.location.lng.toFixed(5)}
+          </span>`;
+        }
+        html += `</div>`;
+        return html;
+      }
+    }
+
+    // Open Google Maps with destination = captured GPS
+    function openMapsForDelivery(lat, lng) {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+      window.open(url, "_blank");
+    }
+
     async function fetchOrders(dateStr){
       try{
         const res = await fetch(`/api/orders?date=${dateStr}`);
@@ -578,7 +603,7 @@
                 <div class="order-card-meta text-gray-400">
                   ${o.mobile ? `📞 ${o.mobile} • ` : ""}${o.registrationNumber || ""} ${o.tableNumber ? `• Table ${o.tableNumber}` : ""}
                 </div>
-                ${o.address ? `<div class="order-card-meta text-gray-300 mt-1">📍 ${o.address}</div>` : ""}
+                ${renderOrderDetails(o)}
               </div>
               <div class="text-right text-[11px] text-gray-400">
                 ${new Date(o.createdAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}<br>
@@ -593,6 +618,19 @@
               ${itemsText || "No items"}
             </div>
             <div class="flex flex-wrap gap-2 text-[11px]">
+              ${
+                o.location && o.location.lat && o.location.lng
+                  ? `<button
+                       class="px-2 py-1 rounded-full border border-amber-400 text-amber-200"
+                       onclick="openMapsForDelivery(${o.location.lat},${o.location.lng})">
+                       Deliver
+                     </button>`
+                  : `<button
+                       class="px-2 py-1 rounded-full border border-slate-700 text-slate-400"
+                       disabled>
+                       Deliver
+                     </button>`
+              }
               <button data-action="status" data-status="incoming"
                 class="px-2 py-1 rounded-full border border-slate-600 text-gray-200">
                 Incoming
@@ -607,7 +645,7 @@
               </button>
               <button data-action="payment"
                 class="px-2 py-1 rounded-full border border-emerald-500 text-emerald-300">
-                Toggle Paid
+                Paid
               </button>
             </div>
           `;
@@ -625,7 +663,8 @@
             };
           });
 
-          card.querySelector("button[data-action='payment']").onclick = async () => {
+          const paidBtn = card.querySelector("button[data-action='payment']");
+          paidBtn.onclick = async () => {
             try{
               await fetch(`/api/orders/${o._id}/payment-verified`,{
                 method:"PATCH",
@@ -817,6 +856,7 @@
         });
         inventoryStatus.textContent = "Menu updated successfully.";
         inventoryStatus.classList.remove('hidden');
+        inventoryStatus.classList.remove('text-red-400');
         setTimeout(()=>inventoryStatus.classList.add('hidden'),1500);
       }catch(e){
         console.error(e);
