@@ -1,4 +1,4 @@
-// server.js – Prince Pizza King (NO Razorpay)
+// server.js – Abba SEENUUU... FAST FOODS (NO Razorpay)
 
 const express  = require('express');
 const http     = require('http');
@@ -17,16 +17,23 @@ const PORT   = process.env.PORT || 4000;
 
 // --- Manager Portal Login (simple in‑memory, changeable) ---
 let managerUser = "admin";
-let managerPass = "ppk2025"; // you can change
+let managerPass = "abbaseenu2025"; // change as you like
 
-// --- MongoDB connection (Prince Pizza King) ---
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://architdisha_db_user:TYfUDsEGBaLut5nT@princepizzaking.kex94lk.mongodb.net/?appName=Princepizzaking';
+// --- MongoDB connection (Abba SEENUUU... FAST FOODS) ---
+// you can still override via env MONGO_URI on Render
+const MONGO_URI =
+  process.env.MONGO_URI ||
+  "mongodb+srv://architkumarsncp2123_db_user:abbaseenu@abbaseenudb.5sndjat.mongodb.net/?appName=AbbaSeenudb";
 
 mongoose.connect(MONGO_URI, {
-  dbName: 'PrincePizzaKing'
+  dbName: "AbbaSeenudb"
 });
-mongoose.connection.on('connected', () => console.log('✅ Connected to MongoDB (Prince Pizza King)'));
-mongoose.connection.on('error', (err) => console.error('❌ MongoDB Error:', err));
+mongoose.connection.on("connected", () =>
+  console.log("✅ Connected to MongoDB (Abba SEENUUU... FAST FOODS)")
+);
+mongoose.connection.on("error", (err) =>
+  console.error("❌ MongoDB Error:", err)
+);
 
 // --- Schema ---
 const orderSchema = new mongoose.Schema({
@@ -56,7 +63,7 @@ const orderSchema = new mongoose.Schema({
   total: Number,
   status: {
     type: String,
-    default: 'incoming'           // incoming | out_for_delivery | delivered | deleted
+    default: "incoming"           // incoming | out_for_delivery | delivered | deleted
   },
   createdAt: {
     type: Date,
@@ -68,7 +75,7 @@ const orderSchema = new mongoose.Schema({
 // Auto-delete orders after 90 days (3 months)
 orderSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7776000 });
 
-const Order = mongoose.model('Order', orderSchema);
+const Order = mongoose.model("Order", orderSchema);
 
 // --- AUTO PRINT QUEUE ---
 let printQueue = [];
@@ -76,26 +83,30 @@ let printQueue = [];
 async function saveAndBroadcastOrder(orderData) {
   const order = new Order(orderData);
   await order.save();
-  io.emit('newOrder', order);   // real-time to manager + delivery portals
+  io.emit("newOrder", order);   // real-time to manager + delivery portals
   printQueue.push(order);       // enqueue for auto print (if you use it)
   return order;
 }
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
 // --- Manager Login API ---
 app.post("/api/manager/login", (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) {
-    return res.status(400).json({ success: false, message: "Missing credentials" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing credentials" });
   }
 
   if (username === managerUser && password === managerPass) {
     return res.json({ success: true });
   }
-  return res.status(401).json({ success: false, message: "Invalid credentials" });
+  return res
+    .status(401)
+    .json({ success: false, message: "Invalid credentials" });
 });
 
 // --- Change Manager ID / Password ---
@@ -103,11 +114,15 @@ app.post("/api/manager/change-credentials", (req, res) => {
   const { currentUser, currentPassword, newUser, newPassword } = req.body || {};
 
   if (!currentUser || !currentPassword || !newUser || !newPassword) {
-    return res.status(400).json({ success: false, message: "All fields are required" });
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields are required" });
   }
 
   if (currentUser !== managerUser || currentPassword !== managerPass) {
-    return res.status(401).json({ success: false, message: "Current ID / password is incorrect" });
+    return res
+      .status(401)
+      .json({ success: false, message: "Current ID / password is incorrect" });
   }
 
   managerUser = newUser;
@@ -117,40 +132,40 @@ app.post("/api/manager/change-credentials", (req, res) => {
 });
 
 // --- Serve menu file ---
-app.get('/menu.json', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/menu.json'));
+app.get("/menu.json", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/menu.json"));
 });
 
 // Inventory: update menu.json
-app.post('/update-menu', (req, res) => {
+app.post("/update-menu", (req, res) => {
   try {
-    const filePath = path.join(__dirname, 'public', 'menu.json');
+    const filePath = path.join(__dirname, "public", "menu.json");
     const data = JSON.stringify(req.body, null, 2);
-    fs.writeFile(filePath, data, 'utf8', (err) => {
+    fs.writeFile(filePath, data, "utf8", (err) => {
       if (err) {
-        console.error('Error writing menu.json:', err);
-        return res.status(500).json({ error: 'Failed to save menu' });
+        console.error("Error writing menu.json:", err);
+        return res.status(500).json({ error: "Failed to save menu" });
       }
       res.json({ success: true });
     });
   } catch (e) {
-    console.error('Error in /update-menu:', e);
-    res.status(500).json({ error: 'Server error' });
+    console.error("Error in /update-menu:", e);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
 // --- Utility: IST date boundaries ---
 function getISTDateBounds(dateStr) {
   const date  = dateStr || new Date().toISOString().slice(0, 10);
-  const start = new Date(Date.parse(date + 'T00:00:00+05:30'));
-  const end   = new Date(Date.parse(date + 'T23:59:59+05:30'));
+  const start = new Date(Date.parse(date + "T00:00:00+05:30"));
+  const end   = new Date(Date.parse(date + "T23:59:59+05:30"));
   return { start, end };
 }
 
 // ---------------- ORDERS APIs ----------------
 
 // Get orders for a given date (IST) and optional status
-app.get('/api/orders', async (req, res) => {
+app.get("/api/orders", async (req, res) => {
   try {
     const date = req.query.date || new Date().toISOString().slice(0, 10);
     const { start, end } = getISTDateBounds(date);
@@ -158,21 +173,20 @@ app.get('/api/orders', async (req, res) => {
 
     const query = {
       createdAt: { $gte: start, $lte: end },
-      status: { $ne: 'deleted' }
+      status: { $ne: "deleted" }
     };
     if (status) query.status = status;
 
     const orders = await Order.find(query).sort({ createdAt: -1 });
     res.json(orders);
   } catch (err) {
-    console.error('Get orders error:', err);
-    res.status(500).json({ error: 'Could not fetch orders' });
+    console.error("Get orders error:", err);
+    res.status(500).json({ error: "Could not fetch orders" });
   }
 });
 
 // Place new order (QR / COD – NO Razorpay)
-// Client must send: orderType, customerName, registrationNumber, mobile, tableNumber, address, location, items, paymentMethod
-app.post('/api/orders', async (req, res) => {
+app.post("/api/orders", async (req, res) => {
   try {
     const {
       orderType,
@@ -183,7 +197,7 @@ app.post('/api/orders', async (req, res) => {
       address,
       location,        // { lat, lng } for delivery
       items,
-      paymentMethod    // 'UPI' or 'COD'
+      paymentMethod    // "UPI" or "COD"
     } = req.body;
 
     const total = (items || []).reduce(
@@ -201,21 +215,22 @@ app.post('/api/orders', async (req, res) => {
       location,
       items,
       total,
-      paymentMethod: paymentMethod || 'COD',
+      paymentMethod: paymentMethod || "COD",
       paymentVerified: false,
-      status: 'incoming'
+      status: "incoming"
     });
 
     res.json({ success: true, order });
   } catch (err) {
-    console.error('Create order error:', err);
-    res.status(500).json({ success: false, error: 'Could not create order' });
+    console.error("Create order error:", err);
+    res
+      .status(500)
+      .json({ success: false, error: "Could not create order" });
   }
 });
 
-// Update order status (manager or delivery portal)
-// e.g. { status: 'delivered' } or { status: 'out_for_delivery' }
-app.patch('/api/orders/:id/status', async (req, res) => {
+// Update order status
+app.patch("/api/orders/:id/status", async (req, res) => {
   try {
     const { id }    = req.params;
     const { status } = req.body;
@@ -227,20 +242,23 @@ app.patch('/api/orders/:id/status', async (req, res) => {
     );
 
     if (!order) {
-      return res.status(404).json({ success: false, error: 'Order not found' });
+      return res
+        .status(404)
+        .json({ success: false, error: "Order not found" });
     }
 
-    io.emit('orderUpdated', order);
+    io.emit("orderUpdated", order);
     res.json({ success: true, order });
   } catch (err) {
-    console.error('Update status error:', err);
-    res.status(500).json({ success: false, error: 'Could not update status' });
+    console.error("Update status error:", err);
+    res
+      .status(500)
+      .json({ success: false, error: "Could not update status" });
   }
 });
 
-// Toggle payment verification (for manager & delivery portals)
-// body: { paymentVerified: true/false }
-app.patch('/api/orders/:id/payment-verified', async (req, res) => {
+// Toggle payment verification
+app.patch("/api/orders/:id/payment-verified", async (req, res) => {
   try {
     const { id } = req.params;
     const { paymentVerified } = req.body;
@@ -252,48 +270,53 @@ app.patch('/api/orders/:id/payment-verified', async (req, res) => {
     );
 
     if (!order) {
-      return res.status(404).json({ success: false, error: 'Order not found' });
+      return res
+        .status(404)
+        .json({ success: false, error: "Order not found" });
     }
 
-    // broadcast change so manager & delivery portals stay in sync
-    io.emit('orderUpdated', order);
+    io.emit("orderUpdated", order);
     res.json({ success: true, order });
   } catch (err) {
-    console.error('Payment verify update error:', err);
-    res.status(500).json({ success: false, error: 'Could not update payment verification' });
+    console.error("Payment verify update error:", err);
+    res
+      .status(500)
+      .json({ success: false, error: "Could not update payment verification" });
   }
 });
 
-// Hard delete (if needed) – optional
-app.delete('/api/orders/:id', async (req, res) => {
+// Hard delete (optional)
+app.delete("/api/orders/:id", async (req, res) => {
   try {
     const { id } = req.params;
     await Order.findByIdAndDelete(id);
     res.json({ success: true });
   } catch (err) {
-    console.error('Delete order error:', err);
-    res.status(500).json({ success: false, error: 'Could not delete order' });
+    console.error("Delete order error:", err);
+    res
+      .status(500)
+      .json({ success: false, error: "Could not delete order" });
   }
 });
 
 // ---------------- DASHBOARD APIs ----------------
 
-// Total sales for a day/week/month (IST based)
-app.get('/api/dashboard/sales', async (req, res) => {
+// Total sales for a day/week/month (IST)
+app.get("/api/dashboard/sales", async (req, res) => {
   try {
-    const period = req.query.period || 'day';
+    const period = req.query.period || "day";
     const date   = req.query.date   || new Date().toISOString().slice(0, 10);
 
     let start, end;
-    if (period === 'day') {
+    if (period === "day") {
       ({ start, end } = getISTDateBounds(date));
-    } else if (period === 'week') {
+    } else if (period === "week") {
       const { start: dayStart } = getISTDateBounds(date);
       const d     = new Date(dayStart);
       const first = new Date(d.setDate(d.getDate() - d.getDay()));
       start = new Date(first.setHours(0, 0, 0, 0));
       end   = new Date(new Date(start).setDate(start.getDate() + 7));
-    } else if (period === 'month') {
+    } else if (period === "month") {
       const { start: dayStart } = getISTDateBounds(date);
       const d = new Date(dayStart);
       start   = new Date(d.getFullYear(), d.getMonth(), 1);
@@ -302,25 +325,25 @@ app.get('/api/dashboard/sales', async (req, res) => {
 
     const orders = await Order.find({
       createdAt: { $gte: start, $lte: end },
-      status: { $ne: 'deleted' }
+      status: { $ne: "deleted" }
     });
     const total = orders.reduce((sum, o) => sum + (o.total || 0), 0);
     res.json({ total, count: orders.length });
   } catch (err) {
-    console.error('Dashboard sales error:', err);
-    res.status(500).json({ error: 'Could not get sales' });
+    console.error("Dashboard sales error:", err);
+    res.status(500).json({ error: "Could not get sales" });
   }
 });
 
-// Peak Hour (IST)
-app.get('/api/dashboard/peakhour', async (req, res) => {
+// Peak hour (IST)
+app.get("/api/dashboard/peakhour", async (req, res) => {
   try {
     const date = req.query.date || new Date().toISOString().slice(0, 10);
     const { start, end } = getISTDateBounds(date);
 
     const orders = await Order.find({
       createdAt: { $gte: start, $lte: end },
-      status: { $ne: 'deleted' }
+      status: { $ne: "deleted" }
     });
 
     const hourly = {};
@@ -329,19 +352,19 @@ app.get('/api/dashboard/peakhour', async (req, res) => {
       hourly[hour] = (hourly[hour] || 0) + 1;
     });
 
-    let peak = { hour: '-', count: 0 };
+    let peak = { hour: "-", count: 0 };
     Object.entries(hourly).forEach(([h, c]) => {
       if (c > peak.count) peak = { hour: h, count: c };
     });
     res.json(peak);
   } catch (err) {
-    console.error('Peakhour error:', err);
-    res.status(500).json({ error: 'Could not get peak hour' });
+    console.error("Peakhour error:", err);
+    res.status(500).json({ error: "Could not get peak hour" });
   }
 });
 
-// Most Ordered Dish (IST)
-app.get('/api/dashboard/topdish', async (req, res) => {
+// Most ordered dish (IST)
+app.get("/api/dashboard/topdish", async (req, res) => {
   try {
     let start, end;
     if (req.query.from && req.query.to) {
@@ -355,13 +378,13 @@ app.get('/api/dashboard/topdish', async (req, res) => {
 
     const orders = await Order.find({
       createdAt: { $gte: start, $lte: end },
-      status: { $ne: 'deleted' }
+      status: { $ne: "deleted" }
     });
 
     const countMap = {};
     orders.forEach(o => {
       (o.items || []).forEach(i => {
-        const n = i.name || 'Unnamed Item';
+        const n = i.name || "Unnamed Item";
         countMap[n] = (countMap[n] || 0) + (i.qty || 0);
       });
     });
@@ -369,13 +392,13 @@ app.get('/api/dashboard/topdish', async (req, res) => {
     const top = Object.entries(countMap).sort((a, b) => b[1] - a[1])[0];
     res.json(top ? { _id: top[0], count: top[1] } : null);
   } catch (err) {
-    console.error('Top dish error:', err);
-    res.status(500).json({ error: 'Could not get top dish' });
+    console.error("Top dish error:", err);
+    res.status(500).json({ error: "Could not get top dish" });
   }
 });
 
-// Repeat Customers (IST)
-app.get('/api/dashboard/repeatcustomers', async (req, res) => {
+// Repeat customers (IST)
+app.get("/api/dashboard/repeatcustomers", async (req, res) => {
   try {
     let start, end;
     if (req.query.from && req.query.to) {
@@ -390,7 +413,7 @@ app.get('/api/dashboard/repeatcustomers', async (req, res) => {
     const nameFilter = req.query.name ? { customerName: req.query.name } : {};
     const orders = await Order.find({
       createdAt: { $gte: start, $lte: end },
-      status: { $ne: 'deleted' },
+      status: { $ne: "deleted" },
       ...nameFilter
     });
 
@@ -401,7 +424,9 @@ app.get('/api/dashboard/repeatcustomers', async (req, res) => {
     });
 
     if (req.query.name) {
-      return res.json([{ _id: req.query.name, orders: stats[req.query.name] || 0 }]);
+      return res.json([
+        { _id: req.query.name, orders: stats[req.query.name] || 0 }
+      ]);
     }
 
     const sorted = Object.entries(stats)
@@ -409,13 +434,13 @@ app.get('/api/dashboard/repeatcustomers', async (req, res) => {
       .map(([name, count]) => ({ _id: name, orders: count }));
     res.json(sorted);
   } catch (err) {
-    console.error('Repeat customers error:', err);
-    res.status(500).json({ error: 'Could not get repeat customers' });
+    console.error("Repeat customers error:", err);
+    res.status(500).json({ error: "Could not get repeat customers" });
   }
 });
 
 // --------------- AUTO-PRINT TICKET API ---------------
-app.get('/api/next-print-ticket', (req, res) => {
+app.get("/api/next-print-ticket", (req, res) => {
   if (printQueue.length === 0) {
     return res.status(204).send(); // nothing to print
   }
@@ -423,39 +448,45 @@ app.get('/api/next-print-ticket', (req, res) => {
   const order = printQueue.shift(); // oldest order
 
   let lines = [];
-  lines.push('PRINCE PIZZA KING');
-  lines.push('--------------------------');
+  lines.push("ABBA SEENUUU... FAST FOODS");
+  lines.push('Tagline: Taste like "ahh devudaa..."');
+  lines.push("--------------------------");
   lines.push(`Order ID: ${order._id}`);
   lines.push(`Type   : ${order.orderType}`);
   if (order.customerName)       lines.push(`Name   : ${order.customerName}`);
   if (order.registrationNumber) lines.push(`Reg No : ${order.registrationNumber}`);
   if (order.mobile)             lines.push(`Mobile : ${order.mobile}`);
   if (order.address)            lines.push(`Addr   : ${order.address}`);
-  lines.push('Payment: ' + (order.paymentMethod || 'COD') + (order.paymentVerified ? ' (VERIFIED)' : ' (PENDING)'));
-  lines.push('--------------------------');
-  (order.items || []).forEach(it => {
+  lines.push(
+    "Payment: " +
+      (order.paymentMethod || "COD") +
+      (order.paymentVerified ? " (VERIFIED)" : " (PENDING)")
+  );
+  lines.push("--------------------------");
+  (order.items || []).forEach((it) => {
     lines.push(`${it.name} x${it.qty}  ₹${it.price}`);
   });
-  lines.push('--------------------------');
+  lines.push("--------------------------");
   lines.push(`Total: ₹${order.total}`);
-  lines.push('\n\n\n');
+  lines.push("\\n\\n\\n");
 
-  res.type('text/plain').send(lines.join('\n'));
+  res.type("text/plain").send(lines.join("\\n"));
 });
 
 // ---------------- SOCKET.IO ----------------
-io.on('connection', (socket) => {
-  console.log('🟢 Prince Pizza King client connected');
-  socket.emit('connected', { status: 'connected' });
+io.on("connection", (socket) => {
+  console.log("🟢 Abba SEENUUU... FAST FOODS client connected");
+  socket.emit("connected", { status: "connected" });
 });
 
 // ---------------- HEALTH CHECK ----------------
-app.get('/health', (req, res) => {
-  res.status(200).send('OK');
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
 });
 
 // ---------------- SERVER ----------------
 server.listen(PORT, () => {
-  console.log(`🚀 Prince Pizza King Server running on http://localhost:${PORT}`);
+  console.log(
+    `🚀 Abba SEENUUU... FAST FOODS server running on http://localhost:${PORT}`
+  );
 });
-
