@@ -437,7 +437,6 @@
           fetchOrders(getLocalToday());
           renderDashboard();
           await loadInventory();
-          // After inventory load, ensure toggle and checkboxes are synced
           syncRestaurantToggleWithInventory();
         }else{
           loginError.textContent = data.message || "Wrong username or password.";
@@ -544,6 +543,30 @@
     const saveInventoryBtn = document.getElementById('saveInventoryBtn');
     const inventoryStatus = document.getElementById('inventoryStatus');
 
+    async function saveMenuToServer(showMessage = true) {
+      if(!menuData) return;
+      try{
+        await fetch('/update-menu',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(menuData)
+        });
+        if(showMessage){
+          inventoryStatus.textContent = "Menu updated successfully.";
+          inventoryStatus.classList.remove('hidden');
+          inventoryStatus.classList.remove('text-red-400');
+          setTimeout(()=>inventoryStatus.classList.add('hidden'),1500);
+        }
+      }catch(e){
+        console.error(e);
+        if(showMessage){
+          inventoryStatus.textContent = "Error saving menu.";
+          inventoryStatus.classList.remove('hidden');
+          inventoryStatus.classList.add('text-red-400');
+        }
+      }
+    }
+
     saveInventoryBtn.onclick = async () => {
       if(!menuData) return;
       const switches = document.querySelectorAll('#inventoryTableBody input[type="checkbox"]');
@@ -554,29 +577,14 @@
         const item = items.find(i => i.name === name);
         if(item) item.available = sw.checked;
       });
-      try{
-        await fetch('/update-menu',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(menuData)
-        });
-        inventoryStatus.textContent = "Menu updated successfully.";
-        inventoryStatus.classList.remove('hidden');
-        inventoryStatus.classList.remove('text-red-400');
-        setTimeout(()=>inventoryStatus.classList.add('hidden'),1500);
-      }catch(e){
-        console.error(e);
-        inventoryStatus.textContent = "Error saving menu.";
-        inventoryStatus.classList.remove('hidden');
-        inventoryStatus.classList.add('text-red-400');
-      }
+      await saveMenuToServer(true);
     };
 
-    // Restaurant ON/OFF affecting inventory checkboxes
+    // Restaurant ON/OFF affecting inventory checkboxes + auto save
     const restStatusToggle = document.getElementById("restStatusToggle");
     const restStatusLabel  = document.getElementById("restStatusLabel");
 
-    function setAllInventoryCheckboxes(checked) {
+    function setAllInventoryCheckboxesInDOM(checked) {
       const switches = document.querySelectorAll('#inventoryTableBody input[type="checkbox"]');
       switches.forEach(sw => {
         sw.checked = checked;
@@ -593,12 +601,34 @@
         : "Restaurant: OFF (online ordering disabled manually)";
     }
 
-    restStatusToggle.onchange = () => {
+    restStatusToggle.onchange = async () => {
       const online = restStatusToggle.checked;
       restStatusLabel.textContent = online
         ? "Restaurant: ON"
         : "Restaurant: OFF (online ordering disabled manually)";
-      setAllInventoryCheckboxes(online);
+
+      if(!menuData) return;
+
+      // Update menuData availability
+      Object.values(menuData).forEach(items => {
+        items.forEach(item => {
+          item.available = online;
+        });
+      });
+
+      // Reflect in DOM checkboxes
+      setAllInventoryCheckboxesInDOM(online);
+
+      // Auto-save to server (no popup message, very quick)
+      await saveMenuToServer(false);
+
+      // Small inline text feedback
+      inventoryStatus.textContent = online
+        ? "Restaurant ON – all items available (auto-saved)."
+        : "Restaurant OFF – all items unavailable (auto-saved).";
+      inventoryStatus.classList.remove('hidden');
+      inventoryStatus.classList.remove('text-red-400');
+      setTimeout(()=>inventoryStatus.classList.add('hidden'),1500);
     };
 
     // Tabs
