@@ -9,9 +9,9 @@
 
 <style>
 :root{
-  --bg:#2b0008;            /* maroon base */
+  --bg:#2b0008;
   --paper:#3a050f;
-  --accent:#f5c518;        /* warm yellow */
+  --accent:#f5c518;
   --accent-soft:#ffe28a;
   --text:#f5f5f5;
 }
@@ -206,7 +206,7 @@ select{
   color:var(--accent-soft);
 }
 
-/* items block – always visible, no inner scroll */
+/* items block */
 #cartItems{
   margin-bottom:10px;
   max-height:none;
@@ -358,7 +358,7 @@ textarea#address{resize:vertical;min-height:60px;}
 
     <textarea id="address" placeholder="Delivery address / landmark (for delivery)"></textarea>
 
-    <button id="locBtn" class="loc-btn">📍 Use current location (for delivery)</button>
+    <button id="locBtn" class="loc-btn">📍 Use current location (mandatory for delivery)</button>
     <div id="locStatus" class="helper"></div>
 
     <select id="paymentMethod">
@@ -430,11 +430,11 @@ let cart=[],page=0,locked=false,menu={};
 let customerLocation=null;
 let pendingOrderPayload=null;
 
-/* Build UPI QR with amount (Abba Seenu) */
+/* Build UPI QR with amount */
 function setUpiQr(totalAmount){
   const upiId   = "7054699905@ptaxis";
   const upiName = "Abba SEENUUU... FAST FOODS";
-  const note    = 'Abba Seenu order';
+  const note    = "Abba Seenu order";
   const amountStr = totalAmount.toFixed(2);
 
   const upiLink =
@@ -446,7 +446,7 @@ function setUpiQr(totalAmount){
 
   const qrApi =
     "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" +
-    encodeURIComponent(upiLink);   /* qrserver usage pattern [web:1283] */
+    encodeURIComponent(upiLink);
 
   upiQrImg.src = qrApi;
 }
@@ -488,7 +488,7 @@ function toast(msg){
   setTimeout(()=>t.style.display="none",1400);
 }
 
-/* MENU (same APIs as server.js) */
+/* MENU */
 fetch("/menu.json?_=" + Date.now(), { cache: "no-store" })
   .then(r=>r.json())
   .then(m=>{menu=m;build();})
@@ -498,7 +498,7 @@ fetch("/menu.json?_=" + Date.now(), { cache: "no-store" })
 function build(){
   book.innerHTML="";
 
-  /* FIRST PAGE – COVER */
+  /* COVER */
   book.innerHTML+=`
   <section class="page">
     <div style="
@@ -568,7 +568,7 @@ function build(){
     </div>
   </section>`;
 
-  /* CONTENTS PAGE */
+  /* CONTENTS */
   let contents="",start=2;
   Object.keys(menu).forEach(c=>{
     const items = menu[c];
@@ -641,7 +641,7 @@ function build(){
   }
 }
 
-/* CART LOGIC – visible items */
+/* CART LOGIC */
 function add(name,btn){
   const sel=btn.previousElementSibling;
   if(!sel.value){alert("Please choose an option");return;}
@@ -683,11 +683,11 @@ function chg(i,d){
   updateCart();
 }
 
-/* LOCATION */
+/* LOCATION (mandatory for delivery) */
 locBtn.onclick = () => {
   const orderType = orderTypeSel.value;
   if(orderType !== "delivery"){
-    locStatus.textContent = "Location is only used for delivery orders.";
+    locStatus.textContent = "Location is only required for delivery orders.";
     return;
   }
   if(!navigator.geolocation){
@@ -701,11 +701,11 @@ locBtn.onclick = () => {
         lat: pos.coords.latitude,
         lng: pos.coords.longitude
       };
-      locStatus.textContent = "Location captured ✔ (only used for delivery)";
+      locStatus.textContent = "Location captured ✔";
     },
     err => {
       console.error(err);
-      locStatus.textContent = "Could not get location. Please type address.";
+      locStatus.textContent = "Could not get location. Please allow permission.";
     },
     { enableHighAccuracy:true, timeout:10000 }
   );
@@ -831,7 +831,7 @@ upiCancelBtn.onclick = () => {
   upiOverlay.style.display="none";
 };
 
-/* PLACE ORDER main */
+/* PLACE ORDER main (location mandatory for delivery) */
 let submitting=false;
 placeOrderBtn.onclick = async () => {
   if(submitting)return;
@@ -844,6 +844,11 @@ placeOrderBtn.onclick = async () => {
 
   if(orderType === "delivery" && !addressInput.value.trim()){
     return alert("Enter delivery address / hostel / block");
+  }
+
+  if(orderType === "delivery" && !customerLocation){
+    alert("Please tap 'Use current location' and allow location access for delivery orders.");
+    return;
   }
 
   const paymentMethod = paymentSel.value;
@@ -885,7 +890,7 @@ placeOrderBtn.onclick = async () => {
   placeOrderBtn.disabled=false;
 };
 
-/* BUILD INITIAL PAGES ON LOAD */
+/* INITIAL */
 build();
 updateCart();
 </script>
