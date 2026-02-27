@@ -1,31 +1,31 @@
 {
   "Starters": [
-    { "name": "Veg Manchurian",        "variants": { "Plate": 90 } },
-    { "name": "Chilli chicken",        "variants": { "Plate": 140 } },
-    { "name": "Abba special chicken",  "variants": { "Plate": 150 } },
-    { "name": "Chicken lollipop",      "variants": { "Plate": 140 } },
-    { "name": "Chicken 65",            "variants": { "Plate": 150 } },
-    { "name": "Dragon chicken",        "variants": { "Plate": 150 } },
-    { "name": "Chicken Manchurian",    "variants": { "Plate": 140 } }
+    { "name": "Veg Manchurian",       "available": true, "variants": { "Plate": 90 } },
+    { "name": "Chilli chicken",       "available": true, "variants": { "Plate": 140 } },
+    { "name": "Abba special chicken", "available": true, "variants": { "Plate": 150 } },
+    { "name": "Chicken lollipop",     "available": true, "variants": { "Plate": 140 } },
+    { "name": "Chicken 65",           "available": true, "variants": { "Plate": 150 } },
+    { "name": "Dragon chicken",       "available": true, "variants": { "Plate": 150 } },
+    { "name": "Chicken Manchurian",   "available": true, "variants": { "Plate": 140 } }
   ],
 
   "Rice": [
-    { "name": "Paneer fried rice",          "variants": { "Plate": 110 } },
-    { "name": "Veg fried rice",             "variants": { "Plate": 70 } },
-    { "name": "Double egg fried rice",      "variants": { "Plate": 90 } },
-    { "name": "Abba special chicken rice",  "variants": { "Plate": 120 } },
-    { "name": "Chicken fried rice",         "variants": { "Plate": 110 } },
-    { "name": "Egg fried rice",             "variants": { "Plate": 80 } },
-    { "name": "Gobi fried rice",            "variants": { "Plate": 90 } }
+    { "name": "Paneer fried rice",         "available": true, "variants": { "Plate": 110 } },
+    { "name": "Veg fried rice",            "available": true, "variants": { "Plate": 70 } },
+    { "name": "Double egg fried rice",     "available": true, "variants": { "Plate": 90 } },
+    { "name": "Abba special chicken rice", "available": true, "variants": { "Plate": 120 } },
+    { "name": "Chicken fried rice",        "available": true, "variants": { "Plate": 110 } },
+    { "name": "Egg fried rice",            "available": true, "variants": { "Plate": 80 } },
+    { "name": "Gobi fried rice",           "available": true, "variants": { "Plate": 90 } }
   ],
 
   "Noodles": [
-    { "name": "Double egg noodles",             "variants": { "Plate": 90 } },
-    { "name": "Abba special chicken noodles",   "variants": { "Plate": 120 } },
-    { "name": "Chicken noodles",                "variants": { "Plate": 110 } },
-    { "name": "Gobi noodles",                   "variants": { "Plate": 90 } },
-    { "name": "Veg noodles",                    "variants": { "Plate": 70 } },
-    { "name": "Paneer noodles",                 "variants": { "Plate": 110 } },
-    { "name": "Egg noodles",                    "variants": { "Plate": 80 } }
+    { "name": "Double egg noodles",            "available": true, "variants": { "Plate": 90 } },
+    { "name": "Abba special chicken noodles",  "available": true, "variants": { "Plate": 120 } },
+    { "name": "Chicken noodles",               "available": true, "variants": { "Plate": 110 } },
+    { "name": "Gobi noodles",                  "available": true, "variants": { "Plate": 90 } },
+    { "name": "Veg noodles",                   "available": true, "variants": { "Plate": 70 } },
+    { "name": "Paneer noodles",                "available": true, "variants": { "Plate": 110 } },
+    { "name": "Egg noodles",                   "available": true, "variants": { "Plate": 80 } }
   ]
 }
