@@ -328,18 +328,28 @@
     <!-- INVENTORY TAB -->
     <div id="inventoryTab" style="display:none;">
       <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6">
-        <h2 class="text-lg md:text-xl font-extrabold text-amber-300 mb-3">
-          Inventory &amp; Menu Availability
-        </h2>
-        <p class="text-xs md:text-sm text-gray-300 mb-3">
-          Quickly switch items ON/OFF for the Abba SEENUUU... FAST FOODS online menu. Changes are saved to <b>menu.json</b> on the server.
-        </p>
-
-        <div id="inventoryStatus" class="text-xs text-emerald-400 mb-2 hidden">
-          Menu updated successfully.
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div>
+            <h2 class="text-lg md:text-xl font-extrabold text-amber-300">
+              Inventory &amp; Menu Availability
+            </h2>
+            <p class="text-xs md:text-sm text-gray-300">
+              Quickly switch items ON/OFF for the Abba SEENUUU... FAST FOODS online menu.
+              Changes are saved to <b>menu.json</b> on the server.
+            </p>
+          </div>
+          <div class="flex flex-col items-end gap-1">
+            <button id="saveInventoryBtn"
+              class="px-4 py-2 rounded-full bg-emerald-500 text-black font-semibold text-xs md:text-sm">
+              Save Changes
+            </button>
+            <div id="inventoryStatus" class="text-[11px] text-emerald-400 hidden">
+              Menu updated successfully.
+            </div>
+          </div>
         </div>
 
-        <div class="table-wrapper">
+        <div class="table-wrapper mt-2">
           <table class="w-full text-xs md:text-sm">
             <thead>
               <tr class="border-b border-amber-400 text-amber-200">
@@ -351,13 +361,6 @@
             </thead>
             <tbody id="inventoryTableBody" class="text-gray-100"></tbody>
           </table>
-        </div>
-
-        <div class="mt-4 flex justify-end">
-          <button id="saveInventoryBtn"
-            class="px-4 py-2 rounded-full bg-emerald-500 text-black font-semibold text-xs md:text-sm">
-            Save Changes
-          </button>
         </div>
       </section>
     </div>
