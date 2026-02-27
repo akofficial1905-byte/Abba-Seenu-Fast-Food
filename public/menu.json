@@ -1,6 +1,6 @@
 {
   "Starters": [
-    { "name": "Veg Manchurian",       "available": true, "variants": { "Plate": 90 } },
+    { "name": "Veg Manchurian", "image": "/vm.jpeg", "available": true, "variants": { "Plate": 90 } },
     { "name": "Chilli chicken",       "available": true, "variants": { "Plate": 140 } },
     { "name": "Abba special chicken", "available": true, "variants": { "Plate": 150 } },
     { "name": "Chicken lollipop",     "available": true, "variants": { "Plate": 140 } },
