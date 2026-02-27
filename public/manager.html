@@ -504,13 +504,134 @@
       }
     };
 
-    // Restaurant ON/OFF (local only toggle now)
+    // ---------- INVENTORY / RESTAURANT STATUS ----------
+    let menuData = null;
+    let originalMenuSnapshot = null; // to restore when turning ON again
+
+    async function loadInventory() {
+      try{
+        const res = await fetch('/menu.json?_=' + Date.now());
+        menuData = await res.json();
+        // Take a deep snapshot once (first load)
+        if(!originalMenuSnapshot){
+          originalMenuSnapshot = JSON.parse(JSON.stringify(menuData));
+        }
+        const tbody = document.getElementById('inventoryTableBody');
+        let rows = '';
+        Object.entries(menuData).forEach(([cat, items]) => {
+          items.forEach((item, idx) => {
+            const rowSpan = idx === 0 ? `rowspan="${items.length}"` : '';
+            rows += `
+              <tr class="border-b border-slate-700">
+                ${idx === 0 ? `<td ${rowSpan} class="py-2 pr-2 align-top text-amber-200 text-xs md:text-sm font-semibold">${cat}</td>` : ''}
+                <td class="py-2 pr-2 text-xs md:text-sm text-gray-100">${item.name}</td>
+                <td class="py-2 pr-2 text-[11px] md:text-xs text-gray-300">
+                  ${Object.entries(item.variants || {}).map(([v,p]) => `${v}: ₹${p}`).join('<br>')}
+                </td>
+                <td class="py-2 text-center">
+                  <label class="switch">
+                    <input type="checkbox" ${item.available !== false ? 'checked' : ''} data-cat="${cat}" data-name="${item.name}">
+                    <span class="slider"></span>
+                  </label>
+                </td>
+              </tr>
+            `;
+          });
+        });
+        tbody.innerHTML = rows;
+      }catch(e){
+        console.error(e);
+      }
+    }
+
+    const saveInventoryBtn = document.getElementById('saveInventoryBtn');
+    const inventoryStatus = document.getElementById('inventoryStatus');
+
+    saveInventoryBtn.onclick = async () => {
+      if(!menuData) return;
+      const switches = document.querySelectorAll('#inventoryTableBody input[type="checkbox"]');
+      switches.forEach(sw => {
+        const cat = sw.getAttribute('data-cat');
+        const name = sw.getAttribute('data-name');
+        const items = menuData[cat] || [];
+        const item = items.find(i => i.name === name);
+        if(item) item.available = sw.checked;
+      });
+      try{
+        await fetch('/update-menu',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(menuData)
+        });
+        // refresh snapshot after manual save
+        originalMenuSnapshot = JSON.parse(JSON.stringify(menuData));
+        inventoryStatus.textContent = "Menu updated successfully.";
+        inventoryStatus.classList.remove('hidden');
+        inventoryStatus.classList.remove('text-red-400');
+        setTimeout(()=>inventoryStatus.classList.add('hidden'),1500);
+      }catch(e){
+        console.error(e);
+        inventoryStatus.textContent = "Error saving menu.";
+        inventoryStatus.classList.remove('hidden');
+        inventoryStatus.classList.add('text-red-400');
+      }
+    };
+
+    // Restaurant ON/OFF connected to inventory
     const restStatusToggle = document.getElementById("restStatusToggle");
     const restStatusLabel  = document.getElementById("restStatusLabel");
+
+    async function applyRestaurantStatus(online){
+      if(!menuData) return;
+      // If going online, restore from snapshot; if offline, force all items unavailable
+      if(online && originalMenuSnapshot){
+        menuData = JSON.parse(JSON.stringify(originalMenuSnapshot));
+      }else if(!online){
+        Object.values(menuData).forEach(items => {
+          items.forEach(item => { item.available = false; });
+        });
+      }
+      try{
+        await fetch('/update-menu',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(menuData)
+        });
+        // Update inventory table checkboxes to reflect new state
+        const tbody = document.getElementById('inventoryTableBody');
+        let rows = '';
+        Object.entries(menuData).forEach(([cat, items]) => {
+          items.forEach((item, idx) => {
+            const rowSpan = idx === 0 ? `rowspan="${items.length}"` : '';
+            rows += `
+              <tr class="border-b border-slate-700">
+                ${idx === 0 ? `<td ${rowSpan} class="py-2 pr-2 align-top text-amber-200 text-xs md:text-sm font-semibold">${cat}</td>` : ''}
+                <td class="py-2 pr-2 text-xs md:text-sm text-gray-100">${item.name}</td>
+                <td class="py-2 pr-2 text-[11px] md:text-xs text-gray-300">
+                  ${Object.entries(item.variants || {}).map(([v,p]) => `${v}: ₹${p}`).join('<br>')}
+                </td>
+                <td class="py-2 text-center">
+                  <label class="switch">
+                    <input type="checkbox" ${item.available !== false ? 'checked' : ''} data-cat="${cat}" data-name="${item.name}">
+                    <span class="slider"></span>
+                  </label>
+                </td>
+              </tr>
+            `;
+          });
+        });
+        tbody.innerHTML = rows;
+      }catch(e){
+        console.error(e);
+      }
+    }
+
     restStatusToggle.onchange = () => {
-      restStatusLabel.textContent = restStatusToggle.checked
+      const online = restStatusToggle.checked;
+      restStatusLabel.textContent = online
         ? "Restaurant: ON"
         : "Restaurant: OFF (online ordering disabled manually)";
+      applyRestaurantStatus(online);
     };
 
     // Tabs
@@ -794,72 +915,6 @@
     socket.on('orderUpdated', () => {
       fetchOrders(datePicker.value);
     });
-
-    // ---------- INVENTORY LOGIC ----------
-    let menuData = null;
-
-    async function loadInventory() {
-      try{
-        const res = await fetch('/menu.json?_=' + Date.now());
-        menuData = await res.json();
-        const tbody = document.getElementById('inventoryTableBody');
-        let rows = '';
-        Object.entries(menuData).forEach(([cat, items]) => {
-          items.forEach((item, idx) => {
-            const rowSpan = idx === 0 ? `rowspan="${items.length}"` : '';
-            rows += `
-              <tr class="border-b border-slate-700">
-                ${idx === 0 ? `<td ${rowSpan} class="py-2 pr-2 align-top text-amber-200 text-xs md:text-sm font-semibold">${cat}</td>` : ''}
-                <td class="py-2 pr-2 text-xs md:text-sm text-gray-100">${item.name}</td>
-                <td class="py-2 pr-2 text-[11px] md:text-xs text-gray-300">
-                  ${Object.entries(item.variants || {}).map(([v,p]) => `${v}: ₹${p}`).join('<br>')}
-                </td>
-                <td class="py-2 text-center">
-                  <label class="switch">
-                    <input type="checkbox" ${item.available !== false ? 'checked' : ''} data-cat="${cat}" data-name="${item.name}">
-                    <span class="slider"></span>
-                  </label>
-                </td>
-              </tr>
-            `;
-          });
-        });
-        tbody.innerHTML = rows;
-      }catch(e){
-        console.error(e);
-      }
-    }
-
-    const saveInventoryBtn = document.getElementById('saveInventoryBtn');
-    const inventoryStatus = document.getElementById('inventoryStatus');
-
-    saveInventoryBtn.onclick = async () => {
-      if(!menuData) return;
-      const switches = document.querySelectorAll('#inventoryTableBody input[type="checkbox"]');
-      switches.forEach(sw => {
-        const cat = sw.getAttribute('data-cat');
-        const name = sw.getAttribute('data-name');
-        const items = menuData[cat] || [];
-        const item = items.find(i => i.name === name);
-        if(item) item.available = sw.checked;
-      });
-      try{
-        await fetch('/update-menu',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify(menuData)
-        });
-        inventoryStatus.textContent = "Menu updated successfully.";
-        inventoryStatus.classList.remove('hidden');
-        inventoryStatus.classList.remove('text-red-400');
-        setTimeout(()=>inventoryStatus.classList.add('hidden'),1500);
-      }catch(e){
-        console.error(e);
-        inventoryStatus.textContent = "Error saving menu.";
-        inventoryStatus.classList.remove('hidden');
-        inventoryStatus.classList.add('text-red-400');
-      }
-    };
   </script>
 </body>
 </html>
