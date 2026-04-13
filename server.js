@@ -1,929 +1,509 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Abba SEENUUU... FAST FOODS — Manager Portal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+// server.js – Abba SEENUUU... FAST FOODS (NO Razorpay)
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="/socket.io/socket.io.js"></script>
+const express = require('express');
+const http = require('http');
+const socketio = require('socket.io');
+const cors = require('cors');
+const path = require('path');
+const mongoose = require('mongoose');
+const fs = require('fs');
 
-  <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+require('dotenv').config();
+
+const app = express();
+const server = http.createServer(app);
+const io = socketio(server);
+const PORT = process.env.PORT || 4000;
+
+// --- Manager Portal Login ---
+// Use environment variables if available, otherwise fallback defaults
+const managerUser = process.env.MANAGER_USER || "admin";
+const managerPass = process.env.MANAGER_PASS || "abbaseenu2025";
+
+// --- MongoDB connection ---
+const MONGO_URI =
+  process.env.MONGO_URI ||
+  "mongodb+srv://architkumarsncp2123_db_user:abbaseenu@abbaseenudb.5sndjat.mongodb.net/?appName=AbbaSeenudb";
+
+mongoose.connect(MONGO_URI, {
+  dbName: "AbbaSeenudb"
+});
+
+mongoose.connection.on("connected", () => {
+  console.log("✅ Connected to MongoDB (Abba SEENUUU... FAST FOODS)");
+});
+
+mongoose.connection.on("error", (err) => {
+  console.error("❌ MongoDB Error:", err);
+});
+
+// --- Schema ---
+const orderSchema = new mongoose.Schema({
+  orderType: String,
+  customerName: String,
+  registrationNumber: String,
+  mobile: String,
+  tableNumber: String,
+  address: String,
+  location: {
+    lat: Number,
+    lng: Number
+  },
+  paymentMethod: String,
+  paymentVerified: {
+    type: Boolean,
+    default: false
+  },
+  items: [
+    {
+      name: String,
+      variant: String,
+      price: Number,
+      qty: Number
     }
+  ],
+  total: Number,
+  status: {
+    type: String,
+    default: "incoming"
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    index: true
+  }
+});
 
-    .order-type-badge { font-size:11px; font-weight:600; border-radius:999px; padding:2px 10px; margin-right:6px; }
-    .order-type-dinein { background:#fbbf24; color:#222; }
-    .order-type-takeaway { background:#34d399; color:#222; }
-    .order-type-delivery { background:#60a5fa; color:#fff; }
+// Auto-delete orders after 90 days
+orderSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7776000 });
 
-    .insight-label { color:#b45309; font-weight:700; font-size:0.98rem; letter-spacing:.4px; text-transform:uppercase; }
-    .insight-select, .insight-input, #dashboardDate, #dashboardPeriod {
-      font-weight:700; font-size:0.95rem; background:#fffbe0; color:#7c4700;
-      border:2.5px solid #f59e0b; border-radius:999px; padding:7px 16px; margin:0 6px 6px 0;
-      box-shadow:0 0 0 1px rgba(245,158,11,0.4);
-    }
-    .insight-box {
-      background:#fffbe8; border:3px solid #fbbf24; border-radius:18px;
-      padding:18px; margin-top:10px; color:#4c1d06; font-size:0.95rem;
-    }
-    .insight-result-table { width:100%; border-collapse:collapse; font-size:0.9rem; }
-    .insight-result-table th, .insight-result-table td {
-      border-bottom:2px solid #fbbf24; padding:8px 10px; text-align:left;
-    }
-    .insight-big-value { font-size:1.25rem; font-weight:800; color:#a16207; line-height:1.4; }
-    .insight-mid-value { font-size:0.95rem; font-weight:700; }
-    .dashboard-label { font-size:0.95rem; font-weight:800; color:#92400e; padding-right:8px; text-transform:uppercase; }
+const Order = mongoose.model("Order", orderSchema);
 
-    .tab-btn {
-      padding:0.4rem 1rem;
-      font-size:0.8rem;
-      font-weight:600;
-      border-radius:999px;
-      border:1px solid rgb(251,191,36);
-      color:rgb(252,211,77);
-      background-color:rgb(15,23,42);
-    }
-    .tab-btn-active {
-      background-color:rgb(251,191,36);
-      color:black;
-      box-shadow:0 0 0 1px rgba(0,0,0,0.1);
-    }
+// --- AUTO PRINT QUEUE ---
+let printQueue = [];
 
-    .order-card-title { font-size:0.95rem; font-weight:700; }
-    .order-card-meta { font-size:0.75rem; }
-    .order-card-items { font-size:0.8rem; }
+async function saveAndBroadcastOrder(orderData) {
+  const order = new Order(orderData);
+  await order.save();
+  io.emit("newOrder", order);
+  printQueue.push(order);
+  return order;
+}
 
-    @media (max-width:700px){
-      .max-w-7xl { max-width:100vw !important; padding:10px !important; }
-      header h1 { font-size:1.4rem; }
-      header p { font-size:0.7rem; }
-      .p-6, .py-10, .px-8, .mb-8, .my-10 { padding:10px !important; margin:8px 0 !important; }
-      .grid { gap:10px !important; }
-      .dashboard-label { font-size:0.85rem; }
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
-      .flex-wrap-row {
-        flex-direction:column;
-        align-items:flex-start;
-        gap:8px;
+// --- Manager Login API ---
+app.post("/api/manager/login", (req, res) => {
+  const { username, password } = req.body || {};
+
+  console.log("🔐 Manager login attempt:", {
+    username,
+    hasPassword: !!password
+  });
+
+  if (!username || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing credentials"
+    });
+  }
+
+  if (username === managerUser && password === managerPass) {
+    console.log("✅ Manager login success");
+    return res.json({ success: true });
+  }
+
+  console.log("❌ Manager login failed");
+  return res.status(401).json({
+    success: false,
+    message: "Invalid credentials"
+  });
+});
+
+// --- Change Manager ID / Password ---
+// Disabled because in-memory changes do not survive server restart
+app.post("/api/manager/change-credentials", (req, res) => {
+  return res.status(400).json({
+    success: false,
+    message: "Change login is disabled. Update MANAGER_USER and MANAGER_PASS in server config or .env file."
+  });
+});
+
+// --- Serve menu file ---
+app.get("/menu.json", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/menu.json"));
+});
+
+// --- Inventory: update menu.json ---
+app.post("/update-menu", (req, res) => {
+  try {
+    const filePath = path.join(__dirname, "public", "menu.json");
+    const data = JSON.stringify(req.body, null, 2);
+
+    fs.writeFile(filePath, data, "utf8", (err) => {
+      if (err) {
+        console.error("Error writing menu.json:", err);
+        return res.status(500).json({ error: "Failed to save menu" });
       }
+      res.json({ success: true });
+    });
+  } catch (e) {
+    console.error("Error in /update-menu:", e);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
-      .insight-select, .insight-input, #dashboardDate, #dashboardPeriod {
-        width:100%;
-        max-width:none;
-        display:block;
-      }
+// --- Utility: IST date boundaries ---
+function getISTDateBounds(dateStr) {
+  const date = dateStr || new Date().toISOString().slice(0, 10);
+  const start = new Date(Date.parse(date + "T00:00:00+05:30"));
+  const end = new Date(Date.parse(date + "T23:59:59+05:30"));
+  return { start, end };
+}
 
-      .orders-date-row {
-        flex-direction:column;
-        align-items:flex-start;
-      }
-      .orders-date-row > div {
-        width:100%;
-      }
-      #datePicker {
-        width:100%;
-      }
-    }
+// ---------------- ORDERS APIs ----------------
 
-    .table-wrapper { overflow-x:auto; }
+// Get orders for a given date (IST) and optional status
+app.get("/api/orders", async (req, res) => {
+  try {
+    const date = req.query.date || new Date().toISOString().slice(0, 10);
+    const { start, end } = getISTDateBounds(date);
+    const { status } = req.query;
 
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 46px;
-      height: 24px;
-    }
-    .switch input { display:none; }
-    .slider {
-      position:absolute;
-      cursor:pointer;
-      top:0; left:0; right:0; bottom:0;
-      background-color:#4b5563;
-      transition:.3s;
-      border-radius:999px;
-    }
-    .slider:before {
-      position:absolute;
-      content:"";
-      height:18px;
-      width:18px;
-      left:3px;
-      bottom:3px;
-      background-color:white;
-      transition:.3s;
-      border-radius:999px;
-    }
-    .switch input:checked + .slider {
-      background-color:#22c55e;
-    }
-    .switch input:checked + .slider:before {
-      transform:translateX(22px);
-    }
+    const query = {
+      createdAt: { $gte: start, $lte: end },
+      status: { $ne: "deleted" }
+    };
 
-    #loginOverlay {
-      position:fixed;
-      inset:0;
-      background:radial-gradient(circle at top,#1f2937 0,#020617 55%);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      z-index:100;
-    }
-  </style>
-</head>
-<body class="bg-gradient-to-b from-slate-900 via-gray-900 to-black text-gray-100 min-h-screen">
+    if (status) query.status = status;
 
-  <div id="loginOverlay">
-    <div class="bg-slate-900 border border-amber-400 rounded-2xl px-6 py-6 w-80 shadow-2xl">
-      <h2 class="text-xl font-extrabold text-amber-300 mb-2 text-center">Manager Login</h2>
-      <p class="text-xs text-gray-400 mb-4 text-center">
-        Only staff are allowed to access this portal.
-      </p>
+    const orders = await Order.find(query).sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    console.error("Get orders error:", err);
+    res.status(500).json({ error: "Could not fetch orders" });
+  }
+});
 
-      <label class="block text-xs font-semibold text-gray-200 mb-1">Username</label>
-      <input id="loginUser" class="w-full mb-3 px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-sm" />
+// Place new order
+app.post("/api/orders", async (req, res) => {
+  try {
+    const {
+      orderType,
+      customerName,
+      registrationNumber,
+      mobile,
+      tableNumber,
+      address,
+      location,
+      items,
+      paymentMethod
+    } = req.body;
 
-      <label class="block text-xs font-semibold text-gray-200 mb-1">Password</label>
-      <input id="loginPass" type="password" class="w-full mb-4 px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-sm" />
+    const total = (items || []).reduce(
+      (sum, item) => sum + (item.price || 0) * (item.qty || 0),
+      0
+    );
 
-      <button id="loginBtn" class="w-full bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-full py-2 text-sm">
-        Login
-      </button>
-
-      <div id="loginError" class="text-xs text-red-400 mt-2 hidden">
-        Wrong username or password.
-      </div>
-    </div>
-  </div>
-
-  <div id="managerApp" class="max-w-7xl mx-auto p-6" style="display:none;">
-    <header class="flex justify-between items-center mb-4 gap-2">
-      <div>
-        <h1 class="text-2xl md:text-4xl font-extrabold text-amber-300">
-          Abba SEENUUU... FAST FOODS — Manager
-        </h1>
-        <p class="text-[11px] md:text-xs text-gray-400">
-          Contact: <b>+91-XXXXXXXXXX</b> • Live orders, dashboards, Bluetooth &amp; PC print
-        </p>
-      </div>
-
-      <div class="flex flex-col items-end gap-2">
-        <div class="flex items-center gap-2 text-[11px] md:text-xs text-gray-200">
-          <span id="restStatusLabel">Restaurant: ON</span>
-          <label class="switch">
-            <input type="checkbox" id="restStatusToggle" checked />
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <button id="openChangeLogin" class="px-3 py-1 rounded-full text-[11px] md:text-xs bg-red-500 text-white">
-          Change Login
-        </button>
-      </div>
-    </header>
-
-    <div class="flex gap-2 mb-4">
-      <button id="tabOrders" class="tab-btn tab-btn-active text-xs md:text-sm">Orders</button>
-      <button id="tabAnalytics" class="tab-btn text-xs md:text-sm">Analytics &amp; Insights</button>
-      <button id="tabInventory" class="tab-btn text-xs md:text-sm">Inventory</button>
-    </div>
-
-    <div id="ordersTab">
-      <div class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 mb-4">
-        <div class="flex justify-between items-center gap-3 flex-wrap orders-date-row">
-          <div class="flex items-center gap-2">
-            <span class="dashboard-label">Orders for</span>
-            <input id="datePicker" type="date" class="bg-slate-800 border border-amber-400 rounded-full px-3 py-1.5 text-xs md:text-sm" />
-          </div>
-          <div class="text-[11px] md:text-xs text-gray-400">
-            Showing orders for selected date. Auto-refreshes on every new order.
-          </div>
-        </div>
-      </div>
-
-      <div class="grid md:grid-cols-2 gap-4">
-        <div class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4">
-          <h2 class="text-sm md:text-base font-bold mb-3 flex items-center gap-2">
-            <span class="inline-flex w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Live Orders
-          </h2>
-          <div id="ordersList" class="space-y-3 text-sm max-h-[70vh] overflow-y-auto pr-1"></div>
-        </div>
-
-        <div class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4">
-          <h2 class="text-sm md:text-base font-bold mb-3 flex items-center gap-2">
-            Order History
-          </h2>
-          <div id="historyList" class="space-y-3 text-sm max-h-[70vh] overflow-y-auto pr-1"></div>
-        </div>
-      </div>
-    </div>
-
-    <div id="analyticsTab" style="display:none;">
-      <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6 mb-4">
-        <h2 class="text-lg md:text-xl font-extrabold text-amber-300 mb-3">Daily Snapshot</h2>
-
-        <div class="flex flex-wrap items-center gap-3 mb-4 flex-wrap-row">
-          <div class="flex items-center">
-            <span class="dashboard-label">Summary for</span>
-            <input id="dashboardDate" type="date" class="insight-input" />
-          </div>
-          <div class="flex items-center">
-            <span class="dashboard-label">Period</span>
-            <select id="dashboardPeriod" class="insight-select">
-              <option value="day">Day</option>
-              <option value="week">Week</option>
-              <option value="month">Month</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div class="bg-amber-100 rounded-xl p-3 shadow text-slate-900">
-            <div class="text-xs font-semibold text-amber-700 uppercase mb-1">Total Sales (₹)</div>
-            <div id="sales-today" class="text-2xl font-extrabold">₹0</div>
-          </div>
-          <div class="bg-amber-100 rounded-xl p-3 shadow text-slate-900">
-            <div class="text-xs font-semibold text-amber-700 uppercase mb-1">Total Orders</div>
-            <div id="orders-month" class="text-2xl font-extrabold">0</div>
-          </div>
-          <div class="bg-amber-100 rounded-xl p-3 shadow text-slate-900">
-            <div class="text-xs font-semibold text-amber-700 uppercase mb-1">Peak Hour</div>
-            <div id="peak-hour" class="text-2xl font-extrabold">-</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6">
-        <h2 class="text-lg md:text-xl font-extrabold text-amber-300 mb-3">Smart Insights</h2>
-
-        <div class="flex flex-wrap gap-3 mb-3 flex-wrap-row">
-          <div>
-            <div class="insight-label mb-1">Insight Type</div>
-            <select id="insightType" class="insight-select">
-              <option value="">Choose insight</option>
-              <option value="compare_sales">Compare Sales</option>
-              <option value="repeat_customers">Repeat Customers</option>
-              <option value="best_dish">Best Dish</option>
-              <option value="customer_search">Customer Visits</option>
-            </select>
-          </div>
-
-          <div>
-            <div class="insight-label mb-1">From</div>
-            <input id="insightFrom" type="date" class="insight-input" />
-          </div>
-
-          <div>
-            <div class="insight-label mb-1">To</div>
-            <input id="insightTo" type="date" class="insight-input" />
-          </div>
-
-          <div id="compareByLabel" style="display:none;">
-            <div class="insight-label mb-1">Compare By</div>
-            <select id="compareBy" class="insight-select">
-              <option value="day">Day</option>
-              <option value="week">Week</option>
-              <option value="month">Month</option>
-            </select>
-          </div>
-
-          <div>
-            <div class="insight-label mb-1">Customer Name</div>
-            <input id="insightName" class="insight-input" placeholder="For customer search" style="display:none;" />
-          </div>
-
-          <div class="flex items-end">
-            <button onclick="runInsight()" class="px-4 py-2 rounded-full bg-amber-400 text-black font-semibold text-xs md:text-sm">
-              Run Insight
-            </button>
-          </div>
-        </div>
-
-        <div id="insightResult" class="insight-box">
-          Choose an insight and date range to see details.
-        </div>
-      </section>
-    </div>
-
-    <div id="inventoryTab" style="display:none;">
-      <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <div>
-            <h2 class="text-lg md:text-xl font-extrabold text-amber-300">
-              Inventory &amp; Menu Availability
-            </h2>
-          </div>
-          <div class="flex flex-col items-end gap-1">
-            <button id="saveInventoryBtn" class="px-4 py-2 rounded-full bg-emerald-500 text-black font-semibold text-xs md:text-sm">
-              Save Changes
-            </button>
-            <div id="inventoryStatus" class="text-[11px] text-emerald-400 hidden">
-              Menu updated successfully.
-            </div>
-          </div>
-        </div>
-
-        <div class="table-wrapper mt-2">
-          <table class="w-full text-xs md:text-sm">
-            <thead>
-              <tr class="border-b border-amber-400 text-amber-200">
-                <th class="text-left py-2">Category</th>
-                <th class="text-left py-2">Item</th>
-                <th class="text-left py-2">Variants</th>
-                <th class="text-center py-2">Available</th>
-              </tr>
-            </thead>
-            <tbody id="inventoryTableBody" class="text-gray-100"></tbody>
-          </table>
-        </div>
-      </section>
-    </div>
-  </div>
-
-  <div id="changeLoginModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50" style="display:none;">
-    <div class="bg-slate-900 rounded-2xl border border-amber-400 p-5 w-80">
-      <h2 class="text-lg font-extrabold text-amber-300 mb-2 text-center">Change Manager Login</h2>
-      <p class="text-[11px] text-gray-400 mb-3 text-center">
-        Enter current and new credentials for Abba SEENUUU... FAST FOODS manager portal.
-      </p>
-
-      <label class="block text-xs font-semibold text-gray-200 mb-1">Current Username</label>
-      <input id="curUser" class="w-full mb-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-sm" />
-
-      <label class="block text-xs font-semibold text-gray-200 mb-1">Current Password</label>
-      <input id="curPass" type="password" class="w-full mb-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-sm" />
-
-      <label class="block text-xs font-semibold text-gray-200 mb-1">New Username</label>
-      <input id="newUser" class="w-full mb-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-sm" />
-
-      <label class="block text-xs font-semibold text-gray-200 mb-1">New Password</label>
-      <input id="newPass" type="password" class="w-full mb-3 px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-sm" />
-
-      <div class="flex gap-2">
-        <button id="saveLoginChange" class="flex-1 bg-amber-400 hover:bg-amber-500 text-black font-semibold rounded-full py-2 text-xs">
-          Save
-        </button>
-        <button id="cancelLoginChange" class="flex-1 bg-slate-700 text-gray-100 rounded-full py-2 text-xs">
-          Cancel
-        </button>
-      </div>
-
-      <div id="changeLoginMsg" class="text-[11px] mt-2 text-center text-red-400 hidden"></div>
-    </div>
-  </div>
-
-  <script>
-    const socket = io();
-
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
+    const order = await saveAndBroadcastOrder({
+      orderType,
+      customerName,
+      registrationNumber,
+      mobile,
+      tableNumber,
+      address,
+      location,
+      items,
+      total,
+      paymentMethod: paymentMethod || "COD",
+      paymentVerified: false,
+      status: "incoming"
     });
 
-    socket.on("connect_error", (err) => {
-      console.error("Socket connect error:", err);
+    res.json({ success: true, order });
+  } catch (err) {
+    console.error("Create order error:", err);
+    res.status(500).json({
+      success: false,
+      error: "Could not create order"
     });
+  }
+});
 
-    socket.on("disconnect", (reason) => {
-      console.log("Socket disconnected:", reason);
-    });
+// Update order status
+app.patch("/api/orders/:id/status", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
 
-    const loginOverlay = document.getElementById("loginOverlay");
-    const managerApp = document.getElementById("managerApp");
-    const loginBtn = document.getElementById("loginBtn");
-    const loginUser = document.getElementById("loginUser");
-    const loginPass = document.getElementById("loginPass");
-    const loginError = document.getElementById("loginError");
+    const order = await Order.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
 
-    loginBtn.onclick = async () => {
-      const username = loginUser.value.trim();
-      const password = loginPass.value.trim();
-      loginError.classList.add("hidden");
-
-      if (!username || !password) {
-        loginError.textContent = "Enter username and password.";
-        loginError.classList.remove("hidden");
-        return;
-      }
-
-      try {
-        const res = await fetch("/api/manager/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
-        });
-
-        let data = {};
-        try {
-          data = await res.json();
-        } catch (jsonErr) {
-          console.error("Login response is not valid JSON:", jsonErr);
-        }
-
-        console.log("Login request URL:", "/api/manager/login");
-        console.log("Login status:", res.status);
-        console.log("Login response data:", data);
-
-        if (res.ok && data.success) {
-          loginOverlay.style.display = "none";
-          managerApp.style.display = "block";
-
-          await loadInventory();
-          syncRestaurantToggleWithInventory();
-          fetchOrders(getLocalToday());
-          renderDashboard();
-        } else {
-          loginError.textContent = data.message || `Login failed (status ${res.status})`;
-          loginError.classList.remove("hidden");
-        }
-      } catch (e) {
-        console.error("LOGIN FETCH ERROR:", e);
-        loginError.textContent = "Server error. Check if server is running on the correct port.";
-        loginError.classList.remove("hidden");
-      }
-    };
-
-    const openChangeLogin = document.getElementById("openChangeLogin");
-    const changeLoginModal = document.getElementById("changeLoginModal");
-    const saveLoginChange = document.getElementById("saveLoginChange");
-    const cancelLoginChange = document.getElementById("cancelLoginChange");
-    const curUser = document.getElementById("curUser");
-    const curPass = document.getElementById("curPass");
-    const newUser = document.getElementById("newUser");
-    const newPass = document.getElementById("newPass");
-    const changeLoginMsg = document.getElementById("changeLoginMsg");
-
-    openChangeLogin.onclick = () => {
-      changeLoginMsg.classList.add("hidden");
-      curUser.value = "";
-      curPass.value = "";
-      newUser.value = "";
-      newPass.value = "";
-      changeLoginModal.style.display = "flex";
-    };
-
-    cancelLoginChange.onclick = () => {
-      changeLoginModal.style.display = "none";
-    };
-
-    saveLoginChange.onclick = async () => {
-      changeLoginMsg.classList.add("hidden");
-      try {
-        const res = await fetch("/api/manager/change-credentials", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            currentUser: curUser.value.trim(),
-            currentPassword: curPass.value.trim(),
-            newUser: newUser.value.trim(),
-            newPassword: newPass.value.trim()
-          })
-        });
-
-        const data = await res.json();
-        if (data.success) {
-          changeLoginMsg.textContent = "Login updated successfully.";
-          changeLoginMsg.classList.remove("hidden");
-          changeLoginMsg.classList.remove("text-red-400");
-          changeLoginMsg.classList.add("text-emerald-400");
-          setTimeout(() => { changeLoginModal.style.display = "none"; }, 1200);
-        } else {
-          changeLoginMsg.textContent = data.message || "Could not update login.";
-          changeLoginMsg.classList.remove("hidden");
-          changeLoginMsg.classList.remove("text-emerald-400");
-          changeLoginMsg.classList.add("text-red-400");
-        }
-      } catch (e) {
-        console.error(e);
-        changeLoginMsg.textContent = "Server error.";
-        changeLoginMsg.classList.remove("hidden");
-        changeLoginMsg.classList.add("text-red-400");
-      }
-    };
-
-    let menuData = null;
-
-    async function loadInventory() {
-      try {
-        const res = await fetch("/menu.json?_=" + Date.now());
-        menuData = await res.json();
-        const tbody = document.getElementById("inventoryTableBody");
-        let rows = "";
-
-        Object.entries(menuData).forEach(([cat, items]) => {
-          items.forEach((item, idx) => {
-            const rowSpan = idx === 0 ? `rowspan="${items.length}"` : "";
-            rows += `
-              <tr class="border-b border-slate-700">
-                ${idx === 0 ? `<td ${rowSpan} class="py-2 pr-2 align-top text-amber-200 text-xs md:text-sm font-semibold">${cat}</td>` : ""}
-                <td class="py-2 pr-2 text-xs md:text-sm text-gray-100">${item.name}</td>
-                <td class="py-2 pr-2 text-[11px] md:text-xs text-gray-300">
-                  ${Object.entries(item.variants || {}).map(([v, p]) => `${v}: ₹${p}`).join("<br>")}
-                </td>
-                <td class="py-2 text-center">
-                  <label class="switch">
-                    <input type="checkbox" ${item.available !== false ? "checked" : ""} data-cat="${cat}" data-name="${item.name}">
-                    <span class="slider"></span>
-                  </label>
-                </td>
-              </tr>
-            `;
-          });
-        });
-
-        tbody.innerHTML = rows;
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    const saveInventoryBtn = document.getElementById("saveInventoryBtn");
-    const inventoryStatus = document.getElementById("inventoryStatus");
-
-    async function saveMenuToServer(showMessage = true) {
-      if (!menuData) return;
-
-      try {
-        await fetch("/update-menu", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(menuData)
-        });
-
-        if (showMessage) {
-          inventoryStatus.textContent = "Menu updated successfully.";
-          inventoryStatus.classList.remove("hidden");
-          inventoryStatus.classList.remove("text-red-400");
-          setTimeout(() => inventoryStatus.classList.add("hidden"), 1500);
-        }
-      } catch (e) {
-        console.error(e);
-        if (showMessage) {
-          inventoryStatus.textContent = "Error saving menu.";
-          inventoryStatus.classList.remove("hidden");
-          inventoryStatus.classList.add("text-red-400");
-        }
-      }
-    }
-
-    saveInventoryBtn.onclick = async () => {
-      if (!menuData) return;
-      const switches = document.querySelectorAll('#inventoryTableBody input[type="checkbox"]');
-      switches.forEach(sw => {
-        const cat = sw.getAttribute("data-cat");
-        const name = sw.getAttribute("data-name");
-        const items = menuData[cat] || [];
-        const item = items.find(i => i.name === name);
-        if (item) item.available = sw.checked;
-      });
-      await saveMenuToServer(true);
-    };
-
-    const restStatusToggle = document.getElementById("restStatusToggle");
-    const restStatusLabel = document.getElementById("restStatusLabel");
-
-    function setAllInventoryCheckboxesInDOM(checked) {
-      const switches = document.querySelectorAll('#inventoryTableBody input[type="checkbox"]');
-      switches.forEach(sw => {
-        sw.checked = checked;
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        error: "Order not found"
       });
     }
 
-    function syncRestaurantToggleWithInventory() {
-      const switches = document.querySelectorAll('#inventoryTableBody input[type="checkbox"]');
-      if (!switches.length) return;
-      const allOn = Array.from(switches).every(sw => sw.checked);
-      restStatusToggle.checked = allOn;
-      restStatusLabel.textContent = allOn
-        ? "Restaurant: ON"
-        : "Restaurant: OFF (online ordering disabled manually)";
-    }
+    io.emit("orderUpdated", order);
+    res.json({ success: true, order });
+  } catch (err) {
+    console.error("Update status error:", err);
+    res.status(500).json({
+      success: false,
+      error: "Could not update status"
+    });
+  }
+});
 
-    restStatusToggle.onchange = async () => {
-      const online = restStatusToggle.checked;
-      restStatusLabel.textContent = online
-        ? "Restaurant: ON"
-        : "Restaurant: OFF (online ordering disabled manually)";
+// Toggle payment verification
+app.patch("/api/orders/:id/payment-verified", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paymentVerified } = req.body;
 
-      if (!menuData) return;
+    const order = await Order.findByIdAndUpdate(
+      id,
+      { paymentVerified: !!paymentVerified },
+      { new: true }
+    );
 
-      Object.values(menuData).forEach(items => {
-        items.forEach(item => {
-          item.available = online;
-        });
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        error: "Order not found"
       });
-
-      setAllInventoryCheckboxesInDOM(online);
-      await saveMenuToServer(false);
-
-      inventoryStatus.textContent = online
-        ? "Restaurant ON – all items available (auto-saved)."
-        : "Restaurant OFF – all items unavailable (auto-saved).";
-      inventoryStatus.classList.remove("hidden");
-      inventoryStatus.classList.remove("text-red-400");
-      setTimeout(() => inventoryStatus.classList.add("hidden"), 1500);
-    };
-
-    const tabOrders = document.getElementById("tabOrders");
-    const tabAnalytics = document.getElementById("tabAnalytics");
-    const tabInventory = document.getElementById("tabInventory");
-    const ordersTab = document.getElementById("ordersTab");
-    const analyticsTab = document.getElementById("analyticsTab");
-    const inventoryTab = document.getElementById("inventoryTab");
-
-    function setActiveTab(which) {
-      [tabOrders, tabAnalytics, tabInventory].forEach(b => b.classList.remove("tab-btn-active"));
-      [ordersTab, analyticsTab, inventoryTab].forEach(d => d.style.display = "none");
-
-      if (which === "orders") {
-        tabOrders.classList.add("tab-btn-active");
-        ordersTab.style.display = "block";
-      }
-      if (which === "analytics") {
-        tabAnalytics.classList.add("tab-btn-active");
-        analyticsTab.style.display = "block";
-      }
-      if (which === "inventory") {
-        tabInventory.classList.add("tab-btn-active");
-        inventoryTab.style.display = "block";
-      }
     }
 
-    tabOrders.onclick = () => setActiveTab("orders");
-    tabAnalytics.onclick = () => setActiveTab("analytics");
-    tabInventory.onclick = () => setActiveTab("inventory");
+    io.emit("orderUpdated", order);
+    res.json({ success: true, order });
+  } catch (err) {
+    console.error("Payment verify update error:", err);
+    res.status(500).json({
+      success: false,
+      error: "Could not update payment verification"
+    });
+  }
+});
 
-    function getLocalToday() {
-      const d = new Date();
-      const off = d.getTimezoneOffset();
-      const ist = new Date(d.getTime() + (330 + off) * 60000);
-      return ist.toISOString().slice(0, 10);
+// Hard delete (optional)
+app.delete("/api/orders/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Order.findByIdAndDelete(id);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Delete order error:", err);
+    res.status(500).json({
+      success: false,
+      error: "Could not delete order"
+    });
+  }
+});
+
+// ---------------- DASHBOARD APIs ----------------
+
+// Total sales for a day/week/month (IST)
+app.get("/api/dashboard/sales", async (req, res) => {
+  try {
+    const period = req.query.period || "day";
+    const date = req.query.date || new Date().toISOString().slice(0, 10);
+
+    let start, end;
+
+    if (period === "day") {
+      ({ start, end } = getISTDateBounds(date));
+    } else if (period === "week") {
+      const { start: dayStart } = getISTDateBounds(date);
+      const d = new Date(dayStart);
+      const first = new Date(d.setDate(d.getDate() - d.getDay()));
+      start = new Date(first.setHours(0, 0, 0, 0));
+      end = new Date(new Date(start).setDate(start.getDate() + 7));
+    } else if (period === "month") {
+      const { start: dayStart } = getISTDateBounds(date);
+      const d = new Date(dayStart);
+      start = new Date(d.getFullYear(), d.getMonth(), 1);
+      end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
     }
 
-    const datePicker = document.getElementById("datePicker");
-    datePicker.value = getLocalToday();
-
-    const ordersList = document.getElementById("ordersList");
-    const historyList = document.getElementById("historyList");
-
-    function renderOrderDetails(o) {
-      if (o.orderType === "dinein") {
-        return o.tableNumber
-          ? `<div class="order-card-meta text-gray-300 mt-1">Table: ${o.tableNumber}</div>`
-          : "";
-      } else {
-        if (!o.address && !(o.location && o.location.lat && o.location.lng)) return "";
-        let html = `<div class="order-card-meta text-gray-300 mt-1">📍 ${o.address || "—"}`;
-        if (o.location && o.location.lat && o.location.lng) {
-          html += `<br><span class="text-[11px] text-amber-300">
-            Captured GPS: ${o.location.lat.toFixed(5)}, ${o.location.lng.toFixed(5)}
-          </span>`;
-        }
-        html += `</div>`;
-        return html;
-      }
-    }
-
-    function openMapsForDelivery(lat, lng) {
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-      window.open(url, "_blank");
-    }
-
-    async function fetchOrders(dateStr) {
-      try {
-        const res = await fetch(`/api/orders?date=${dateStr}`);
-        const orders = await res.json();
-
-        ordersList.innerHTML = "";
-        historyList.innerHTML = "";
-
-        orders.forEach(o => {
-          const card = document.createElement("div");
-          card.className = "border border-slate-700 rounded-xl p-3 bg-slate-900/60";
-
-          const typeClass =
-            o.orderType === "dinein" ? "order-type-dinein" :
-            o.orderType === "takeaway" ? "order-type-takeaway" :
-            "order-type-delivery";
-
-          const itemsText = (o.items || [])
-            .map(i => `${i.name} (${i.variant}) x${i.qty}`)
-            .join(", ");
-
-          card.innerHTML = `
-            <div class="flex justify-between items-start mb-2 gap-2">
-              <div>
-                <div class="flex items-center mb-1">
-                  <span class="order-type-badge ${typeClass}">
-                    ${o.orderType || ""}
-                  </span>
-                  <span class="order-card-title">
-                    ${o.customerName || "No name"} • ₹${o.total || 0}
-                  </span>
-                </div>
-                <div class="order-card-meta text-gray-400">
-                  ${o.mobile ? `📞 ${o.mobile} • ` : ""}${o.registrationNumber || ""}${o.tableNumber ? ` • Table ${o.tableNumber}` : ""}
-                </div>
-                ${renderOrderDetails(o)}
-              </div>
-
-              <div class="text-right text-[11px] text-gray-400">
-                ${new Date(o.createdAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}<br>
-                <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] ${
-                  o.paymentVerified ? "bg-emerald-500/20 text-emerald-300" : "bg-red-500/20 text-red-300"
-                }">
-                  ${o.paymentMethod || "COD"} ${o.paymentVerified ? "(PAID)" : "(PENDING)"}
-                </span>
-              </div>
-            </div>
-
-            <div class="order-card-items text-gray-100 mb-2">
-              ${itemsText || "No items"}
-            </div>
-
-            <div class="flex flex-wrap gap-2 text-[11px]">
-              ${
-                o.location && o.location.lat && o.location.lng
-                  ? `<button class="px-2 py-1 rounded-full border border-amber-400 text-amber-200" onclick="openMapsForDelivery(${o.location.lat},${o.location.lng})">Deliver</button>`
-                  : `<button class="px-2 py-1 rounded-full border border-slate-700 text-slate-400" disabled>Deliver</button>`
-              }
-
-              <button data-action="status" data-status="delivered" class="px-2 py-1 rounded-full border border-slate-600 text-gray-200">
-                Delivered
-              </button>
-
-              <button data-action="payment" class="px-2 py-1 rounded-full border border-emerald-500 text-emerald-300">
-                Paid
-              </button>
-            </div>
-          `;
-
-          card.querySelectorAll("button[data-action='status']").forEach(btn => {
-            btn.onclick = async () => {
-              const status = btn.getAttribute("data-status");
-              try {
-                await fetch(`/api/orders/${o._id}/status`, {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ status })
-                });
-                fetchOrders(datePicker.value);
-              } catch (e) {
-                console.error(e);
-              }
-            };
-          });
-
-          const paidBtn = card.querySelector("button[data-action='payment']");
-          paidBtn.onclick = async () => {
-            try {
-              await fetch(`/api/orders/${o._id}/payment-verified`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ paymentVerified: !o.paymentVerified })
-              });
-              fetchOrders(datePicker.value);
-            } catch (e) {
-              console.error(e);
-            }
-          };
-
-          if (o.status === "delivered") {
-            historyList.appendChild(card);
-          } else {
-            ordersList.appendChild(card);
-          }
-        });
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    window.openMapsForDelivery = openMapsForDelivery;
-
-    const dashboardPeriod = document.getElementById("dashboardPeriod");
-    const dashboardDate = document.getElementById("dashboardDate");
-    dashboardDate.value = getLocalToday();
-
-    async function renderDashboard() {
-      let d = dashboardDate.value, period = dashboardPeriod.value;
-      try {
-        let r = await fetch(`/api/dashboard/sales?period=${period}&date=${d}`);
-        let stats = await r.json();
-        document.getElementById("sales-today").textContent = "₹" + (stats.total || 0);
-        document.getElementById("orders-month").textContent = stats.count || 0;
-
-        r = await fetch(`/api/dashboard/peakhour?date=${d}`);
-        let peak = await r.json();
-        document.getElementById("peak-hour").textContent = (peak && peak.hour !== "-") ? `${peak.hour}:00` : "-";
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    dashboardPeriod.onchange = dashboardDate.onchange = renderDashboard;
-
-    const compareBy = document.getElementById("compareBy");
-    const compareByLabel = document.getElementById("compareByLabel");
-    const insightType = document.getElementById("insightType");
-    const insightName = document.getElementById("insightName");
-
-    insightType.onchange = () => {
-      compareByLabel.style.display = insightType.value === "compare_sales" ? "" : "none";
-      insightName.style.display = insightType.value === "customer_search" ? "" : "none";
-    };
-
-    async function runInsight() {
-      const type = insightType.value;
-      const from = document.getElementById("insightFrom").value;
-      const to = document.getElementById("insightTo").value;
-      const name = insightName.value;
-      const by = compareBy.value || "day";
-      let html = "";
-
-      try {
-        if (type === "compare_sales") {
-          let salesA, salesB, labelA, labelB;
-
-          if (by === "day") {
-            salesA = await fetch(`/api/dashboard/sales?period=day&date=${from}`).then(r => r.json());
-            salesB = await fetch(`/api/dashboard/sales?period=day&date=${to}`).then(r => r.json());
-            labelA = from || "—";
-            labelB = to || "—";
-          } else if (by === "week") {
-            salesA = await fetch(`/api/dashboard/sales?period=week&date=${from}`).then(r => r.json());
-            salesB = await fetch(`/api/dashboard/sales?period=week&date=${to}`).then(r => r.json());
-            labelA = `Week of ${from || "—"}`;
-            labelB = `Week of ${to || "—"}`;
-          } else {
-            salesA = await fetch(`/api/dashboard/sales?period=month&date=${from}`).then(r => r.json());
-            salesB = await fetch(`/api/dashboard/sales?period=month&date=${to}`).then(r => r.json());
-            labelA = `Month: ${(from || "—").slice(0,7)}`;
-            labelB = `Month: ${(to || "—").slice(0,7)}`;
-          }
-
-          html = `
-            <div class="mb-4 flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-6">
-              <div class="flex-1 bg-yellow-200 rounded-xl p-3 md:p-4 shadow insight-big-value text-center">
-                ${labelA}<br>₹${salesA.total || 0}<br>
-                <span class="insight-mid-value">Orders: ${salesA.count || 0}</span>
-              </div>
-              <div class="flex-1 bg-yellow-200 rounded-xl p-3 md:p-4 shadow insight-big-value text-center">
-                ${labelB}<br>₹${salesB.total || 0}<br>
-                <span class="insight-mid-value">Orders: ${salesB.count || 0}</span>
-              </div>
-            </div>
-          `;
-          document.getElementById("insightResult").innerHTML = html;
-          return;
-        }
-
-        if (type === "repeat_customers") {
-          const data = await fetch(`/api/dashboard/repeatcustomers?from=${from}&to=${to}`).then(r => r.json());
-          html = `<div class="table-wrapper"><table class="insight-result-table"><thead><tr><th>Name</th><th>Orders</th></tr></thead><tbody>${
-            data.map(c => `<tr><td>${c._id}</td><td>${c.orders}</td></tr>`).join("")
-          }</tbody></table></div>`;
-        } else if (type === "best_dish") {
-          const dish = await fetch(`/api/dashboard/topdish?from=${from}&to=${to}`).then(r => r.json());
-          html = dish
-            ? `<div class="text-xl md:text-2xl font-bold text-yellow-800 mb-1">${dish._id}</div><div class="text-sm md:text-lg">Total Orders: <b>${dish.count}</b></div>`
-            : `<div class="text-sm text-red-700">No data found in this time frame</div>`;
-        } else if (type === "customer_search" && name) {
-          const data = await fetch(`/api/dashboard/repeatcustomers?from=${from}&to=${to}&name=${encodeURIComponent(name)}`).then(r => r.json());
-          html = data && data.length
-            ? `<div class="text-lg md:text-2xl text-yellow-900 font-bold mb-1">${name} visited <span class="font-extrabold text-yellow-900">${data[0].orders}</span> times</div>`
-            : `<div class="text-sm text-red-700">${name} did not visit in this period.</div>`;
-        } else {
-          html = `<div class="text-sm text-red-700">Choose an insight and date(s).</div>`;
-        }
-      } catch (e) {
-        console.error(e);
-        html = `<div class="text-sm text-red-700">Error loading insight data.</div>`;
-      }
-
-      document.getElementById("insightResult").innerHTML = html;
-    }
-
-    window.runInsight = runInsight;
-
-    datePicker.onchange = () => {
-      fetchOrders(datePicker.value);
-      renderDashboard();
-    };
-
-    socket.on("newOrder", (o) => {
-      console.log("newOrder event received:", o);
-      fetchOrders(datePicker.value);
-      renderDashboard();
+    const orders = await Order.find({
+      createdAt: { $gte: start, $lte: end },
+      status: { $ne: "deleted" }
     });
 
-    socket.on("orderUpdated", (o) => {
-      console.log("orderUpdated event received:", o);
-      fetchOrders(datePicker.value);
-      renderDashboard();
+    const total = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+    res.json({ total, count: orders.length });
+  } catch (err) {
+    console.error("Dashboard sales error:", err);
+    res.status(500).json({ error: "Could not get sales" });
+  }
+});
+
+// Peak hour (IST)
+app.get("/api/dashboard/peakhour", async (req, res) => {
+  try {
+    const date = req.query.date || new Date().toISOString().slice(0, 10);
+    const { start, end } = getISTDateBounds(date);
+
+    const orders = await Order.find({
+      createdAt: { $gte: start, $lte: end },
+      status: { $ne: "deleted" }
     });
-  </script>
-</body>
-</html>
+
+    const hourly = {};
+    orders.forEach((o) => {
+      const hour = new Date(o.createdAt).getHours();
+      hourly[hour] = (hourly[hour] || 0) + 1;
+    });
+
+    let peak = { hour: "-", count: 0 };
+    Object.entries(hourly).forEach(([h, c]) => {
+      if (c > peak.count) peak = { hour: h, count: c };
+    });
+
+    res.json(peak);
+  } catch (err) {
+    console.error("Peakhour error:", err);
+    res.status(500).json({ error: "Could not get peak hour" });
+  }
+});
+
+// Most ordered dish (IST)
+app.get("/api/dashboard/topdish", async (req, res) => {
+  try {
+    let start, end;
+
+    if (req.query.from && req.query.to) {
+      ({ start, end } = getISTDateBounds(req.query.from));
+      const toBounds = getISTDateBounds(req.query.to);
+      end = toBounds.end;
+    } else {
+      const date = req.query.date || new Date().toISOString().slice(0, 10);
+      ({ start, end } = getISTDateBounds(date));
+    }
+
+    const orders = await Order.find({
+      createdAt: { $gte: start, $lte: end },
+      status: { $ne: "deleted" }
+    });
+
+    const countMap = {};
+    orders.forEach((o) => {
+      (o.items || []).forEach((i) => {
+        const n = i.name || "Unnamed Item";
+        countMap[n] = (countMap[n] || 0) + (i.qty || 0);
+      });
+    });
+
+    const top = Object.entries(countMap).sort((a, b) => b[1] - a[1])[0];
+    res.json(top ? { _id: top[0], count: top[1] } : null);
+  } catch (err) {
+    console.error("Top dish error:", err);
+    res.status(500).json({ error: "Could not get top dish" });
+  }
+});
+
+// Repeat customers (IST)
+app.get("/api/dashboard/repeatcustomers", async (req, res) => {
+  try {
+    let start, end;
+
+    if (req.query.from && req.query.to) {
+      ({ start, end } = getISTDateBounds(req.query.from));
+      const toBounds = getISTDateBounds(req.query.to);
+      end = toBounds.end;
+    } else {
+      const date = req.query.date || new Date().toISOString().slice(0, 10);
+      ({ start, end } = getISTDateBounds(date));
+    }
+
+    const nameFilter = req.query.name ? { customerName: req.query.name } : {};
+
+    const orders = await Order.find({
+      createdAt: { $gte: start, $lte: end },
+      status: { $ne: "deleted" },
+      ...nameFilter
+    });
+
+    const stats = {};
+    orders.forEach((o) => {
+      if (!o.customerName) return;
+      stats[o.customerName] = (stats[o.customerName] || 0) + 1;
+    });
+
+    if (req.query.name) {
+      return res.json([
+        { _id: req.query.name, orders: stats[req.query.name] || 0 }
+      ]);
+    }
+
+    const sorted = Object.entries(stats)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => ({ _id: name, orders: count }));
+
+    res.json(sorted);
+  } catch (err) {
+    console.error("Repeat customers error:", err);
+    res.status(500).json({ error: "Could not get repeat customers" });
+  }
+});
+
+// --------------- AUTO-PRINT TICKET API ---------------
+app.get("/api/next-print-ticket", (req, res) => {
+  if (printQueue.length === 0) {
+    return res.status(204).send();
+  }
+
+  const order = printQueue.shift();
+
+  let lines = [];
+  lines.push("ABBA SEENUUU... FAST FOODS");
+  lines.push('Tagline: Taste like "ahh devudaa..."');
+  lines.push("--------------------------");
+  lines.push(`Order ID: ${order._id}`);
+  lines.push(`Type   : ${order.orderType}`);
+  if (order.customerName) lines.push(`Name   : ${order.customerName}`);
+  if (order.registrationNumber) lines.push(`Reg No : ${order.registrationNumber}`);
+  if (order.mobile) lines.push(`Mobile : ${order.mobile}`);
+  if (order.address) lines.push(`Addr   : ${order.address}`);
+  lines.push(
+    "Payment: " +
+      (order.paymentMethod || "COD") +
+      (order.paymentVerified ? " (VERIFIED)" : " (PENDING)")
+  );
+  lines.push("--------------------------");
+
+  (order.items || []).forEach((it) => {
+    lines.push(`${it.name} x${it.qty}  ₹${it.price}`);
+  });
+
+  lines.push("--------------------------");
+  lines.push(`Total: ₹${order.total}`);
+  lines.push("\\\\n\\\\n\\\\n");
+
+  res.type("text/plain").send(lines.join("\\\\n"));
+});
+
+// ---------------- SOCKET.IO ----------------
+io.on("connection", (socket) => {
+  console.log("🟢 Abba SEENUUU... FAST FOODS client connected");
+  socket.emit("connected", { status: "connected" });
+});
+
+// ---------------- HEALTH CHECK ----------------
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
+// ---------------- SERVER ----------------
+server.listen(PORT, () => {
+  console.log(`🚀 Abba SEENUUU... FAST FOODS server running on http://localhost:${PORT}`);
+  console.log(`👤 Manager username: ${managerUser}`);
+  console.log(`🔑 Manager password: ${managerPass}`);
+});
