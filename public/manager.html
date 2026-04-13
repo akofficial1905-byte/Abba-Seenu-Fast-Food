@@ -410,40 +410,53 @@
     const loginError = document.getElementById("loginError");
 
     loginBtn.onclick = async () => {
-      const username = loginUser.value.trim();
-      const password = loginPass.value.trim();
-      loginError.classList.add("hidden");
+  const username = loginUser.value.trim();
+  const password = loginPass.value.trim();
+  loginError.classList.add("hidden");
 
-      if(!username || !password){
-        loginError.textContent = "Enter username and password.";
-        loginError.classList.remove("hidden");
-        return;
-      }
+  if (!username || !password) {
+    loginError.textContent = "Enter username and password.";
+    loginError.classList.remove("hidden");
+    return;
+  }
 
-      try{
-        const res = await fetch("/api/manager/login",{
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body:JSON.stringify({ username, password })
-        });
-        const data = await res.json();
-        if(data.success){
-          loginOverlay.style.display = "none";
-          managerApp.style.display = "block";
-          fetchOrders(getLocalToday());
-          renderDashboard();
-          await loadInventory();
-          syncRestaurantToggleWithInventory();
-        }else{
-          loginError.textContent = data.message || "Wrong username or password.";
-          loginError.classList.remove("hidden");
-        }
-      }catch(e){
-        console.error(e);
-        loginError.textContent = "Server error.";
-        loginError.classList.remove("hidden");
-      }
-    };
+  try {
+    const res = await fetch("/api/manager/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (jsonErr) {
+      console.error("Login response is not valid JSON:", jsonErr);
+    }
+
+    console.log("Login request URL:", "/api/manager/login");
+    console.log("Login status:", res.status);
+    console.log("Login response data:", data);
+
+    if (res.ok && data.success) {
+      loginOverlay.style.display = "none";
+      managerApp.style.display = "block";
+
+      fetchOrders(getLocalToday());
+      renderDashboard();
+      await loadInventory();
+      syncRestaurantToggleWithInventory();
+    } else {
+      loginError.textContent = data.message || `Login failed (status ${res.status})`;
+      loginError.classList.remove("hidden");
+    }
+  } catch (e) {
+    console.error("LOGIN FETCH ERROR:", e);
+    loginError.textContent = "Server error. Check if server is running on the correct port.";
+    loginError.classList.remove("hidden");
+  }
+};
+       
 
     // CHANGE LOGIN MODAL
     const openChangeLogin = document.getElementById("openChangeLogin");
