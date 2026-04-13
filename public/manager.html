@@ -730,9 +730,9 @@
                     ${o.customerName || "No name"} • ₹${o.total || 0}
                   </span>
                 </div>
-                <div class="order-card-meta text-gray-400">
-                  ${o.mobile ? \`📞 ${o.mobile} • \` : ""}${o.registrationNumber || ""} ${o.tableNumber ? \`• Table ${o.tableNumber}\` : ""}
-                </div>
+               <div class="order-card-meta text-gray-400">
+  ${o.mobile ? `📞 ${o.mobile} • ` : ""}${o.registrationNumber || ""}${o.tableNumber ? ` • Table ${o.tableNumber}` : ""}
+</div>
                 ${renderOrderDetails(o)}
               </div>
               <div class="text-right text-[11px] text-gray-400">
