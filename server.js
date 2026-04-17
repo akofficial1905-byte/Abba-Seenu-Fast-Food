@@ -54,6 +54,10 @@ const orderSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // NEW: customer notes from checkout
+  specialRequest: String,
+  requestTags: [String],
+
   items: [
     {
       name: String,
@@ -78,6 +82,34 @@ const orderSchema = new mongoose.Schema({
 orderSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7776000 });
 
 const Order = mongoose.model("Order", orderSchema);
+
+// --- Service Request Schema (Call Waiter / Call Manager) ---
+const serviceRequestSchema = new mongoose.Schema({
+  type: String, // "Call Waiter" | "Call Manager" | etc.
+  customerName: String,
+  mobile: String,
+  registrationNumber: String,
+  orderType: String,
+  address: String,
+  location: {
+    lat: Number,
+    lng: Number
+  },
+  status: {
+    type: String,
+    default: "pending"
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    index: true
+  }
+});
+
+// Auto-delete service requests after 7 days
+serviceRequestSchema.index({ createdAt: 1 }, { expireAfterSeconds: 604800 });
+
+const ServiceRequest = mongoose.model("ServiceRequest", serviceRequestSchema);
 
 // --- AUTO PRINT QUEUE ---
 let printQueue = [];
@@ -199,7 +231,9 @@ app.post("/api/orders", async (req, res) => {
       address,
       location,
       items,
-      paymentMethod
+      paymentMethod,
+      specialRequest,
+      requestTags
     } = req.body;
 
     const total = (items || []).reduce(
@@ -219,6 +253,8 @@ app.post("/api/orders", async (req, res) => {
       total,
       paymentMethod: paymentMethod || "COD",
       paymentVerified: false,
+      specialRequest: specialRequest || "",
+      requestTags: Array.isArray(requestTags) ? requestTags : [],
       status: "incoming"
     });
 
@@ -304,6 +340,71 @@ app.delete("/api/orders/:id", async (req, res) => {
       success: false,
       error: "Could not delete order"
     });
+  }
+});
+
+// ---------------- SERVICE REQUEST APIs (Call Waiter / Call Manager) ----------------
+
+// Create a service request
+app.post("/api/service-request", async (req, res) => {
+  try {
+    const {
+      type,
+      customerName,
+      mobile,
+      registrationNumber,
+      orderType,
+      address,
+      location
+    } = req.body || {};
+
+    if (!type) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing type (e.g. 'Call Waiter' or 'Call Manager')"
+      });
+    }
+
+    const sr = new ServiceRequest({
+      type,
+      customerName: customerName || "",
+      mobile: mobile || "",
+      registrationNumber: registrationNumber || "",
+      orderType: orderType || "",
+      address: address || "",
+      location: location || null,
+      status: "pending"
+    });
+
+    await sr.save();
+
+    // Broadcast to manager dashboard
+    io.emit("serviceRequest", sr);
+
+    res.json({ success: true, serviceRequest: sr });
+  } catch (err) {
+    console.error("Create service request error:", err);
+    res.status(500).json({
+      success: false,
+      error: "Could not create service request"
+    });
+  }
+});
+
+// Optional: fetch recent service requests for manager dashboard
+app.get("/api/service-request", async (req, res) => {
+  try {
+    const { start, end } = getISTDateBounds(
+      req.query.date || new Date().toISOString().slice(0, 10)
+    );
+    const list = await ServiceRequest.find({
+      createdAt: { $gte: start, $lte: end }
+    }).sort({ createdAt: -1 });
+
+    res.json(list);
+  } catch (err) {
+    console.error("Get service requests error:", err);
+    res.status(500).json({ error: "Could not get service requests" });
   }
 });
 
@@ -472,6 +573,10 @@ app.get("/api/next-print-ticket", (req, res) => {
   if (order.registrationNumber) lines.push(`Reg No : ${order.registrationNumber}`);
   if (order.mobile) lines.push(`Mobile : ${order.mobile}`);
   if (order.address) lines.push(`Addr   : ${order.address}`);
+  if (order.specialRequest) lines.push(`Note   : ${order.specialRequest}`);
+  if (order.requestTags && order.requestTags.length) {
+    lines.push(`Tags   : ${order.requestTags.join(", ")}`);
+  }
   lines.push(
     "Payment: " +
       (order.paymentMethod || "COD") +
@@ -485,9 +590,9 @@ app.get("/api/next-print-ticket", (req, res) => {
 
   lines.push("--------------------------");
   lines.push(`Total: ₹${order.total}`);
-  lines.push("\\\\n\\\\n\\\\n");
+  lines.push("\\\\\\\\n\\\\\\\\n\\\\\\\\n");
 
-  res.type("text/plain").send(lines.join("\\\\n"));
+  res.type("text/plain").send(lines.join("\\\\\\\\n"));
 });
 
 // ---------------- SOCKET.IO ----------------
