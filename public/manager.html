@@ -131,6 +131,23 @@
       justify-content:center;
       z-index:100;
     }
+
+    /* Toast for service requests */
+    #serviceToast {
+      position:fixed;
+      bottom:20px;
+      right:16px;
+      background:rgba(15,23,42,0.95);
+      border:1px solid #fbbf24;
+      color:#fde68a;
+      padding:10px 14px;
+      border-radius:12px;
+      font-size:12px;
+      max-width:260px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.6);
+      display:none;
+      z-index:80;
+    }
   </style>
 </head>
 <body class="bg-gradient-to-b from-slate-900 via-gray-900 to-black text-gray-100 min-h-screen">
@@ -374,6 +391,9 @@
       <div id="changeLoginMsg" class="text-[11px] mt-2 text-center text-red-400 hidden"></div>
     </div>
   </div>
+
+  <!-- Toast for Call Waiter / Call Manager -->
+  <div id="serviceToast"></div>
 
   <script>
     const socket = io();
@@ -669,21 +689,40 @@
     const historyList = document.getElementById("historyList");
 
     function renderOrderDetails(o) {
+      let html = "";
+
       if (o.orderType === "dinein") {
-        return o.tableNumber
+        html += o.tableNumber
           ? `<div class="order-card-meta text-gray-300 mt-1">Table: ${o.tableNumber}</div>`
           : "";
       } else {
-        if (!o.address && !(o.location && o.location.lat && o.location.lng)) return "";
-        let html = `<div class="order-card-meta text-gray-300 mt-1">📍 ${o.address || "—"}`;
-        if (o.location && o.location.lat && o.location.lng) {
-          html += `<br><span class="text-[11px] text-amber-300">
-            Captured GPS: ${o.location.lat.toFixed(5)}, ${o.location.lng.toFixed(5)}
-          </span>`;
+        if (o.address || (o.location && o.location.lat && o.location.lng)) {
+          html += `<div class="order-card-meta text-gray-300 mt-1">📍 ${o.address || "—"}`;
+          if (o.location && o.location.lat && o.location.lng) {
+            html += `<br><span class="text-[11px] text-amber-300">
+              Captured GPS: ${o.location.lat.toFixed(5)}, ${o.location.lng.toFixed(5)}
+            </span>`;
+          }
+          html += `</div>`;
         }
-        html += `</div>`;
-        return html;
       }
+
+      if (o.specialRequest) {
+        html += `<div class="order-card-meta text-amber-200 mt-1 text-[11px]">
+          📝 Note: ${o.specialRequest}
+        </div>`;
+      }
+
+      if (o.requestTags && o.requestTags.length) {
+        html += `<div class="mt-1 flex flex-wrap gap-1 text-[10px]">
+          ${o.requestTags.map(t => `
+            <span class="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-300/40 text-amber-200">
+              ${t}
+            </span>`).join("")}
+        </div>`;
+      }
+
+      return html;
     }
 
     function openMapsForDelivery(lat, lng) {
@@ -923,6 +962,41 @@
       console.log("orderUpdated event received:", o);
       fetchOrders(datePicker.value);
       renderDashboard();
+    });
+
+    // ---- Service Request realtime alerts (Call Waiter / Call Manager) ----
+    const serviceToast = document.getElementById("serviceToast");
+    let serviceToastTimeout = null;
+
+    function showServiceToast(sr) {
+      const when = new Date(sr.createdAt || Date.now()).toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      const who = sr.customerName || sr.registrationNumber || sr.mobile || "Unknown guest";
+      const type = sr.type || "Service Request";
+
+      serviceToast.innerHTML = `
+        <div class="text-[11px] text-amber-300 mb-1">${type}</div>
+        <div class="text-xs text-amber-100 mb-1">${who}</div>
+        <div class="text-[11px] text-gray-300 mb-1">
+          ${sr.orderType ? `Order type: ${sr.orderType}` : ""}
+          ${sr.address ? `<br/>📍 ${sr.address}` : ""}
+        </div>
+        <div class="text-[10px] text-gray-400">Received at ${when}</div>
+      `;
+      serviceToast.style.display = "block";
+
+      if (serviceToastTimeout) clearTimeout(serviceToastTimeout);
+      serviceToastTimeout = setTimeout(() => {
+        serviceToast.style.display = "none";
+      }, 6000);
+    }
+
+    socket.on("serviceRequest", (sr) => {
+      console.log("serviceRequest event received:", sr);
+      showServiceToast(sr);
     });
   </script>
 </body>
