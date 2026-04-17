@@ -24,7 +24,6 @@ body{
   overflow:hidden;
 }
 
-/* BOOK */
 #viewport{width:100vw;height:100vh;overflow:hidden}
 #book{display:flex;height:100%;transition:transform .55s cubic-bezier(.4,0,.2,1)}
 .page{
@@ -47,7 +46,6 @@ body{
   pointer-events:none;
 }
 
-/* HEADINGS */
 h1,h2{
   font-family:"Playfair Display",serif;
   color:var(--accent-soft);
@@ -65,7 +63,6 @@ h2{font-size:1.4rem}
   text-align:center;
 }
 
-/* NAV ARROWS */
 .nav{
   position:fixed;
   top:50%;
@@ -80,7 +77,6 @@ h2{font-size:1.4rem}
 #prev{left:6px}
 #next{right:6px}
 
-/* PAGE NO */
 .pageNo{
   position:absolute;
   bottom:14px;
@@ -89,7 +85,6 @@ h2{font-size:1.4rem}
   color:#ddd;
 }
 
-/* CONTENTS */
 #contentsBtn{
   position:fixed;
   top:12px;
@@ -103,7 +98,6 @@ h2{font-size:1.4rem}
   border:1px solid var(--accent);
 }
 
-/* CONTENTS GRID */
 .contents-grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -121,7 +115,6 @@ h2{font-size:1.4rem}
   color:var(--text);
 }
 
-/* ITEMS */
 .items-grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -160,7 +153,6 @@ select{
   color:#2b0008;
 }
 
-/* FOOTER CART BAR */
 #cartBar{
   position:fixed;
   bottom:0;left:0;right:0;
@@ -182,7 +174,6 @@ select{
   border:none;
 }
 
-/* CART MODAL */
 #cartModal{
   position:fixed;inset:0;
   background:rgba(0,0,0,.78);
@@ -200,13 +191,13 @@ select{
   display:flex;
   flex-direction:column;
   border:1px solid rgba(255,255,255,.25);
+  overflow-y:auto;
 }
 #cartBox h3{
   margin-top:0;
   color:var(--accent-soft);
 }
 
-/* items block */
 #cartItems{
   margin-bottom:10px;
   max-height:none;
@@ -229,8 +220,7 @@ select{
   margin:0 4px;
 }
 
-/* INPUTS */
-input,select#orderType,textarea#address,select#paymentMethod{
+input,select#orderType,textarea#address,select#paymentMethod,textarea#specialRequest{
   width:100%;
   padding:10px;
   border-radius:10px;
@@ -240,7 +230,7 @@ input,select#orderType,textarea#address,select#paymentMethod{
   background:#140005;
   color:#fff;
 }
-textarea#address{resize:vertical;min-height:60px;}
+textarea#address, textarea#specialRequest{resize:vertical;min-height:60px;}
 
 .primary{
   background:var(--accent);
@@ -249,14 +239,12 @@ textarea#address{resize:vertical;min-height:60px;}
   color:#2b0008;
 }
 
-/* helper text */
 .helper{
   font-size:.72rem;
   color:#ddd;
   margin-bottom:6px;
 }
 
-/* location button */
 .loc-btn{
   background:#3a050f;
   color:var(--accent-soft);
@@ -267,7 +255,6 @@ textarea#address{resize:vertical;min-height:60px;}
   margin-bottom:6px;
 }
 
-/* TOAST */
 #toast{
   position:fixed;
   bottom:90px;
@@ -282,7 +269,6 @@ textarea#address{resize:vertical;min-height:60px;}
   z-index:60;
 }
 
-/* SWIPE HINT */
 #hint{
   position:fixed;
   bottom:120px;
@@ -296,7 +282,6 @@ textarea#address{resize:vertical;min-height:60px;}
   z-index:70;
 }
 
-/* UPI QR OVERLAY */
 #upiOverlay{
   position:fixed;
   inset:0;
@@ -321,6 +306,156 @@ textarea#address{resize:vertical;min-height:60px;}
   margin-top:0;
   color:var(--accent-soft);
 }
+
+#chatFab{
+  position:fixed;
+  right:14px;
+  bottom:84px;
+  width:54px;
+  height:54px;
+  border-radius:50%;
+  border:none;
+  background:var(--accent);
+  color:#2b0008;
+  font-size:1.4rem;
+  font-weight:700;
+  z-index:85;
+  box-shadow:0 8px 25px rgba(0,0,0,.35);
+}
+
+#servicePanel{
+  position:fixed;
+  left:12px;
+  bottom:84px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  z-index:85;
+}
+.serviceBtn{
+  background:#3a050f;
+  color:var(--accent-soft);
+  border:1px solid rgba(245,197,24,.5);
+  border-radius:999px;
+  padding:10px 12px;
+  font-size:.78rem;
+  font-weight:600;
+}
+
+#chatPanel{
+  position:fixed;
+  right:12px;
+  bottom:148px;
+  width:min(92vw,360px);
+  height:470px;
+  background:#220006;
+  border:1px solid rgba(245,197,24,.45);
+  border-radius:20px;
+  display:none;
+  flex-direction:column;
+  overflow:hidden;
+  z-index:90;
+  box-shadow:0 14px 40px rgba(0,0,0,.45);
+}
+#chatHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 14px;
+  background:#3a050f;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+#chatHeader b{color:var(--accent-soft)}
+#chatClose{
+  background:transparent;
+  border:none;
+  color:#fff;
+  font-size:1.1rem;
+}
+#chatMessages{
+  flex:1;
+  overflow-y:auto;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.msg{
+  max-width:86%;
+  padding:9px 11px;
+  border-radius:14px;
+  font-size:.82rem;
+  line-height:1.45;
+  white-space:pre-wrap;
+}
+.botMsg{
+  align-self:flex-start;
+  background:#3a050f;
+  color:#fff7d1;
+  border:1px solid rgba(245,197,24,.22);
+}
+.userMsg{
+  align-self:flex-end;
+  background:var(--accent);
+  color:#2b0008;
+}
+#faqRow{
+  padding:8px 10px 0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.faqBtn{
+  border:none;
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:.72rem;
+  background:#4a1018;
+  color:#ffe9a6;
+}
+#chatInputWrap{
+  display:flex;
+  gap:8px;
+  padding:10px;
+  border-top:1px solid rgba(255,255,255,.1);
+  background:#1a0005;
+}
+#chatInput{
+  flex:1;
+  margin:0;
+}
+#chatSend{
+  border:none;
+  border-radius:12px;
+  padding:0 14px;
+  background:var(--accent);
+  color:#2b0008;
+  font-weight:700;
+}
+.request-chip-wrap{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:4px 0 8px;
+}
+.request-chip{
+  border:1px solid rgba(245,197,24,.45);
+  background:#3a050f;
+  color:#ffe9a6;
+  padding:7px 10px;
+  border-radius:999px;
+  font-size:.74rem;
+  cursor:pointer;
+}
+.request-chip.active{
+  background:var(--accent);
+  color:#2b0008;
+}
+@media(max-width:480px){
+  #servicePanel{left:8px;bottom:88px}
+  .serviceBtn{font-size:.72rem;padding:9px 10px}
+  #chatPanel{right:8px;left:8px;width:auto;height:62vh;bottom:148px}
+}
 </style>
 </head>
 
@@ -331,6 +466,36 @@ textarea#address{resize:vertical;min-height:60px;}
 <div id="prev" class="nav">❮</div>
 <div id="next" class="nav">❯</div>
 <button id="contentsBtn" onclick="go(1)">📑 Menu</button>
+
+<div id="servicePanel">
+  <button class="serviceBtn" id="callWaiterBtn">🔔 Call Waiter</button>
+  <button class="serviceBtn" id="callManagerBtn">👨‍💼 Call Manager</button>
+</div>
+
+<button id="chatFab">💬</button>
+
+<div id="chatPanel">
+  <div id="chatHeader">
+    <b>Abba Assistant</b>
+    <button id="chatClose">✕</button>
+  </div>
+
+  <div id="faqRow">
+    <button class="faqBtn" data-q="best food">Best food</button>
+    <button class="faqBtn" data-q="spicy food">Spicy food</button>
+    <button class="faqBtn" data-q="veg food">Veg</button>
+    <button class="faqBtn" data-q="budget food">Budget</button>
+    <button class="faqBtn" data-q="payment help">Payment</button>
+    <button class="faqBtn" data-q="delivery help">Delivery</button>
+  </div>
+
+  <div id="chatMessages"></div>
+
+  <div id="chatInputWrap">
+    <input id="chatInput" placeholder="Ask for food suggestions..." />
+    <button id="chatSend">Send</button>
+  </div>
+</div>
 
 <div id="cartBar">
   <div id="cartSummary">🛒 0 items | ₹0</div>
@@ -370,12 +535,24 @@ textarea#address{resize:vertical;min-height:60px;}
       If you choose UPI, please scan the QR and pay before placing the order.
     </div>
 
+    <div style="margin-top:6px;font-size:.83rem;font-weight:600;color:#ffe7a3;">Quick Requests</div>
+    <div class="request-chip-wrap" id="requestChips">
+      <button type="button" class="request-chip" data-tag="Less spicy">Less spicy</button>
+      <button type="button" class="request-chip" data-tag="Extra spicy">Extra spicy</button>
+      <button type="button" class="request-chip" data-tag="No onion">No onion</button>
+      <button type="button" class="request-chip" data-tag="Extra sauce">Extra sauce</button>
+      <button type="button" class="request-chip" data-tag="Send cutlery">Send cutlery</button>
+      <button type="button" class="request-chip" data-tag="Call on arrival">Call on arrival</button>
+      <button type="button" class="request-chip" data-tag="Talk to manager">Talk to manager</button>
+    </div>
+
+    <textarea id="specialRequest" placeholder="Special request for chef / manager (optional)"></textarea>
+
     <button class="primary" id="placeOrderBtn">Place Order</button>
     <button class="primary" style="margin-top:6px;background:#3a050f;color:#fff;border:1px solid rgba(255,255,255,.25);" onclick="closeCart()">Close</button>
   </div>
 </div>
 
-<!-- UPI QR overlay -->
 <div id="upiOverlay">
   <div id="upiBox">
     <h3>Pay using UPI</h3>
@@ -420,17 +597,28 @@ const orderTypeSel=document.getElementById("orderType");
 const paymentSel=document.getElementById("paymentMethod");
 const locBtn=document.getElementById("locBtn");
 const locStatus=document.getElementById("locStatus");
+const specialRequestInput=document.getElementById("specialRequest");
 
 const upiOverlay=document.getElementById("upiOverlay");
 const upiPaidBtn=document.getElementById("upiPaidBtn");
 const upiCancelBtn=document.getElementById("upiCancelBtn");
 const upiQrImg=document.getElementById("upiQrImg");
 
+const chatFab=document.getElementById("chatFab");
+const chatPanel=document.getElementById("chatPanel");
+const chatClose=document.getElementById("chatClose");
+const chatMessages=document.getElementById("chatMessages");
+const chatInput=document.getElementById("chatInput");
+const chatSend=document.getElementById("chatSend");
+
+const callWaiterBtn=document.getElementById("callWaiterBtn");
+const callManagerBtn=document.getElementById("callManagerBtn");
+
 let cart=[],page=0,locked=false,menu={};
 let customerLocation=null;
 let pendingOrderPayload=null;
+let selectedRequestTags=[];
 
-/* Build UPI QR with amount */
 function setUpiQr(totalAmount){
   const upiId   = "7054699905@ptaxis";
   const upiName = "Abba SEENUUU... FAST FOODS";
@@ -451,7 +639,6 @@ function setUpiQr(totalAmount){
   upiQrImg.src = qrApi;
 }
 
-/* NAV */
 function go(i){
   locked=true;page=i;
   book.style.transform=`translateX(-${i*100}vw)`;
@@ -460,7 +647,6 @@ function go(i){
 document.getElementById("prev").onclick=()=>page>0&&go(page-1);
 document.getElementById("next").onclick=()=>page<book.children.length-1&&go(page+1);
 
-/* SWIPE */
 let sx=0;
 document.addEventListener("touchstart",e=>sx=e.touches[0].clientX);
 document.addEventListener("touchend",e=>{
@@ -470,7 +656,6 @@ document.addEventListener("touchend",e=>{
   if(dx<-80)document.getElementById("next").onclick();
 });
 
-/* CART OPEN */
 checkoutBtn.onclick=()=>{
   if(cart.length===0){
     toast("Cart is empty");
@@ -480,7 +665,6 @@ checkoutBtn.onclick=()=>{
 };
 function closeCart(){cartModal.style.display="none"}
 
-/* TOAST */
 function toast(msg){
   const t=document.getElementById("toast");
   t.innerText=msg;
@@ -488,17 +672,14 @@ function toast(msg){
   setTimeout(()=>t.style.display="none",1400);
 }
 
-/* MENU */
 fetch("/menu.json?_=" + Date.now(), { cache: "no-store" })
   .then(r=>r.json())
-  .then(m=>{menu=m;build();})
+  .then(m=>{menu=m;build();initChatbot();})
   .catch(()=>toast("Could not load menu"));
 
-/* BUILD PAGES */
 function build(){
   book.innerHTML="";
 
-  /* COVER */
   book.innerHTML+=`
   <section class="page">
     <div style="
@@ -568,7 +749,6 @@ function build(){
     </div>
   </section>`;
 
-  /* CONTENTS */
   let contents="",start=2;
   Object.keys(menu).forEach(c=>{
     const items = menu[c];
@@ -589,7 +769,6 @@ function build(){
     <div class="pageNo">2</div>
   </section>`;
 
-  /* CATEGORY PAGES */
   let pg=3;
   for (let [cat, items] of Object.entries(menu)) {
     const hasImages = items.some(it => it.image);
@@ -621,7 +800,7 @@ function build(){
             inStock
               ? `
                 <select>${opts}</select>
-                <button class="add" onclick="add('${it.name}',this)">Add</button>
+                <button class="add" onclick="add('${it.name.replace(/'/g,"\\'")}',this)">Add</button>
               `
               : `
                 <div style="margin-top:6px;font-size:0.85rem;color:#ffb3b3;font-weight:600;">
@@ -641,7 +820,6 @@ function build(){
   }
 }
 
-/* CART LOGIC */
 function add(name,btn){
   const sel=btn.previousElementSibling;
   if(!sel.value){alert("Please choose an option");return;}
@@ -683,7 +861,6 @@ function chg(i,d){
   updateCart();
 }
 
-/* LOCATION (mandatory for delivery) */
 locBtn.onclick = () => {
   const orderType = orderTypeSel.value;
   if(orderType !== "delivery"){
@@ -711,7 +888,6 @@ locBtn.onclick = () => {
   );
 };
 
-/* SUCCESS OVERLAY */
 function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethod){
   const overlay=document.createElement("div");
   overlay.style.position="fixed";
@@ -769,13 +945,15 @@ function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethod){
     mobileInput.value="";
     addressInput.value="";
     paymentSel.value="";
+    specialRequestInput.value="";
     customerLocation=null;
     locStatus.textContent="";
+    selectedRequestTags=[];
+    document.querySelectorAll(".request-chip").forEach(ch=>ch.classList.remove("active"));
     go(0);
   };
 }
 
-/* PLACE ORDER helper */
 async function actuallyPlaceOrder(payload, totalAmount, paymentMethod){
   try{
     const res = await fetch("/api/orders",{
@@ -807,7 +985,6 @@ async function actuallyPlaceOrder(payload, totalAmount, paymentMethod){
   }
 }
 
-/* UPI overlay buttons */
 upiPaidBtn.onclick = async () => {
   if(!pendingOrderPayload) {
     upiOverlay.style.display="none";
@@ -831,7 +1008,6 @@ upiCancelBtn.onclick = () => {
   upiOverlay.style.display="none";
 };
 
-/* PLACE ORDER main (location mandatory for delivery) */
 let submitting=false;
 placeOrderBtn.onclick = async () => {
   if(submitting)return;
@@ -865,7 +1041,9 @@ placeOrderBtn.onclick = async () => {
     address:addressInput.value.trim(),
     location: orderType==="delivery" ? customerLocation : null,
     items:cart,
-    paymentMethod
+    paymentMethod,
+    specialRequest: specialRequestInput.value.trim(),
+    requestTags: selectedRequestTags
   };
 
   if(paymentMethod === "UPI"){
@@ -890,7 +1068,248 @@ placeOrderBtn.onclick = async () => {
   placeOrderBtn.disabled=false;
 };
 
-/* INITIAL */
+document.querySelectorAll(".request-chip").forEach(btn=>{
+  btn.onclick=()=>{
+    const tag = btn.getAttribute("data-tag");
+    if(selectedRequestTags.includes(tag)){
+      selectedRequestTags = selectedRequestTags.filter(t=>t!==tag);
+      btn.classList.remove("active");
+    }else{
+      selectedRequestTags.push(tag);
+      btn.classList.add("active");
+    }
+  };
+});
+
+function flattenMenu(){
+  const list = [];
+  Object.entries(menu).forEach(([category, items])=>{
+    items.forEach(item=>{
+      const minPrice = Math.min(...Object.values(item.variants || {Plate:99999}));
+      list.push({
+        ...item,
+        category,
+        minPrice,
+        lowerName: (item.name || "").toLowerCase()
+      });
+    });
+  });
+  return list;
+}
+
+function pickAvailable(names){
+  const all = flattenMenu();
+  return names.map(n => all.find(x => x.lowerName === n.toLowerCase() && x.available !== false)).filter(Boolean);
+}
+
+function suggestByIntent(msg){
+  const text = (msg || "").toLowerCase().trim();
+  const all = flattenMenu().filter(x => x.available !== false);
+
+  const directAnswers = [
+    {
+      match: ["hi", "hello", "hey", "hlo"],
+      reply: "Hi 👋 Welcome to Abba SEENUUU... FAST FOODS.\nYou can ask me things like:\n• best food\n• spicy food\n• veg food\n• budget food\n• noodles\n• rice\n• starters"
+    },
+    {
+      match: ["payment", "upi", "cod", "cash"],
+      reply: "We support UPI and Cash on Delivery. If you choose UPI, you can scan the QR before placing the order."
+    },
+    {
+      match: ["delivery", "location", "address"],
+      reply: "For delivery orders, please enter your address and tap 'Use current location' before placing the order."
+    },
+    {
+      match: ["waiter", "manager", "call waiter", "call manager"],
+      reply: "You can tap the Call Waiter or Call Manager buttons on the screen, and the request can be sent to the manager portal."
+    }
+  ];
+
+  for(const item of directAnswers){
+    if(item.match.some(k => text.includes(k))) return {type:"text", text:item.reply};
+  }
+
+  const trainedGroups = {
+    best: [
+      "Abba special chicken",
+      "Chicken 65",
+      "Chicken fried rice",
+      "Abba special chicken noodles",
+      "Paneer fried rice"
+    ],
+    spicy: [
+      "Chilli chicken",
+      "Dragon chicken",
+      "Chicken 65",
+      "Chicken lollipop",
+      "Chicken Manchurian"
+    ],
+    veg: [
+      "Veg Manchurian",
+      "Paneer fried rice",
+      "Veg fried rice",
+      "Gobi fried rice",
+      "Veg noodles",
+      "Paneer noodles",
+      "Gobi noodles"
+    ],
+    nonveg: [
+      "Chilli chicken",
+      "Abba special chicken",
+      "Chicken lollipop",
+      "Chicken 65",
+      "Dragon chicken",
+      "Chicken Manchurian",
+      "Chicken fried rice",
+      "Chicken noodles",
+      "Abba special chicken rice",
+      "Abba special chicken noodles"
+    ],
+    budget: all.filter(i => i.minPrice <= 100).sort((a,b)=>a.minPrice-b.minPrice).slice(0,6).map(i=>i.name),
+    rice: all.filter(i => i.category.toLowerCase() === "rice").slice(0,6).map(i=>i.name),
+    noodles: all.filter(i => i.category.toLowerCase() === "noodles").slice(0,6).map(i=>i.name),
+    starters: all.filter(i => i.category.toLowerCase() === "starters").slice(0,6).map(i=>i.name),
+    egg: all.filter(i => i.lowerName.includes("egg")).map(i=>i.name),
+    paneer: all.filter(i => i.lowerName.includes("paneer")).map(i=>i.name),
+    chicken: all.filter(i => i.lowerName.includes("chicken")).map(i=>i.name)
+  };
+
+  const intentChecks = [
+    { keys:["best", "popular", "famous", "recommend", "suggest"], group:"best", title:"Popular picks" },
+    { keys:["spicy", "hot"], group:"spicy", title:"Spicy picks" },
+    { keys:["veg", "vegetarian"], group:"veg", title:"Veg suggestions" },
+    { keys:["non veg", "nonveg", "chicken"], group:"nonveg", title:"Non-veg suggestions" },
+    { keys:["budget", "cheap", "under 100", "under ₹100", "low price"], group:"budget", title:"Budget-friendly options" },
+    { keys:["rice", "fried rice"], group:"rice", title:"Rice options" },
+    { keys:["noodles", "noodle"], group:"noodles", title:"Noodles options" },
+    { keys:["starter", "starters", "snacks"], group:"starters", title:"Starter options" },
+    { keys:["egg"], group:"egg", title:"Egg options" },
+    { keys:["paneer"], group:"paneer", title:"Paneer options" }
+  ];
+
+  for(const rule of intentChecks){
+    if(rule.keys.some(k => text.includes(k))){
+      const picks = pickAvailable(trainedGroups[rule.group] || []);
+      if(picks.length){
+        return {
+          type:"items",
+          title:rule.title,
+          items:picks.slice(0,5)
+        };
+      }
+    }
+  }
+
+  const nameMatch = all.filter(i => text.includes(i.lowerName) || i.lowerName.includes(text)).slice(0,5);
+  if(nameMatch.length){
+    return {
+      type:"items",
+      title:"Here’s what I found",
+      items:nameMatch
+    };
+  }
+
+  return {
+    type:"text",
+    text:"I can help with:\n• best food\n• spicy food\n• veg / non-veg\n• budget food\n• rice / noodles / starters\n• payment / delivery help"
+  };
+}
+
+function addBotMessage(text){
+  const div = document.createElement("div");
+  div.className = "msg botMsg";
+  div.textContent = text;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function addUserMessage(text){
+  const div = document.createElement("div");
+  div.className = "msg userMsg";
+  div.textContent = text;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function addBotItemReply(title, items){
+  const lines = items.map(i => `• ${i.name} — from ₹${i.minPrice}`);
+  addBotMessage(`${title}\n${lines.join("\n")}`);
+}
+
+function runChatQuery(q){
+  if(!q.trim()) return;
+  addUserMessage(q);
+  const result = suggestByIntent(q);
+  setTimeout(()=>{
+    if(result.type === "items"){
+      addBotItemReply(result.title, result.items);
+    }else{
+      addBotMessage(result.text);
+    }
+  }, 250);
+}
+
+function initChatbot(){
+  chatMessages.innerHTML = "";
+  addBotMessage("Hi 👋 Welcome to Abba SEENUUU... FAST FOODS.\nAsk me for best food, spicy food, veg food, noodles, rice, or budget suggestions.");
+}
+
+chatFab.onclick = ()=>{
+  chatPanel.style.display = chatPanel.style.display === "flex" ? "none" : "flex";
+};
+chatClose.onclick = ()=> chatPanel.style.display = "none";
+chatSend.onclick = ()=>{
+  const q = chatInput.value.trim();
+  if(!q) return;
+  runChatQuery(q);
+  chatInput.value = "";
+};
+chatInput.addEventListener("keydown", e=>{
+  if(e.key === "Enter"){
+    e.preventDefault();
+    chatSend.click();
+  }
+});
+document.querySelectorAll(".faqBtn").forEach(btn=>{
+  btn.onclick = ()=>{
+    const q = btn.getAttribute("data-q");
+    runChatQuery(q);
+  };
+});
+
+async function sendServiceRequest(type){
+  const payload = {
+    type,
+    customerName: nameInput.value.trim() || "",
+    mobile: mobileInput.value.trim() || "",
+    registrationNumber: regInput.value.trim() || "",
+    orderType: orderTypeSel.value || "",
+    address: addressInput.value.trim() || "",
+    location: customerLocation || null,
+    createdAt: new Date().toISOString()
+  };
+
+  try{
+    const res = await fetch("/api/service-request", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+
+    if(res.ok){
+      toast(`${type} request sent`);
+    }else{
+      toast(`Could not send ${type.toLowerCase()} request`);
+    }
+  }catch(e){
+    console.error(e);
+    toast(`Could not send ${type.toLowerCase()} request`);
+  }
+}
+
+callWaiterBtn.onclick = ()=> sendServiceRequest("Call Waiter");
+callManagerBtn.onclick = ()=> sendServiceRequest("Call Manager");
+
 build();
 updateCart();
 </script>
