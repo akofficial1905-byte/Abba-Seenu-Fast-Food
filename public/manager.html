@@ -11,40 +11,44 @@
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-x: hidden;
     }
 
-    .order-type-badge { font-size:11px; font-weight:600; border-radius:999px; padding:2px 10px; margin-right:6px; }
-    .order-type-dinein { background:#fbbf24; color:#222; }
-    .order-type-takeaway { background:#34d399; color:#222; }
-    .order-type-delivery { background:#60a5fa; color:#fff; }
+    .order-type-badge { font-size:11px; font-weight:700; border-radius:999px; padding:2px 10px; margin-right:6px; }
+    .order-type-dinein { background:#fbbf24; color:#111827; }
+    .order-type-takeaway { background:#34d399; color:#111827; }
+    .order-type-delivery { background:#60a5fa; color:#ffffff; }
 
-    .insight-label { color:#b45309; font-weight:700; font-size:0.98rem; letter-spacing:.4px; text-transform:uppercase; }
-    .insight-select, .insight-input, #dashboardDate, #dashboardPeriod {
-      font-weight:700; font-size:0.95rem; background:#fffbe0; color:#7c4700;
-      border:2.5px solid #f59e0b; border-radius:999px; padding:7px 16px; margin:0 6px 6px 0;
-      box-shadow:0 0 0 1px rgba(245,158,11,0.4);
+    .insight-label { color:#b45309; font-weight:700; font-size:0.92rem; letter-spacing:.4px; text-transform:uppercase; }
+    .insight-select, .insight-input, #dashboardDate, #dashboardPeriod, .table-input, .table-select {
+      font-weight:700; font-size:0.92rem; background:#fffbe0; color:#7c4700;
+      border:2px solid #f59e0b; border-radius:14px; padding:10px 12px; width:100%;
+      outline:none;
     }
+
     .insight-box {
-      background:#fffbe8; border:3px solid #fbbf24; border-radius:18px;
-      padding:18px; margin-top:10px; color:#4c1d06; font-size:0.95rem;
+      background:#fffbe8; border:2px solid #fbbf24; border-radius:18px;
+      padding:16px; margin-top:10px; color:#4c1d06; font-size:0.95rem;
     }
+
     .insight-result-table { width:100%; border-collapse:collapse; font-size:0.9rem; }
     .insight-result-table th, .insight-result-table td {
-      border-bottom:2px solid #fbbf24; padding:8px 10px; text-align:left;
+      border-bottom:1px solid #fbbf24; padding:8px 10px; text-align:left;
     }
-    .insight-big-value { font-size:1.25rem; font-weight:800; color:#a16207; line-height:1.4; }
-    .insight-mid-value { font-size:0.95rem; font-weight:700; }
-    .dashboard-label { font-size:0.95rem; font-weight:800; color:#92400e; padding-right:8px; text-transform:uppercase; }
+
+    .dashboard-label { font-size:0.9rem; font-weight:800; color:#92400e; padding-right:8px; text-transform:uppercase; }
 
     .tab-btn {
-      padding:0.4rem 1rem;
-      font-size:0.8rem;
-      font-weight:600;
+      padding:0.55rem 1rem;
+      font-size:0.84rem;
+      font-weight:700;
       border-radius:999px;
       border:1px solid rgb(251,191,36);
       color:rgb(252,211,77);
       background-color:rgb(15,23,42);
+      white-space:nowrap;
     }
+
     .tab-btn-active {
       background-color:rgb(251,191,36);
       color:black;
@@ -53,41 +57,81 @@
 
     .order-card-title { font-size:0.95rem; font-weight:700; }
     .order-card-meta { font-size:0.75rem; }
-    .order-card-items { font-size:0.8rem; }
+    .order-card-items { font-size:0.82rem; line-height:1.5; }
 
-    @media (max-width:700px){
-      .max-w-7xl { max-width:100vw !important; padding:10px !important; }
-      header h1 { font-size:1.4rem; }
-      header p { font-size:0.7rem; }
-      .p-6, .py-10, .px-8, .mb-8, .my-10 { padding:10px !important; margin:8px 0 !important; }
-      .grid { gap:10px !important; }
-      .dashboard-label { font-size:0.85rem; }
-
-      .flex-wrap-row {
-        flex-direction:column;
-        align-items:flex-start;
-        gap:8px;
-      }
-
-      .insight-select, .insight-input, #dashboardDate, #dashboardPeriod {
-        width:100%;
-        max-width:none;
-        display:block;
-      }
-
-      .orders-date-row {
-        flex-direction:column;
-        align-items:flex-start;
-      }
-      .orders-date-row > div {
-        width:100%;
-      }
-      #datePicker {
-        width:100%;
-      }
+    .table-card {
+      border:1px solid rgba(251,191,36,.25);
+      background:rgba(15,23,42,.86);
+      border-radius:18px;
+      padding:14px;
+      cursor:pointer;
+      transition:.2s ease;
     }
 
-    .table-wrapper { overflow-x:auto; }
+    .table-card.active {
+      border-color:#fbbf24;
+      background:rgba(251,191,36,.12);
+      box-shadow:0 0 0 1px rgba(251,191,36,.35);
+    }
+
+    .table-status-badge {
+      display:inline-block;
+      font-size:10px;
+      font-weight:800;
+      padding:4px 8px;
+      border-radius:999px;
+    }
+
+    .status-available {
+      background:rgba(34,197,94,.18);
+      color:#86efac;
+      border:1px solid rgba(34,197,94,.35);
+    }
+
+    .status-draft {
+      background:rgba(251,191,36,.15);
+      color:#fde68a;
+      border:1px solid rgba(251,191,36,.35);
+    }
+
+    .status-billed {
+      background:rgba(96,165,250,.18);
+      color:#bfdbfe;
+      border:1px solid rgba(96,165,250,.35);
+    }
+
+    .mini-btn {
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid rgba(251,191,36,.25);
+      background:#0f172a;
+      color:#fde68a;
+    }
+
+    .pos-menu-item {
+      border:1px solid #334155;
+      border-radius:14px;
+      padding:10px;
+      background:rgba(15,23,42,.75);
+    }
+
+    .service-toast {
+      position:fixed;
+      right:14px;
+      bottom:16px;
+      z-index:100;
+      background:rgba(15,23,42,.96);
+      border:1px solid rgba(251,191,36,.35);
+      color:#fde68a;
+      padding:12px 14px;
+      border-radius:14px;
+      font-size:12px;
+      display:none;
+      max-width:280px;
+      box-shadow:0 12px 30px rgba(0,0,0,.45);
+    }
 
     .switch {
       position: relative;
@@ -115,12 +159,8 @@
       transition:.3s;
       border-radius:999px;
     }
-    .switch input:checked + .slider {
-      background-color:#22c55e;
-    }
-    .switch input:checked + .slider:before {
-      transform:translateX(22px);
-    }
+    .switch input:checked + .slider { background-color:#22c55e; }
+    .switch input:checked + .slider:before { transform:translateX(22px); }
 
     #loginOverlay {
       position:fixed;
@@ -132,28 +172,36 @@
       z-index:100;
     }
 
-    /* Toast for service requests */
-    #serviceToast {
-      position:fixed;
-      bottom:20px;
-      right:16px;
-      background:rgba(15,23,42,0.95);
-      border:1px solid #fbbf24;
-      color:#fde68a;
-      padding:10px 14px;
-      border-radius:12px;
-      font-size:12px;
-      max-width:260px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.6);
-      display:none;
-      z-index:80;
+    @media (max-width: 900px) {
+      .manager-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .table-pos-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    @media (max-width:700px){
+      .max-w-7xl { max-width:100vw !important; padding:12px !important; }
+      header h1 { font-size:1.25rem; line-height:1.2; }
+      header p { font-size:0.72rem; }
+      .tab-btn { font-size:0.74rem; padding:0.5rem 0.85rem; }
+      .mobile-stack {
+        flex-direction:column !important;
+        align-items:stretch !important;
+      }
+      .table-top-actions {
+        flex-direction:column;
+        align-items:stretch !important;
+      }
     }
   </style>
 </head>
 <body class="bg-gradient-to-b from-slate-900 via-gray-900 to-black text-gray-100 min-h-screen">
 
+  <!-- LOGIN -->
   <div id="loginOverlay">
-    <div class="bg-slate-900 border border-amber-400 rounded-2xl px-6 py-6 w-80 shadow-2xl">
+    <div class="bg-slate-900 border border-amber-400 rounded-2xl px-6 py-6 w-[92%] max-w-sm shadow-2xl">
       <h2 class="text-xl font-extrabold text-amber-300 mb-2 text-center">Manager Login</h2>
       <p class="text-xs text-gray-400 mb-4 text-center">
         Only staff are allowed to access this portal.
@@ -175,14 +223,15 @@
     </div>
   </div>
 
-  <div id="managerApp" class="max-w-7xl mx-auto p-6" style="display:none;">
-    <header class="flex justify-between items-center mb-4 gap-2">
+  <!-- APP -->
+  <div id="managerApp" class="max-w-7xl mx-auto p-4 md:p-6" style="display:none;">
+    <header class="flex justify-between items-start mb-4 gap-3 mobile-stack">
       <div>
         <h1 class="text-2xl md:text-4xl font-extrabold text-amber-300">
           Abba SEENUUU... FAST FOODS — Manager
         </h1>
-        <p class="text-[11px] md:text-xs text-gray-400">
-          Contact: <b>+91-XXXXXXXXXX</b> • Live orders, dashboards, Bluetooth &amp; PC print
+        <p class="text-[11px] md:text-xs text-gray-400 mt-1">
+          Live orders, analytics, service calls, inventory, and dine-in table drafts
         </p>
       </div>
 
@@ -201,15 +250,31 @@
       </div>
     </header>
 
-    <div class="flex gap-2 mb-4">
-      <button id="tabOrders" class="tab-btn tab-btn-active text-xs md:text-sm">Orders</button>
-      <button id="tabAnalytics" class="tab-btn text-xs md:text-sm">Analytics &amp; Insights</button>
-      <button id="tabInventory" class="tab-btn text-xs md:text-sm">Inventory</button>
+    <!-- TABS -->
+    <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
+      <button id="tabOrders" class="tab-btn tab-btn-active">Orders</button>
+      <button id="tabAnalytics" class="tab-btn">Analytics &amp; Insights</button>
+      <button id="tabInventory" class="tab-btn">Inventory</button>
+      <button id="tabTables" class="tab-btn">Tables / Dine-In POS</button>
     </div>
 
+    <!-- ORDERS TAB -->
     <div id="ordersTab">
+      <div class="bg-red-950/30 rounded-2xl border border-red-500/40 p-4 mb-4">
+        <div class="flex items-center justify-between gap-3 mb-3 mobile-stack">
+          <div>
+            <h2 class="text-sm md:text-base font-bold text-red-300">Live Service Requests</h2>
+            <p class="text-[11px] md:text-xs text-gray-400 mt-1">
+              Customer calls from the new index page will appear here with name, order type and table number.
+            </p>
+          </div>
+          <button id="clearServiceRequestsBtn" class="mini-btn">Clear</button>
+        </div>
+        <div id="serviceRequestList" class="space-y-2 text-sm"></div>
+      </div>
+
       <div class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 mb-4">
-        <div class="flex justify-between items-center gap-3 flex-wrap orders-date-row">
+        <div class="flex justify-between items-center gap-3 flex-wrap mobile-stack">
           <div class="flex items-center gap-2">
             <span class="dashboard-label">Orders for</span>
             <input id="datePicker" type="date" class="bg-slate-800 border border-amber-400 rounded-full px-3 py-1.5 text-xs md:text-sm" />
@@ -220,7 +285,7 @@
         </div>
       </div>
 
-      <div class="grid md:grid-cols-2 gap-4">
+      <div class="grid md:grid-cols-2 gap-4 manager-grid">
         <div class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4">
           <h2 class="text-sm md:text-base font-bold mb-3 flex items-center gap-2">
             <span class="inline-flex w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -238,16 +303,17 @@
       </div>
     </div>
 
+    <!-- ANALYTICS TAB -->
     <div id="analyticsTab" style="display:none;">
       <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6 mb-4">
         <h2 class="text-lg md:text-xl font-extrabold text-amber-300 mb-3">Daily Snapshot</h2>
 
-        <div class="flex flex-wrap items-center gap-3 mb-4 flex-wrap-row">
-          <div class="flex items-center">
+        <div class="flex flex-wrap items-center gap-3 mb-4 mobile-stack">
+          <div class="flex items-center gap-2">
             <span class="dashboard-label">Summary for</span>
             <input id="dashboardDate" type="date" class="insight-input" />
           </div>
-          <div class="flex items-center">
+          <div class="flex items-center gap-2">
             <span class="dashboard-label">Period</span>
             <select id="dashboardPeriod" class="insight-select">
               <option value="day">Day</option>
@@ -276,7 +342,7 @@
       <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6">
         <h2 class="text-lg md:text-xl font-extrabold text-amber-300 mb-3">Smart Insights</h2>
 
-        <div class="flex flex-wrap gap-3 mb-3 flex-wrap-row">
+        <div class="grid md:grid-cols-5 gap-3">
           <div>
             <div class="insight-label mb-1">Insight Type</div>
             <select id="insightType" class="insight-select">
@@ -311,12 +377,12 @@
             <div class="insight-label mb-1">Customer Name</div>
             <input id="insightName" class="insight-input" placeholder="For customer search" style="display:none;" />
           </div>
+        </div>
 
-          <div class="flex items-end">
-            <button onclick="runInsight()" class="px-4 py-2 rounded-full bg-amber-400 text-black font-semibold text-xs md:text-sm">
-              Run Insight
-            </button>
-          </div>
+        <div class="mt-3">
+          <button onclick="runInsight()" class="px-4 py-2 rounded-full bg-amber-400 text-black font-semibold text-xs md:text-sm">
+            Run Insight
+          </button>
         </div>
 
         <div id="insightResult" class="insight-box">
@@ -325,9 +391,10 @@
       </section>
     </div>
 
+    <!-- INVENTORY TAB -->
     <div id="inventoryTab" style="display:none;">
       <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3 mobile-stack">
           <div>
             <h2 class="text-lg md:text-xl font-extrabold text-amber-300">
               Inventory &amp; Menu Availability
@@ -343,7 +410,7 @@
           </div>
         </div>
 
-        <div class="table-wrapper mt-2">
+        <div class="overflow-x-auto mt-2">
           <table class="w-full text-xs md:text-sm">
             <thead>
               <tr class="border-b border-amber-400 text-amber-200">
@@ -358,13 +425,100 @@
         </div>
       </section>
     </div>
+
+    <!-- TABLES TAB -->
+    <div id="tablesTab" style="display:none;">
+      <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6">
+        <div class="flex items-center justify-between gap-3 mb-4 table-top-actions">
+          <div>
+            <h2 class="text-lg md:text-xl font-extrabold text-amber-300">
+              Tables / Dine-In POS
+            </h2>
+            <p class="text-[11px] md:text-xs text-gray-400 mt-1">
+              Manage 5 dine-in tables, add dishes without photos, keep draft orders open, and print when needed.
+            </p>
+          </div>
+
+          <div class="flex gap-2 flex-wrap">
+            <button id="saveTableDraftBtn" class="mini-btn">Save Draft</button>
+            <button id="printTableBillBtn" class="mini-btn">Print Bill</button>
+            <button id="clearTableBtn" class="mini-btn">Clear Table</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 table-pos-grid">
+          <!-- LEFT: TABLES -->
+          <div class="space-y-3">
+            <div id="tablesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3"></div>
+          </div>
+
+          <!-- RIGHT: TABLE EDITOR -->
+          <div class="space-y-4">
+            <div class="bg-slate-950/60 rounded-2xl border border-slate-700 p-4">
+              <div class="flex items-start justify-between gap-3 mobile-stack">
+                <div>
+                  <div class="text-xs uppercase tracking-wide text-amber-300 font-bold">Selected Table</div>
+                  <h3 id="selectedTableTitle" class="text-xl font-extrabold mt-1">Table 1</h3>
+                </div>
+                <div id="selectedTableBadge" class="table-status-badge status-available">Available</div>
+              </div>
+
+              <div class="grid md:grid-cols-3 gap-3 mt-4">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-200 mb-1">Customer Name</label>
+                  <input id="tableCustomerName" class="table-input" placeholder="Guest name" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-200 mb-1">Mobile</label>
+                  <input id="tableCustomerMobile" class="table-input" placeholder="Phone" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-200 mb-1">Guests</label>
+                  <input id="tableGuestCount" class="table-input" type="number" min="1" value="1" />
+                </div>
+              </div>
+            </div>
+
+            <!-- ADD ITEMS -->
+            <div class="bg-slate-950/60 rounded-2xl border border-slate-700 p-4">
+              <div class="flex items-center justify-between gap-3 mb-3 mobile-stack">
+                <div>
+                  <h3 class="text-base md:text-lg font-extrabold text-amber-300">Add Dishes</h3>
+                  <p class="text-[11px] md:text-xs text-gray-400">Names only, no photos, all categories included.</p>
+                </div>
+                <input id="tableMenuSearch" class="table-input max-w-xs" placeholder="Search dishes..." />
+              </div>
+
+              <div id="tableMenuList" class="grid md:grid-cols-2 gap-3 max-h-[340px] overflow-y-auto pr-1"></div>
+            </div>
+
+            <!-- CURRENT TABLE CART -->
+            <div class="bg-slate-950/60 rounded-2xl border border-slate-700 p-4">
+              <div class="flex items-center justify-between gap-3 mb-3 mobile-stack">
+                <div>
+                  <h3 class="text-base md:text-lg font-extrabold text-amber-300">Current Draft</h3>
+                  <p class="text-[11px] md:text-xs text-gray-400">Keep adding items until final bill.</p>
+                </div>
+                <div class="text-right">
+                  <div class="text-[11px] text-gray-400">Draft Total</div>
+                  <div id="tableDraftTotal" class="text-xl font-extrabold text-amber-300">₹0</div>
+                </div>
+              </div>
+
+              <div id="tableDraftItems" class="space-y-2"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   </div>
 
+  <!-- CHANGE LOGIN MODAL -->
   <div id="changeLoginModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50" style="display:none;">
-    <div class="bg-slate-900 rounded-2xl border border-amber-400 p-5 w-80">
+    <div class="bg-slate-900 rounded-2xl border border-amber-400 p-5 w-[92%] max-w-sm">
       <h2 class="text-lg font-extrabold text-amber-300 mb-2 text-center">Change Manager Login</h2>
       <p class="text-[11px] text-gray-400 mb-3 text-center">
-        Enter current and new credentials for Abba SEENUUU... FAST FOODS manager portal.
+        Enter current and new credentials for manager portal.
       </p>
 
       <label class="block text-xs font-semibold text-gray-200 mb-1">Current Username</label>
@@ -392,23 +546,14 @@
     </div>
   </div>
 
-  <!-- Toast for Call Waiter / Call Manager -->
-  <div id="serviceToast"></div>
+  <div id="serviceToast" class="service-toast"></div>
 
   <script>
     const socket = io();
 
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
-    });
-
-    socket.on("connect_error", (err) => {
-      console.error("Socket connect error:", err);
-    });
-
-    socket.on("disconnect", (reason) => {
-      console.log("Socket disconnected:", reason);
-    });
+    socket.on("connect", () => console.log("Socket connected:", socket.id));
+    socket.on("connect_error", (err) => console.error("Socket connect error:", err));
+    socket.on("disconnect", (reason) => console.log("Socket disconnected:", reason));
 
     const loginOverlay = document.getElementById("loginOverlay");
     const managerApp = document.getElementById("managerApp");
@@ -416,6 +561,14 @@
     const loginUser = document.getElementById("loginUser");
     const loginPass = document.getElementById("loginPass");
     const loginError = document.getElementById("loginError");
+
+    const serviceToast = document.getElementById("serviceToast");
+    function toast(msg) {
+      serviceToast.textContent = msg;
+      serviceToast.style.display = "block";
+      clearTimeout(window.__toastT);
+      window.__toastT = setTimeout(() => serviceToast.style.display = "none", 2200);
+    }
 
     loginBtn.onclick = async () => {
       const username = loginUser.value.trim();
@@ -442,18 +595,17 @@
           console.error("Login response is not valid JSON:", jsonErr);
         }
 
-        console.log("Login request URL:", "/api/manager/login");
-        console.log("Login status:", res.status);
-        console.log("Login response data:", data);
-
         if (res.ok && data.success) {
           loginOverlay.style.display = "none";
           managerApp.style.display = "block";
 
           await loadInventory();
+          await loadMenuForTables();
           syncRestaurantToggleWithInventory();
           fetchOrders(getLocalToday());
           renderDashboard();
+          renderTablesList();
+          selectTable(1);
         } else {
           loginError.textContent = data.message || `Login failed (status ${res.status})`;
           loginError.classList.remove("hidden");
@@ -484,9 +636,7 @@
       changeLoginModal.style.display = "flex";
     };
 
-    cancelLoginChange.onclick = () => {
-      changeLoginModal.style.display = "none";
-    };
+    cancelLoginChange.onclick = () => changeLoginModal.style.display = "none";
 
     saveLoginChange.onclick = async () => {
       changeLoginMsg.classList.add("hidden");
@@ -523,12 +673,41 @@
       }
     };
 
+    // TABS
+    const tabOrders = document.getElementById("tabOrders");
+    const tabAnalytics = document.getElementById("tabAnalytics");
+    const tabInventory = document.getElementById("tabInventory");
+    const tabTables = document.getElementById("tabTables");
+
+    const ordersTab = document.getElementById("ordersTab");
+    const analyticsTab = document.getElementById("analyticsTab");
+    const inventoryTab = document.getElementById("inventoryTab");
+    const tablesTab = document.getElementById("tablesTab");
+
+    function setActiveTab(which) {
+      [tabOrders, tabAnalytics, tabInventory, tabTables].forEach(b => b.classList.remove("tab-btn-active"));
+      [ordersTab, analyticsTab, inventoryTab, tablesTab].forEach(d => d.style.display = "none");
+
+      if (which === "orders") { tabOrders.classList.add("tab-btn-active"); ordersTab.style.display = "block"; }
+      if (which === "analytics") { tabAnalytics.classList.add("tab-btn-active"); analyticsTab.style.display = "block"; }
+      if (which === "inventory") { tabInventory.classList.add("tab-btn-active"); inventoryTab.style.display = "block"; }
+      if (which === "tables") { tabTables.classList.add("tab-btn-active"); tablesTab.style.display = "block"; }
+    }
+
+    tabOrders.onclick = () => setActiveTab("orders");
+    tabAnalytics.onclick = () => setActiveTab("analytics");
+    tabInventory.onclick = () => setActiveTab("inventory");
+    tabTables.onclick = () => setActiveTab("tables");
+
+    // INVENTORY / MENU DATA
     let menuData = null;
+    let tableMenuFlat = [];
 
     async function loadInventory() {
       try {
         const res = await fetch("/menu.json?_=" + Date.now());
         menuData = await res.json();
+
         const tbody = document.getElementById("inventoryTableBody");
         let rows = "";
 
@@ -540,7 +719,7 @@
                 ${idx === 0 ? `<td ${rowSpan} class="py-2 pr-2 align-top text-amber-200 text-xs md:text-sm font-semibold">${cat}</td>` : ""}
                 <td class="py-2 pr-2 text-xs md:text-sm text-gray-100">${item.name}</td>
                 <td class="py-2 pr-2 text-[11px] md:text-xs text-gray-300">
-                  ${Object.entries(item.variants || {}).map(([v, p]) => `${v}: ₹${p}`).join("<br>")}
+                  ${Object.entries(item.variants || {}).map(([v, p]) => `${v}: ₹${p}`).join("<br>") || `₹${item.price || 0}`}
                 </td>
                 <td class="py-2 text-center">
                   <label class="switch">
@@ -559,12 +738,49 @@
       }
     }
 
+    async function loadMenuForTables() {
+      try {
+        if (!menuData) {
+          const res = await fetch("/menu.json?_=" + Date.now());
+          menuData = await res.json();
+        }
+
+        tableMenuFlat = [];
+        Object.entries(menuData || {}).forEach(([category, items]) => {
+          items.forEach(item => {
+            if (item.variants && Object.keys(item.variants).length) {
+              Object.entries(item.variants).forEach(([variant, price]) => {
+                tableMenuFlat.push({
+                  category,
+                  name: item.name,
+                  variant,
+                  price: Number(price) || 0,
+                  available: item.available !== false
+                });
+              });
+            } else {
+              tableMenuFlat.push({
+                category,
+                name: item.name,
+                variant: "",
+                price: Number(item.price || 0),
+                available: item.available !== false
+              });
+            }
+          });
+        });
+
+        renderTableMenuList();
+      } catch (e) {
+        console.error("Error loading table menu:", e);
+      }
+    }
+
     const saveInventoryBtn = document.getElementById("saveInventoryBtn");
     const inventoryStatus = document.getElementById("inventoryStatus");
 
     async function saveMenuToServer(showMessage = true) {
       if (!menuData) return;
-
       try {
         await fetch("/update-menu", {
           method: "POST",
@@ -599,6 +815,7 @@
         if (item) item.available = sw.checked;
       });
       await saveMenuToServer(true);
+      await loadMenuForTables();
     };
 
     const restStatusToggle = document.getElementById("restStatusToggle");
@@ -606,9 +823,7 @@
 
     function setAllInventoryCheckboxesInDOM(checked) {
       const switches = document.querySelectorAll('#inventoryTableBody input[type="checkbox"]');
-      switches.forEach(sw => {
-        sw.checked = checked;
-      });
+      switches.forEach(sw => sw.checked = checked);
     }
 
     function syncRestaurantToggleWithInventory() {
@@ -616,65 +831,33 @@
       if (!switches.length) return;
       const allOn = Array.from(switches).every(sw => sw.checked);
       restStatusToggle.checked = allOn;
-      restStatusLabel.textContent = allOn
-        ? "Restaurant: ON"
-        : "Restaurant: OFF (online ordering disabled manually)";
+      restStatusLabel.textContent = allOn ? "Restaurant: ON" : "Restaurant: OFF";
     }
 
     restStatusToggle.onchange = async () => {
       const online = restStatusToggle.checked;
-      restStatusLabel.textContent = online
-        ? "Restaurant: ON"
-        : "Restaurant: OFF (online ordering disabled manually)";
+      restStatusLabel.textContent = online ? "Restaurant: ON" : "Restaurant: OFF";
 
       if (!menuData) return;
 
       Object.values(menuData).forEach(items => {
-        items.forEach(item => {
-          item.available = online;
-        });
+        items.forEach(item => { item.available = online; });
       });
 
       setAllInventoryCheckboxesInDOM(online);
       await saveMenuToServer(false);
 
       inventoryStatus.textContent = online
-        ? "Restaurant ON – all items available (auto-saved)."
-        : "Restaurant OFF – all items unavailable (auto-saved).";
+        ? "Restaurant ON – all items available."
+        : "Restaurant OFF – all items unavailable.";
       inventoryStatus.classList.remove("hidden");
       inventoryStatus.classList.remove("text-red-400");
       setTimeout(() => inventoryStatus.classList.add("hidden"), 1500);
+
+      await loadMenuForTables();
     };
 
-    const tabOrders = document.getElementById("tabOrders");
-    const tabAnalytics = document.getElementById("tabAnalytics");
-    const tabInventory = document.getElementById("tabInventory");
-    const ordersTab = document.getElementById("ordersTab");
-    const analyticsTab = document.getElementById("analyticsTab");
-    const inventoryTab = document.getElementById("inventoryTab");
-
-    function setActiveTab(which) {
-      [tabOrders, tabAnalytics, tabInventory].forEach(b => b.classList.remove("tab-btn-active"));
-      [ordersTab, analyticsTab, inventoryTab].forEach(d => d.style.display = "none");
-
-      if (which === "orders") {
-        tabOrders.classList.add("tab-btn-active");
-        ordersTab.style.display = "block";
-      }
-      if (which === "analytics") {
-        tabAnalytics.classList.add("tab-btn-active");
-        analyticsTab.style.display = "block";
-      }
-      if (which === "inventory") {
-        tabInventory.classList.add("tab-btn-active");
-        inventoryTab.style.display = "block";
-      }
-    }
-
-    tabOrders.onclick = () => setActiveTab("orders");
-    tabAnalytics.onclick = () => setActiveTab("analytics");
-    tabInventory.onclick = () => setActiveTab("inventory");
-
+    // DATE / ORDERS
     function getLocalToday() {
       const d = new Date();
       const off = d.getTimezoneOffset();
@@ -689,45 +872,12 @@
     const historyList = document.getElementById("historyList");
 
     function renderOrderDetails(o) {
-      let html = "";
-
       if (o.orderType === "dinein") {
-        html += o.tableNumber
-          ? `<div class="order-card-meta text-gray-300 mt-1">Table: ${o.tableNumber}</div>`
-          : "";
+        return o.tableNumber ? `<div class="order-card-meta text-gray-300 mt-1">Table: ${o.tableNumber}</div>` : "";
       } else {
-        if (o.address || (o.location && o.location.lat && o.location.lng)) {
-          html += `<div class="order-card-meta text-gray-300 mt-1">📍 ${o.address || "—"}`;
-          if (o.location && o.location.lat && o.location.lng) {
-            html += `<br><span class="text-[11px] text-amber-300">
-              Captured GPS: ${o.location.lat.toFixed(5)}, ${o.location.lng.toFixed(5)}
-            </span>`;
-          }
-          html += `</div>`;
-        }
+        if (!o.address) return "";
+        return `<div class="order-card-meta text-gray-300 mt-1">📍 ${o.address || "—"}</div>`;
       }
-
-      if (o.specialRequest) {
-        html += `<div class="order-card-meta text-amber-200 mt-1 text-[11px]">
-          📝 Note: ${o.specialRequest}
-        </div>`;
-      }
-
-      if (o.requestTags && o.requestTags.length) {
-        html += `<div class="mt-1 flex flex-wrap gap-1 text-[10px]">
-          ${o.requestTags.map(t => `
-            <span class="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-300/40 text-amber-200">
-              ${t}
-            </span>`).join("")}
-        </div>`;
-      }
-
-      return html;
-    }
-
-    function openMapsForDelivery(lat, lng) {
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-      window.open(url, "_blank");
     }
 
     async function fetchOrders(dateStr) {
@@ -748,13 +898,13 @@
             "order-type-delivery";
 
           const itemsText = (o.items || [])
-            .map(i => `${i.name} (${i.variant}) x${i.qty}`)
+            .map(i => `${i.name}${i.variant ? ` (${i.variant})` : ""} x${i.qty}`)
             .join(", ");
 
           card.innerHTML = `
             <div class="flex justify-between items-start mb-2 gap-2">
               <div>
-                <div class="flex items-center mb-1">
+                <div class="flex items-center mb-1 flex-wrap">
                   <span class="order-type-badge ${typeClass}">
                     ${o.orderType || ""}
                   </span>
@@ -763,32 +913,19 @@
                   </span>
                 </div>
                 <div class="order-card-meta text-gray-400">
-                  ${o.mobile ? `📞 ${o.mobile} • ` : ""}${o.registrationNumber || ""}${o.tableNumber ? ` • Table ${o.tableNumber}` : ""}
+                  ${o.mobile ? `📞 ${o.mobile}` : ""}${o.tableNumber ? ` • Table ${o.tableNumber}` : ""}
                 </div>
                 ${renderOrderDetails(o)}
               </div>
 
               <div class="text-right text-[11px] text-gray-400">
-                ${new Date(o.createdAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}<br>
-                <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] ${
-                  o.paymentVerified ? "bg-emerald-500/20 text-emerald-300" : "bg-red-500/20 text-red-300"
-                }">
-                  ${o.paymentMethod || "COD"} ${o.paymentVerified ? "(PAID)" : "(PENDING)"}
-                </span>
+                ${o.createdAt ? new Date(o.createdAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}) : ""}
               </div>
             </div>
 
-            <div class="order-card-items text-gray-100 mb-2">
-              ${itemsText || "No items"}
-            </div>
+            <div class="order-card-items text-gray-100 mb-2">${itemsText || "No items"}</div>
 
             <div class="flex flex-wrap gap-2 text-[11px]">
-              ${
-                o.location && o.location.lat && o.location.lng
-                  ? `<button class="px-2 py-1 rounded-full border border-amber-400 text-amber-200" onclick="openMapsForDelivery(${o.location.lat},${o.location.lng})">Deliver</button>`
-                  : `<button class="px-2 py-1 rounded-full border border-slate-700 text-slate-400" disabled>Deliver</button>`
-              }
-
               <button data-action="status" data-status="delivered" class="px-2 py-1 rounded-full border border-slate-600 text-gray-200">
                 Delivered
               </button>
@@ -809,9 +946,7 @@
                   body: JSON.stringify({ status })
                 });
                 fetchOrders(datePicker.value);
-              } catch (e) {
-                console.error(e);
-              }
+              } catch (e) { console.error(e); }
             };
           });
 
@@ -824,24 +959,18 @@
                 body: JSON.stringify({ paymentVerified: !o.paymentVerified })
               });
               fetchOrders(datePicker.value);
-            } catch (e) {
-              console.error(e);
-            }
+            } catch (e) { console.error(e); }
           };
 
-          if (o.status === "delivered") {
-            historyList.appendChild(card);
-          } else {
-            ordersList.appendChild(card);
-          }
+          if (o.status === "delivered") historyList.appendChild(card);
+          else ordersList.appendChild(card);
         });
       } catch (e) {
         console.error(e);
       }
     }
 
-    window.openMapsForDelivery = openMapsForDelivery;
-
+    // ANALYTICS
     const dashboardPeriod = document.getElementById("dashboardPeriod");
     const dashboardDate = document.getElementById("dashboardDate");
     dashboardDate.value = getLocalToday();
@@ -904,14 +1033,14 @@
           }
 
           html = `
-            <div class="mb-4 flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-6">
-              <div class="flex-1 bg-yellow-200 rounded-xl p-3 md:p-4 shadow insight-big-value text-center">
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="bg-yellow-200 rounded-xl p-4 shadow text-center text-slate-900 font-bold">
                 ${labelA}<br>₹${salesA.total || 0}<br>
-                <span class="insight-mid-value">Orders: ${salesA.count || 0}</span>
+                <span class="text-sm">Orders: ${salesA.count || 0}</span>
               </div>
-              <div class="flex-1 bg-yellow-200 rounded-xl p-3 md:p-4 shadow insight-big-value text-center">
+              <div class="bg-yellow-200 rounded-xl p-4 shadow text-center text-slate-900 font-bold">
                 ${labelB}<br>₹${salesB.total || 0}<br>
-                <span class="insight-mid-value">Orders: ${salesB.count || 0}</span>
+                <span class="text-sm">Orders: ${salesB.count || 0}</span>
               </div>
             </div>
           `;
@@ -921,7 +1050,7 @@
 
         if (type === "repeat_customers") {
           const data = await fetch(`/api/dashboard/repeatcustomers?from=${from}&to=${to}`).then(r => r.json());
-          html = `<div class="table-wrapper"><table class="insight-result-table"><thead><tr><th>Name</th><th>Orders</th></tr></thead><tbody>${
+          html = `<div class="overflow-x-auto"><table class="insight-result-table"><thead><tr><th>Name</th><th>Orders</th></tr></thead><tbody>${
             data.map(c => `<tr><td>${c._id}</td><td>${c.orders}</td></tr>`).join("")
           }</tbody></table></div>`;
         } else if (type === "best_dish") {
@@ -952,52 +1081,384 @@
       renderDashboard();
     };
 
-    socket.on("newOrder", (o) => {
-      console.log("newOrder event received:", o);
+    socket.on("newOrder", () => {
       fetchOrders(datePicker.value);
       renderDashboard();
     });
 
-    socket.on("orderUpdated", (o) => {
-      console.log("orderUpdated event received:", o);
+    socket.on("orderUpdated", () => {
       fetchOrders(datePicker.value);
       renderDashboard();
     });
 
-    // ---- Service Request realtime alerts (Call Waiter / Call Manager) ----
-    const serviceToast = document.getElementById("serviceToast");
-    let serviceToastTimeout = null;
+    // LIVE SERVICE REQUESTS
+    const serviceRequestList = document.getElementById("serviceRequestList");
+    const clearServiceRequestsBtn = document.getElementById("clearServiceRequestsBtn");
+    let serviceRequests = [];
 
-    function showServiceToast(sr) {
-      const when = new Date(sr.createdAt || Date.now()).toLocaleTimeString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit"
+    function renderServiceRequests() {
+      serviceRequestList.innerHTML = "";
+      if (!serviceRequests.length) {
+        serviceRequestList.innerHTML = `
+          <div class="border border-dashed border-red-500/30 rounded-xl p-3 text-xs text-gray-400">
+            No live service requests yet.
+          </div>
+        `;
+        return;
+      }
+
+      serviceRequests.forEach(req => {
+        const card = document.createElement("div");
+        card.className = "rounded-xl border border-red-400/40 bg-slate-900/80 p-3";
+        card.innerHTML = `
+          <div class="flex justify-between items-start gap-2">
+            <div>
+              <div class="font-bold text-amber-300">
+                ${req.requestType === "manager" ? "Call Manager" : "Call Waiter"}
+              </div>
+              <div class="text-gray-100 text-sm mt-1">${req.customerName || "Unknown"}</div>
+              <div class="text-xs text-gray-300 mt-1">
+                Mobile: ${req.mobile || "-"}<br>
+                Order Type: ${req.orderType || "-"}<br>
+                Table No: ${req.tableNumber || "-"}
+              </div>
+            </div>
+            <div class="text-[11px] text-gray-400">
+              ${req.createdAt ? new Date(req.createdAt).toLocaleTimeString("en-IN", { hour:"2-digit", minute:"2-digit" }) : ""}
+            </div>
+          </div>
+        `;
+        serviceRequestList.appendChild(card);
       });
-
-      const who = sr.customerName || sr.registrationNumber || sr.mobile || "Unknown guest";
-      const type = sr.type || "Service Request";
-
-      serviceToast.innerHTML = `
-        <div class="text-[11px] text-amber-300 mb-1">${type}</div>
-        <div class="text-xs text-amber-100 mb-1">${who}</div>
-        <div class="text-[11px] text-gray-300 mb-1">
-          ${sr.orderType ? `Order type: ${sr.orderType}` : ""}
-          ${sr.address ? `<br/>📍 ${sr.address}` : ""}
-        </div>
-        <div class="text-[10px] text-gray-400">Received at ${when}</div>
-      `;
-      serviceToast.style.display = "block";
-
-      if (serviceToastTimeout) clearTimeout(serviceToastTimeout);
-      serviceToastTimeout = setTimeout(() => {
-        serviceToast.style.display = "none";
-      }, 6000);
     }
 
-    socket.on("serviceRequest", (sr) => {
-      console.log("serviceRequest event received:", sr);
-      showServiceToast(sr);
+    clearServiceRequestsBtn.onclick = () => {
+      serviceRequests = [];
+      renderServiceRequests();
+    };
+
+    socket.on("serviceRequest", (req) => {
+      serviceRequests.unshift(req);
+      if (serviceRequests.length > 20) serviceRequests = serviceRequests.slice(0, 20);
+      renderServiceRequests();
+      toast(`${req.requestType === "manager" ? "Manager" : "Waiter"} call from ${req.customerName || "Guest"}${req.tableNumber ? ` • Table ${req.tableNumber}` : ""}`);
     });
+
+    renderServiceRequests();
+
+    // TABLE POS
+    const TABLE_COUNT = 5;
+    const tablesList = document.getElementById("tablesList");
+    const selectedTableTitle = document.getElementById("selectedTableTitle");
+    const selectedTableBadge = document.getElementById("selectedTableBadge");
+    const tableCustomerName = document.getElementById("tableCustomerName");
+    const tableCustomerMobile = document.getElementById("tableCustomerMobile");
+    const tableGuestCount = document.getElementById("tableGuestCount");
+    const tableMenuSearch = document.getElementById("tableMenuSearch");
+    const tableMenuList = document.getElementById("tableMenuList");
+    const tableDraftItems = document.getElementById("tableDraftItems");
+    const tableDraftTotal = document.getElementById("tableDraftTotal");
+    const saveTableDraftBtn = document.getElementById("saveTableDraftBtn");
+    const printTableBillBtn = document.getElementById("printTableBillBtn");
+    const clearTableBtn = document.getElementById("clearTableBtn");
+
+    const tableOrders = {};
+    for (let i = 1; i <= TABLE_COUNT; i++) {
+      tableOrders[i] = {
+        tableNumber: i,
+        customerName: "",
+        mobile: "",
+        guestCount: 1,
+        status: "available",
+        items: []
+      };
+    }
+
+    let selectedTable = 1;
+
+    function getTableTotal(tableNo) {
+      return (tableOrders[tableNo]?.items || []).reduce((sum, item) => sum + ((item.price || 0) * (item.qty || 0)), 0);
+    }
+
+    function renderTablesList() {
+      tablesList.innerHTML = "";
+      for (let i = 1; i <= TABLE_COUNT; i++) {
+        const table = tableOrders[i];
+        const total = getTableTotal(i);
+        const card = document.createElement("button");
+        card.className = "table-card text-left" + (selectedTable === i ? " active" : "");
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <div class="text-lg font-extrabold text-amber-300">Table ${i}</div>
+            <div class="table-status-badge ${table.status === "draft" ? "status-draft" : table.status === "billed" ? "status-billed" : "status-available"}">
+              ${table.status === "draft" ? "Draft" : table.status === "billed" ? "Billed" : "Available"}
+            </div>
+          </div>
+          <div class="text-xs text-gray-300 mt-2">
+            ${table.customerName ? table.customerName : "No guest assigned"}
+          </div>
+          <div class="text-[11px] text-gray-400 mt-1">
+            Items: ${(table.items || []).reduce((s, x) => s + x.qty, 0)} • Total: ₹${total}
+          </div>
+        `;
+        card.onclick = () => selectTable(i);
+        tablesList.appendChild(card);
+      }
+    }
+
+    function selectTable(tableNo) {
+      selectedTable = tableNo;
+      const table = tableOrders[tableNo];
+
+      selectedTableTitle.textContent = `Table ${tableNo}`;
+      selectedTableBadge.textContent = table.status === "draft" ? "Draft" : table.status === "billed" ? "Billed" : "Available";
+      selectedTableBadge.className = "table-status-badge " + (table.status === "draft" ? "status-draft" : table.status === "billed" ? "status-billed" : "status-available");
+
+      tableCustomerName.value = table.customerName || "";
+      tableCustomerMobile.value = table.mobile || "";
+      tableGuestCount.value = table.guestCount || 1;
+
+      renderTablesList();
+      renderSelectedTableDraft();
+    }
+
+    function syncSelectedTableMeta() {
+      const table = tableOrders[selectedTable];
+      table.customerName = tableCustomerName.value.trim();
+      table.mobile = tableCustomerMobile.value.trim();
+      table.guestCount = Number(tableGuestCount.value || 1);
+      if (table.items.length) table.status = "draft";
+      else table.status = "available";
+      renderTablesList();
+    }
+
+    tableCustomerName.oninput = syncSelectedTableMeta;
+    tableCustomerMobile.oninput = syncSelectedTableMeta;
+    tableGuestCount.oninput = syncSelectedTableMeta;
+
+    function addItemToSelectedTable(menuItem) {
+      const table = tableOrders[selectedTable];
+      const existing = table.items.find(x => x.name === menuItem.name && x.variant === menuItem.variant);
+
+      if (existing) existing.qty += 1;
+      else {
+        table.items.push({
+          name: menuItem.name,
+          variant: menuItem.variant || "",
+          price: menuItem.price || 0,
+          qty: 1,
+          category: menuItem.category || ""
+        });
+      }
+
+      table.status = "draft";
+      syncSelectedTableMeta();
+      renderSelectedTableDraft();
+      toast(`Added to Table ${selectedTable}`);
+    }
+
+    function changeTableItemQty(index, delta) {
+      const table = tableOrders[selectedTable];
+      if (!table.items[index]) return;
+      table.items[index].qty += delta;
+      if (table.items[index].qty <= 0) table.items.splice(index, 1);
+
+      table.status = table.items.length ? "draft" : "available";
+      renderSelectedTableDraft();
+      renderTablesList();
+    }
+
+    function renderSelectedTableDraft() {
+      const table = tableOrders[selectedTable];
+      tableDraftItems.innerHTML = "";
+
+      if (!table.items.length) {
+        tableDraftItems.innerHTML = `
+          <div class="border border-dashed border-slate-700 rounded-xl p-3 text-sm text-gray-400">
+            No items added for this table yet.
+          </div>
+        `;
+      } else {
+        table.items.forEach((item, idx) => {
+          const row = document.createElement("div");
+          row.className = "rounded-xl border border-slate-700 p-3 bg-slate-900/60";
+          row.innerHTML = `
+            <div class="flex justify-between items-start gap-3">
+              <div>
+                <div class="font-bold text-gray-100">${item.name}</div>
+                <div class="text-xs text-gray-400 mt-1">${item.variant || "Standard"} • ₹${item.price}</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="mini-btn" data-act="minus">-</button>
+                <span class="text-sm font-extrabold text-amber-300">${item.qty}</span>
+                <button class="mini-btn" data-act="plus">+</button>
+              </div>
+            </div>
+            <div class="text-right text-xs text-gray-300 mt-2">
+              Subtotal: <span class="font-extrabold text-white">₹${item.qty * item.price}</span>
+            </div>
+          `;
+
+          row.querySelector('[data-act="minus"]').onclick = () => changeTableItemQty(idx, -1);
+          row.querySelector('[data-act="plus"]').onclick = () => changeTableItemQty(idx, 1);
+
+          tableDraftItems.appendChild(row);
+        });
+      }
+
+      tableDraftTotal.textContent = "₹" + getTableTotal(selectedTable);
+    }
+
+    function renderTableMenuList() {
+      const q = (tableMenuSearch.value || "").trim().toLowerCase();
+      tableMenuList.innerHTML = "";
+
+      const filtered = tableMenuFlat.filter(item => {
+        const hay = `${item.name} ${item.variant} ${item.category}`.toLowerCase();
+        return hay.includes(q);
+      });
+
+      if (!filtered.length) {
+        tableMenuList.innerHTML = `
+          <div class="text-sm text-gray-400 border border-dashed border-slate-700 rounded-xl p-3">
+            No dishes found.
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "pos-menu-item";
+        div.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="text-sm font-extrabold text-white">${item.name}</div>
+              <div class="text-[11px] text-gray-400 mt-1">${item.category}${item.variant ? ` • ${item.variant}` : ""}</div>
+              <div class="text-sm font-bold text-amber-300 mt-1">₹${item.price}</div>
+            </div>
+            <button class="mini-btn" ${item.available ? "" : "disabled style='opacity:.5;cursor:not-allowed'"}>Add</button>
+          </div>
+        `;
+        div.querySelector("button").onclick = () => {
+          if (!item.available) return;
+          addItemToSelectedTable(item);
+        };
+        tableMenuList.appendChild(div);
+      });
+    }
+
+    tableMenuSearch.oninput = renderTableMenuList;
+
+    saveTableDraftBtn.onclick = async () => {
+      syncSelectedTableMeta();
+      const table = tableOrders[selectedTable];
+      table.status = table.items.length ? "draft" : "available";
+      renderTablesList();
+      renderSelectedTableDraft();
+
+      // optional backend save hook:
+      try {
+        await fetch("/api/table-orders/save-draft", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify(table)
+        }).catch(() => null);
+      } catch (_) {}
+
+      toast(`Draft saved for Table ${selectedTable}`);
+    };
+
+    clearTableBtn.onclick = async () => {
+      if (!confirm(`Clear Table ${selectedTable}?`)) return;
+
+      tableOrders[selectedTable] = {
+        tableNumber: selectedTable,
+        customerName: "",
+        mobile: "",
+        guestCount: 1,
+        status: "available",
+        items: []
+      };
+
+      selectTable(selectedTable);
+
+      try {
+        await fetch("/api/table-orders/clear", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({ tableNumber: selectedTable })
+        }).catch(() => null);
+      } catch (_) {}
+
+      toast(`Table ${selectedTable} cleared`);
+    };
+
+    function buildPrintTextForSelectedTable() {
+      const table = tableOrders[selectedTable];
+      const lines = [];
+      lines.push("ABBA SEENUUU... FAST FOODS");
+      lines.push("DINE-IN BILL");
+      lines.push("------------------------------");
+      lines.push(`Table: ${selectedTable}`);
+      lines.push(`Customer: ${table.customerName || "-"}`);
+      lines.push(`Mobile: ${table.mobile || "-"}`);
+      lines.push(`Guests: ${table.guestCount || 1}`);
+      lines.push(`Time: ${new Date().toLocaleString("en-IN")}`);
+      lines.push("------------------------------");
+
+      table.items.forEach(item => {
+        const label = `${item.name}${item.variant ? ` (${item.variant})` : ""}`;
+        lines.push(`${label}`);
+        lines.push(`${item.qty} x ${item.price} = ${item.qty * item.price}`);
+      });
+
+      lines.push("------------------------------");
+      lines.push(`TOTAL: ₹${getTableTotal(selectedTable)}`);
+      lines.push("------------------------------");
+      lines.push("Thank you!");
+      lines.push("\n\n\n");
+      return lines.join("\n");
+    }
+
+    printTableBillBtn.onclick = async () => {
+      const table = tableOrders[selectedTable];
+      if (!table.items.length) {
+        toast("No items in this table draft");
+        return;
+      }
+
+      const billText = buildPrintTextForSelectedTable();
+
+      try {
+        // RAWBT / print bridge friendly approach
+        const win = window.open("", "_blank");
+        win.document.write(`
+          <pre style="font-family: monospace; white-space: pre-wrap; padding: 16px;">${billText.replace(/</g, "&lt;")}</pre>
+          <script>window.print();<\/script>
+        `);
+        win.document.close();
+      } catch (e) {
+        console.error(e);
+      }
+
+      table.status = "billed";
+      renderTablesList();
+      selectTable(selectedTable);
+
+      try {
+        await fetch("/api/table-orders/print", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({ ...table, total: getTableTotal(selectedTable) })
+        }).catch(() => null);
+      } catch (_) {}
+
+      toast(`Print opened for Table ${selectedTable}`);
+    };
+
+    renderTablesList();
+    renderSelectedTableDraft();
   </script>
 </body>
 </html>
