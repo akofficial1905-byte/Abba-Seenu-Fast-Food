@@ -1846,16 +1846,16 @@
       await renderDashboard();
     });
 
-    socket.on("pendingDineInAccepted", async (id) => {
-      removePendingRequestById(id);
-      await loadAllTableDrafts();
-      renderTablesList();
-      selectTable(selectedTable);
-    });
+   socket.on("pendingDineInAccepted", async (payload) => {
+  removePendingRequestById(payload?.id || payload);   // FIX: extract .id from payload object
+  await loadAllTableDrafts();
+  renderTablesList();
+  selectTable(selectedTable);
+});
 
-    socket.on("pendingDineInRejected", (id) => {
-      removePendingRequestById(id);
-    });
+socket.on("pendingDineInRejected", (payload) => {
+  removePendingRequestById(payload?.id || payload);   // FIX: same fix
+});
 
     renderTablesList();
     renderSelectedTableDraft();
