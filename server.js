@@ -43,7 +43,7 @@ const orderSchema = new mongoose.Schema({
   customerName: String,
   registrationNumber: String,
   mobile: String,
-  tableNumber: String,
+  tableNumber: String, // dine-in table from new index.html
   address: String,
   location: {
     lat: Number,
@@ -90,6 +90,10 @@ const serviceRequestSchema = new mongoose.Schema({
   mobile: String,
   registrationNumber: String,
   orderType: String,
+
+  // IMPORTANT: add tableNumber so manager sees which table called
+  tableNumber: String, // <-- ADDED
+
   address: String,
   location: {
     lat: Number,
@@ -219,7 +223,7 @@ app.get("/api/orders", async (req, res) => {
   }
 });
 
-// Place new order
+// Place new order – already compatible with new index.html
 app.post("/api/orders", async (req, res) => {
   try {
     const {
@@ -227,7 +231,7 @@ app.post("/api/orders", async (req, res) => {
       customerName,
       registrationNumber,
       mobile,
-      tableNumber,
+      tableNumber,      // from new index.html
       address,
       location,
       items,
@@ -246,7 +250,7 @@ app.post("/api/orders", async (req, res) => {
       customerName,
       registrationNumber,
       mobile,
-      tableNumber,
+      tableNumber,      // stored in DB
       address,
       location,
       items,
@@ -345,7 +349,7 @@ app.delete("/api/orders/:id", async (req, res) => {
 
 // ---------------- SERVICE REQUEST APIs (Call Waiter / Call Manager) ----------------
 
-// Create a service request
+// Create a service request – UPDATED to accept tableNumber
 app.post("/api/service-request", async (req, res) => {
   try {
     const {
@@ -354,6 +358,7 @@ app.post("/api/service-request", async (req, res) => {
       mobile,
       registrationNumber,
       orderType,
+      tableNumber,   // <-- ACCEPTED from new index.html
       address,
       location
     } = req.body || {};
@@ -371,6 +376,7 @@ app.post("/api/service-request", async (req, res) => {
       mobile: mobile || "",
       registrationNumber: registrationNumber || "",
       orderType: orderType || "",
+      tableNumber: tableNumber || "",  // <-- STORED
       address: address || "",
       location: location || null,
       status: "pending"
@@ -378,7 +384,7 @@ app.post("/api/service-request", async (req, res) => {
 
     await sr.save();
 
-    // Broadcast to manager dashboard
+    // Broadcast to manager dashboard (same event name as before)
     io.emit("serviceRequest", sr);
 
     res.json({ success: true, serviceRequest: sr });
@@ -572,6 +578,7 @@ app.get("/api/next-print-ticket", (req, res) => {
   if (order.customerName) lines.push(`Name   : ${order.customerName}`);
   if (order.registrationNumber) lines.push(`Reg No : ${order.registrationNumber}`);
   if (order.mobile) lines.push(`Mobile : ${order.mobile}`);
+  if (order.tableNumber) lines.push(`Table  : ${order.tableNumber}`); // optional, but nice for dine-in
   if (order.address) lines.push(`Addr   : ${order.address}`);
   if (order.specialRequest) lines.push(`Note   : ${order.specialRequest}`);
   if (order.requestTags && order.requestTags.length) {
@@ -590,9 +597,9 @@ app.get("/api/next-print-ticket", (req, res) => {
 
   lines.push("--------------------------");
   lines.push(`Total: ₹${order.total}`);
-  lines.push("\\\\\\\\n\\\\\\\\n\\\\\\\\n");
+  lines.push("\\\\\\\\\\\\\\\\n\\\\\\\\\\\\\\\\n\\\\\\\\\\\\\\\\n");
 
-  res.type("text/plain").send(lines.join("\\\\\\\\n"));
+  res.type("text/plain").send(lines.join("\\\\\\\\\\\\\\\\n"));
 });
 
 // ---------------- SOCKET.IO ----------------
