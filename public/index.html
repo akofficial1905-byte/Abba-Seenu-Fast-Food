@@ -9,16 +9,21 @@
 
 <style>
 :root{
-  --bg:#2b0008;
-  --paper:#3a050f;
+  /* New theme: dark navy + slate + gold */
+  --bg:#020718;
+  --paper:#081225;
+  --paper-soft:#0d1b33;
   --accent:#f5c518;
-  --accent-soft:#ffe28a;
+  --accent-soft:#ffe9a6;
+  --accent-soft2:#f9d869;
   --text:#f5f5f5;
+  --muted:#a9b3cf;
 }
+
 *{box-sizing:border-box}
 body{
   margin:0;
-  background:radial-gradient(circle at top,#5a0718 0,#1a0005 55%);
+  background:radial-gradient(circle at top,#101b3b 0,#020718 55%);
   color:var(--text);
   font-family:Poppins,sans-serif;
   overflow:hidden;
@@ -30,8 +35,8 @@ body{
   height:100vh;
   padding:18px 14px 130px;
   background:
-    radial-gradient(circle at center, rgba(245,197,24,.08), transparent 60%),
-    linear-gradient(160deg,#2b0008,#3a050f);
+    radial-gradient(circle at center, rgba(245,197,24,.06), transparent 60%),
+    linear-gradient(160deg,#050b1c,#08152e);
   position:relative;
 }
 .page::before{
@@ -41,12 +46,12 @@ body{
   font-family:"Playfair Display",serif;
   font-size:2.7rem;
   text-align:center;
-  color:rgba(255,255,255,.04);
+  color:rgba(255,255,255,.03);
   pointer-events:none;
 }
 h1,h2{
   font-family:"Playfair Display",serif;
-  color:var(--accent-soft);
+  color:var(--accent-soft2);
   margin-bottom:10px;
 }
 h1{font-size:2.4rem}
@@ -79,18 +84,22 @@ h2{font-size:1.4rem}
   font-size:.7rem;
   color:#ddd;
 }
+
+/* top menu/contents button */
 #contentsBtn{
   position:fixed;
   top:12px;
   right:12px;
-  background:#3f050f;
-  color:var(--accent-soft);
+  background:var(--paper-soft);
+  color:var(--accent-soft2);
   padding:8px 16px;
   border-radius:20px;
   font-size:.9rem;
   z-index:30;
   border:1px solid var(--accent);
 }
+
+/* contents grid */
 .contents-grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -98,7 +107,7 @@ h2{font-size:1.4rem}
   max-width:440px;
 }
 .contents-card{
-  background:#3a050f;
+  background:var(--paper-soft);
   padding:16px;
   border-radius:16px;
   font-weight:600;
@@ -107,6 +116,8 @@ h2{font-size:1.4rem}
   border:1px solid rgba(245,197,24,.7);
   color:var(--text);
 }
+
+/* menu items */
 .items-grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -116,7 +127,7 @@ h2{font-size:1.4rem}
   .items-grid{grid-template-columns:repeat(3,1fr)}
 }
 .item{
-  background:#3a050f;
+  background:var(--paper);
   border-radius:14px;
   padding:10px;
   font-size:.8rem;
@@ -124,16 +135,18 @@ h2{font-size:1.4rem}
 }
 .item b{display:block;font-size:.9rem;margin-bottom:4px;color:#ffffff}
 .price{font-size:.75rem;color:var(--accent-soft);margin-bottom:6px}
+
+/* form controls */
 select,
 input,
 textarea{
   width:100%;
   padding:10px;
   border-radius:10px;
-  border:1px solid rgba(255,255,255,.35);
+  border:1px solid rgba(255,255,255,.25);
   font-size:.9rem;
   margin-bottom:8px;
-  background:#140005;
+  background:#030817;
   color:#fff;
 }
 .item select{
@@ -150,12 +163,14 @@ textarea{
   background:var(--accent);
   font-weight:600;
   font-size:.78rem;
-  color:#2b0008;
+  color:#020718;
 }
+
+/* bottom cart bar */
 #cartBar{
   position:fixed;
   bottom:0;left:0;right:0;
-  background:#120002;
+  background:#020718;
   border-top:2px solid var(--accent);
   display:flex;
   justify-content:space-between;
@@ -166,12 +181,14 @@ textarea{
 #cartSummary{font-weight:600}
 #checkoutBtn{
   background:var(--accent);
-  color:#2b0008;
+  color:#020718;
   padding:10px 18px;
   border-radius:22px;
   font-weight:700;
   border:none;
 }
+
+/* cart modal */
 #cartModal{
   position:fixed;inset:0;
   background:rgba(0,0,0,.78);
@@ -179,19 +196,19 @@ textarea{
   z-index:50;
 }
 #cartBox{
-  background:#210005;
+  background:#050c1d;
   width:92%;
-  max-width:460px;
+  max-width:480px;
   max-height:88vh;
   margin:30px auto;
-  padding:18px;
+  padding:16px;
   border-radius:18px;
   display:flex;
   flex-direction:column;
-  border:1px solid rgba(255,255,255,.25);
+  border:1px solid rgba(255,255,255,.18);
   overflow-y:auto;
 }
-#cartBox h3{margin-top:0;color:var(--accent-soft)}
+#cartBox h3{margin-top:0;color:var(--accent-soft2)}
 #cartItems{margin-bottom:10px;max-height:none;overflow:visible}
 .cart-row{
   display:flex;
@@ -202,7 +219,7 @@ textarea{
 }
 .cart-row small{color:#ccc}
 .qty button{
-  background:#4b1018;
+  background:#182342;
   color:#fff;
   border:none;
   padding:4px 8px;
@@ -210,6 +227,8 @@ textarea{
   margin:0 4px;
 }
 textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
+
+/* primary buttons */
 .primary{
   background:var(--accent);
   border:none;
@@ -217,28 +236,30 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   border-radius:26px;
   font-weight:700;
   width:100%;
-  color:#2b0008;
+  color:#020718;
 }
 .helper{
   font-size:.72rem;
-  color:#ddd;
+  color:var(--muted);
   margin-bottom:6px;
 }
 .loc-btn{
-  background:#3a050f;
-  color:var(--accent-soft);
+  background:var(--paper-soft);
+  color:var(--accent-soft2);
   border:1px solid rgba(255,255,255,.25);
   padding:6px 10px;
   border-radius:999px;
   font-size:.75rem;
   margin-bottom:6px;
 }
+
+/* toast & hint */
 #toast{
   position:fixed;
   bottom:90px;
   left:50%;
   transform:translateX(-50%);
-  background:#3a050f;
+  background:#0b1325;
   color:var(--accent-soft);
   padding:10px 18px;
   border-radius:20px;
@@ -258,6 +279,8 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   font-size:.75rem;
   z-index:70;
 }
+
+/* UPI overlay */
 #upiOverlay{
   position:fixed;
   inset:0;
@@ -268,7 +291,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   z-index:80;
 }
 #upiBox{
-  background:#210005;
+  background:#050c1d;
   padding:18px;
   border-radius:18px;
   width:90%;
@@ -277,17 +300,19 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   border:1px solid rgba(255,255,255,0.3);
   color:#fff;
 }
-#upiBox h3{margin-top:0;color:var(--accent-soft)}
+#upiBox h3{margin-top:0;color:var(--accent-soft2)}
+
+/* FABs and service buttons */
 #chatFab{
   position:fixed;
   right:14px;
-  bottom:84px;
+  bottom:88px;
   width:54px;
   height:54px;
   border-radius:50%;
   border:none;
   background:var(--accent);
-  color:#2b0008;
+  color:#020718;
   font-size:1.4rem;
   font-weight:700;
   z-index:85;
@@ -296,28 +321,30 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 #servicePanel{
   position:fixed;
   left:12px;
-  bottom:84px;
+  bottom:96px;
   display:flex;
   flex-direction:column;
   gap:8px;
   z-index:85;
 }
 .serviceBtn{
-  background:#3a050f;
-  color:var(--accent-soft);
-  border:1px solid rgba(245,197,24,.5);
+  background:var(--paper-soft);
+  color:var(--accent-soft2);
+  border:1px solid rgba(245,197,24,.55);
   border-radius:999px;
-  padding:10px 12px;
+  padding:8px 12px;
   font-size:.78rem;
   font-weight:600;
 }
+
+/* chatbot */
 #chatPanel{
   position:fixed;
   right:12px;
   bottom:148px;
   width:min(92vw,360px);
   height:470px;
-  background:#220006;
+  background:#050c1d;
   border:1px solid rgba(245,197,24,.45);
   border-radius:20px;
   display:none;
@@ -331,10 +358,10 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   justify-content:space-between;
   align-items:center;
   padding:12px 14px;
-  background:#3a050f;
+  background:#08152e;
   border-bottom:1px solid rgba(255,255,255,.12);
 }
-#chatHeader b{color:var(--accent-soft)}
+#chatHeader b{color:var(--accent-soft2)}
 #chatClose{
   background:transparent;
   border:none;
@@ -359,14 +386,14 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 }
 .botMsg{
   align-self:flex-start;
-  background:#3a050f;
+  background:#08152e;
   color:#fff7d1;
   border:1px solid rgba(245,197,24,.22);
 }
 .userMsg{
   align-self:flex-end;
   background:var(--accent);
-  color:#2b0008;
+  color:#020718;
 }
 #faqRow{
   padding:8px 10px 0;
@@ -379,7 +406,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   border-radius:999px;
   padding:7px 10px;
   font-size:.72rem;
-  background:#4a1018;
+  background:#0f1b33;
   color:#ffe9a6;
 }
 #chatInputWrap{
@@ -387,7 +414,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   gap:8px;
   padding:10px;
   border-top:1px solid rgba(255,255,255,.1);
-  background:#1a0005;
+  background:#020718;
 }
 #chatInput{
   flex:1;
@@ -398,9 +425,11 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   border-radius:12px;
   padding:0 14px;
   background:var(--accent);
-  color:#2b0008;
+  color:#020718;
   font-weight:700;
 }
+
+/* quick request chips */
 .request-chip-wrap{
   display:flex;
   flex-wrap:wrap;
@@ -409,7 +438,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 }
 .request-chip{
   border:1px solid rgba(245,197,24,.45);
-  background:#3a050f;
+  background:#08152e;
   color:#ffe9a6;
   padding:7px 10px;
   border-radius:999px;
@@ -418,13 +447,42 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 }
 .request-chip.active{
   background:var(--accent);
-  color:#2b0008;
+  color:#020718;
 }
+
 .hidden{display:none}
+
+/* Cart details edit toggle in modal */
+#detailsToggle{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:.82rem;
+  cursor:pointer;
+  padding:6px 0;
+  margin-bottom:6px;
+}
+#detailsToggle span{
+  font-weight:600;
+}
+#detailsIcon{
+  font-size:1rem;
+}
+#detailsSection{
+  border-radius:12px;
+  padding:8px 8px 2px;
+  background:#050c1d;
+  border:1px solid rgba(255,255,255,.16);
+  margin-bottom:10px;
+}
+
+/* mobile tweaks */
 @media(max-width:480px){
-  #servicePanel{left:8px;bottom:88px}
-  .serviceBtn{font-size:.72rem;padding:9px 10px}
+  #servicePanel{left:8px;bottom:96px}
+  .serviceBtn{font-size:.72rem;padding:7px 10px}
   #chatPanel{right:8px;left:8px;width:auto;height:62vh;bottom:148px}
+  #chatFab{right:12px;bottom:92px}
+  #cartBox{margin:24px auto;max-height:84vh}
 }
 </style>
 </head>
@@ -435,7 +493,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 
 <div id="prev" class="nav">❮</div>
 <div id="next" class="nav">❯</div>
-<button id="contentsBtn" onclick="go(1)">📑 Menu</button>
+<button id="contentsBtn" onclick="go(3)">📑 Menu</button>
 
 <div id="servicePanel">
   <button class="serviceBtn" id="callWaiterBtn">🔔 Call Waiter</button>
@@ -475,38 +533,46 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 <div id="cartModal">
   <div id="cartBox">
     <h3>Your Order</h3>
+
+    <!-- NEW: quick edit details section -->
+    <div id="detailsToggle" onclick="toggleDetailsInCart()">
+      <span>Customer details</span>
+      <span id="detailsIcon">▾</span>
+    </div>
+    <div id="detailsSection" class="hidden">
+      <input id="name" placeholder="Customer Name">
+      <input id="mobile" placeholder="Mobile Number">
+      <input id="regno" placeholder="Registration / Room No. (optional)">
+
+      <select id="orderType">
+        <option value="">Select Order Type</option>
+        <option value="dinein">Dine-in</option>
+        <option value="takeaway">Takeaway</option>
+        <option value="delivery">Delivery</option>
+      </select>
+
+      <div id="tableWrap" class="hidden">
+        <select id="tableNumber">
+          <option value="">Select Table Number</option>
+          <option value="T1">Table 1</option>
+          <option value="T2">Table 2</option>
+          <option value="T3">Table 3</option>
+          <option value="T4">Table 4</option>
+          <option value="T5">Table 5</option>
+        </select>
+      </div>
+
+      <div id="deliveryFields" class="hidden">
+        <textarea id="address" placeholder="Delivery address / landmark"></textarea>
+        <button id="locBtn" class="loc-btn">📍 Use current location (mandatory for delivery)</button>
+        <div id="locStatus" class="helper"></div>
+      </div>
+    </div>
+
     <div id="cartItems"></div>
     <b>Total: ₹<span id="total">0</span></b>
 
-    <hr style="margin:8px 0;border-color:#555;">
-
-    <input id="name" placeholder="Customer Name">
-    <input id="mobile" placeholder="Mobile Number">
-    <input id="regno" placeholder="Registration / Room No. (optional)">
-
-    <select id="orderType">
-      <option value="">Select Order Type</option>
-      <option value="dinein">Dine-in</option>
-      <option value="takeaway">Takeaway</option>
-      <option value="delivery">Delivery</option>
-    </select>
-
-    <div id="tableWrap" class="hidden">
-      <select id="tableNumber">
-        <option value="">Select Table Number</option>
-        <option value="T1">Table 1</option>
-        <option value="T2">Table 2</option>
-        <option value="T3">Table 3</option>
-        <option value="T4">Table 4</option>
-        <option value="T5">Table 5</option>
-      </select>
-    </div>
-
-    <div id="deliveryFields" class="hidden">
-      <textarea id="address" placeholder="Delivery address / landmark"></textarea>
-      <button id="locBtn" class="loc-btn">📍 Use current location (mandatory for delivery)</button>
-      <div id="locStatus" class="helper"></div>
-    </div>
+    <hr style="margin:8px 0;border-color:#3b4762;">
 
     <select id="paymentMethod">
       <option value="">Select Payment Method</option>
@@ -518,7 +584,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
       If you choose UPI, please scan the QR and pay before placing the order.
     </div>
 
-    <div style="margin-top:6px;font-size:.83rem;font-weight:600;color:#ffe7a3;">Quick Requests</div>
+    <div style="margin-top:6px;font-size:.83rem;font-weight:600;color:var(--accent-soft2);">Quick Requests</div>
     <div class="request-chip-wrap" id="requestChips">
       <button type="button" class="request-chip" data-tag="Less spicy">Less spicy</button>
       <button type="button" class="request-chip" data-tag="Extra spicy">Extra spicy</button>
@@ -532,7 +598,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
     <textarea id="specialRequest" placeholder="Special request for chef / manager (optional)"></textarea>
 
     <button class="primary" id="placeOrderBtn">Place Order</button>
-    <button class="primary" style="margin-top:6px;background:#3a050f;color:#fff;border:1px solid rgba(255,255,255,.25);" onclick="closeCart()">Close</button>
+    <button class="primary" style="margin-top:6px;background:var(--paper-soft);color:#fff;border:1px solid rgba(255,255,255,.25);" onclick="closeCart()">Close</button>
   </div>
 </div>
 
@@ -552,7 +618,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
       >
     </div>
     <button id="upiPaidBtn" class="primary" style="margin-top:6px;">I have paid</button>
-    <button id="upiCancelBtn" class="primary" style="margin-top:6px;background:#3a050f;border:1px solid rgba(255,255,255,.3);color:#fff;">
+    <button id="upiCancelBtn" class="primary" style="margin-top:6px;background:var(--paper-soft);border:1px solid rgba(255,255,255,.3);color:#fff;">
       Cancel
     </button>
   </div>
@@ -605,6 +671,7 @@ let customerLocation=null;
 let pendingOrderPayload=null;
 let selectedRequestTags=[];
 
+/* order type conditional UI */
 function updateOrderTypeUI(){
   const orderType = orderTypeSel.value;
   tableWrap.classList.toggle("hidden", orderType !== "dinein");
@@ -619,6 +686,16 @@ function updateOrderTypeUI(){
 }
 orderTypeSel.addEventListener("change", updateOrderTypeUI);
 
+/* toggle details section in cart */
+function toggleDetailsInCart(){
+  const sec = document.getElementById("detailsSection");
+  const icon = document.getElementById("detailsIcon");
+  const isHidden = sec.classList.contains("hidden");
+  sec.classList.toggle("hidden", !isHidden);
+  icon.textContent = isHidden ? "▴" : "▾";
+}
+
+/* UPI QR */
 function setUpiQr(totalAmount){
   const upiId   = "7054699905@ptaxis";
   const upiName = "Abba SEENUUU... FAST FOODS";
@@ -639,6 +716,7 @@ function setUpiQr(totalAmount){
   upiQrImg.src = qrApi;
 }
 
+/* page navigation */
 function go(i){
   locked=true;page=i;
   book.style.transform=`translateX(-${i*100}vw)`;
@@ -656,6 +734,7 @@ document.addEventListener("touchend",e=>{
   if(dx<-80)document.getElementById("next").onclick();
 });
 
+/* cart open/close */
 checkoutBtn.onclick=()=>{
   if(cart.length===0){
     toast("Cart is empty");
@@ -665,6 +744,7 @@ checkoutBtn.onclick=()=>{
 };
 function closeCart(){cartModal.style.display="none"}
 
+/* toast */
 function toast(msg){
   const t=document.getElementById("toast");
   t.innerText=msg;
@@ -672,14 +752,17 @@ function toast(msg){
   setTimeout(()=>t.style.display="none",1400);
 }
 
+/* load menu */
 fetch("/menu.json?_=" + Date.now(), { cache: "no-store" })
   .then(r=>r.json())
   .then(m=>{menu=m;build();initChatbot();})
   .catch(()=>toast("Could not load menu"));
 
+/* build pages: 0 welcome, 1 details, 2 info, 3 contents, others = menu */
 function build(){
   book.innerHTML="";
 
+  /* page 0: welcome */
   book.innerHTML+=`
   <section class="page">
     <div style="
@@ -695,16 +778,16 @@ function build(){
         text-align:left;
         font-size:0.7rem;
         line-height:1.3;
-        color:#ffd9a8;
+        color:var(--muted);
         font-family:'Poppins',sans-serif;
       ">
-        <div>Powered by <span style="font-weight:700;color:#ffe28a;">Aryvo</span></div>
+        <div>Powered by <span style="font-weight:700;color:var(--accent-soft2);">Aryvo</span></div>
         <div>📞 7054699905</div>
       </div>
 
       <div style="
         font-family:'Poppins',sans-serif;
-        color:#ffe6a8;
+        color:var(--accent-soft2);
         letter-spacing:0.35em;
         font-size:0.8rem;
         margin-bottom:10px;
@@ -718,8 +801,9 @@ function build(){
           font-weight:900;
           font-size:2.3rem;
           letter-spacing:0.16em;
-          color:#ffe76a;
-        ">Abba SEENUUU...</span>
+          color:var(--accent);
+          text-shadow:0 0 18px rgba(245,197,24,.35);
+        ">ABBA SEENUUU...</span>
         <span style="
           font-family:'Playfair Display',serif;
           font-weight:800;
@@ -733,22 +817,65 @@ function build(){
         font-family:'Poppins',sans-serif;
         font-size:0.9rem;
         margin-bottom:16px;
-        background:rgba(0,0,0,0.4);
+        background:rgba(2,7,24,0.75);
         padding:6px 14px;
         border-radius:999px;
+        border:1px solid rgba(245,197,24,.5);
       ">
-        <span style="color:#ffe76a;">Taste like </span>
+        <span style="color:var(--accent-soft2);">Taste like </span>
         <span style="color:#ffffff;">"ahh devudaa..."</span>
       </div>
 
-      <div style="font-size:0.9rem;margin-bottom:10px;">
+      <div style="font-size:0.9rem;margin-bottom:10px;color:var(--muted);">
         📞 +91-6302618096
       </div>
-      <button class="primary" style="background:var(--accent);color:#2b0008;max-width:220px;" onclick="go(1)">Open Menu</button>
+      <button class="primary" style="background:var(--accent);color:#020718;max-width:230px;" onclick="go(1)">Start Order</button>
     </div>
   </section>`;
 
-  let contents="",start=2;
+  /* page 1: basic details */
+  book.innerHTML+=`
+  <section class="page center">
+    <div style="width:100%;max-width:360px;text-align:left;">
+      <h2 style="margin-bottom:4px;">Your details</h2>
+      <p style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;">
+        Please share your basic details so we can serve you better.
+      </p>
+      <input placeholder="Customer Name" oninput="nameInput.value=this.value" value="">
+      <input placeholder="Mobile Number" oninput="mobileInput.value=this.value" value="">
+      <input placeholder="Registration / Room No. (optional)" oninput="regInput.value=this.value" value="">
+      <select onchange="orderTypeSel.value=this.value;updateOrderTypeUI();">
+        <option value="">Select Order Type</option>
+        <option value="dinein">Dine-in</option>
+        <option value="takeaway">Takeaway</option>
+        <option value="delivery">Delivery</option>
+      </select>
+      <p style="font-size:0.8rem;color:var(--muted);margin:4px 0 12px;">
+        You can always edit these details later from the cart.
+      </p>
+      <button class="primary" onclick="go(2)">Next</button>
+    </div>
+    <div class="pageNo">2</div>
+  </section>`;
+
+  /* page 2: info/content */
+  book.innerHTML+=`
+  <section class="page center">
+    <div style="max-width:360px;text-align:left;">
+      <h2>How it works</h2>
+      <ul style="font-size:0.85rem;color:var(--muted);padding-left:18px;margin-bottom:18px;">
+        <li>Browse the menu and add your favourite dishes to cart.</li>
+        <li>For delivery, please share your address and tap on current location.</li>
+        <li>You can call waiter/manager anytime using the buttons on screen.</li>
+        <li>Choose to pay by UPI or Cash at checkout.</li>
+      </ul>
+      <button class="primary" onclick="go(3)">Go to Menu</button>
+    </div>
+    <div class="pageNo">3</div>
+  </section>`;
+
+  /* contents page (page index 3) */
+  let contents="",start=4;
   Object.keys(menu).forEach(c=>{
     const items = menu[c];
     const hasImages = items.some(it => it.image);
@@ -764,10 +891,12 @@ function build(){
   <section class="page center">
     <h2>Menu</h2>
     <div class="contents-grid">${contents}</div>
-    <div class="pageNo">2</div>
+    <p style="font-size:0.8rem;color:var(--muted);margin-top:12px;">Swipe or use arrows to browse categories.</p>
+    <div class="pageNo">4</div>
   </section>`;
 
-  let pg=3;
+  /* menu pages start from page index 4 */
+  let pg=5;
   for (let [cat, items] of Object.entries(menu)) {
     const hasImages = items.some(it => it.image);
     const perPage   = hasImages
@@ -798,7 +927,7 @@ function build(){
             inStock
               ? `
                 <select>${opts}</select>
-                <button class="add" onclick="add('${it.name.replace(/'/g,"\\\\'")}',this)">Add</button>
+                <button class="add" onclick="add('${it.name.replace(/'/g,"\\\\\\\\'")}',this)">Add</button>
               `
               : `
                 <div style="margin-top:6px;font-size:0.85rem;color:#ffb3b3;font-weight:600;">
@@ -807,7 +936,7 @@ function build(){
                 <select disabled style="opacity:0.5;">
                   <option>Choose option</option>
                 </select>
-                <button class="add" disabled style="background:#444;color:#888;">Sold out</button>
+                <button class="add" disabled style="background:#262a3e;color:#888;">Sold out</button>
               `
           }
         </div>`;
@@ -818,6 +947,7 @@ function build(){
   }
 }
 
+/* cart logic */
 function add(name,btn){
   const sel=btn.previousElementSibling;
   if(!sel.value){alert("Please choose an option");return;}
@@ -859,6 +989,7 @@ function chg(i,d){
   updateCart();
 }
 
+/* location */
 locBtn.onclick = () => {
   const orderType = orderTypeSel.value;
   if(orderType !== "delivery"){
@@ -886,6 +1017,7 @@ locBtn.onclick = () => {
   );
 };
 
+/* success overlay */
 function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethod){
   const overlay=document.createElement("div");
   overlay.style.position="fixed";
@@ -898,7 +1030,7 @@ function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethod){
 
   overlay.innerHTML=`
     <div style="
-      background:#210005;
+      background:#050c1d;
       padding:18px;
       border-radius:18px;
       width:88%;
@@ -908,7 +1040,7 @@ function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethod){
       font-family:Poppins,sans-serif;
       color:#f5f5f5;
     ">
-      <h3 style="margin-top:0;color:var(--accent-soft);">Order placed</h3>
+      <h3 style="margin-top:0;color:var(--accent-soft2);">Order placed</h3>
       <p style="font-size:.9rem;margin:8px 0 10px;">${mainMsg}</p>
       <div style="font-weight:600;margin-bottom:6px;">
         Bill Amount: ₹${total}
@@ -916,14 +1048,14 @@ function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethod){
       <div style="font-size:.83rem;margin-bottom:10px;">
         Payment method: <b>${paymentMethod}</b>
       </div>
-      ${extraMsg ? `<div style="font-size:0.78rem;margin-bottom:12px;color:#ffe28a;">${extraMsg}</div>` : ``}
+      ${extraMsg ? `<div style="font-size:0.78rem;margin-bottom:12px;color:var(--accent-soft);">${extraMsg}</div>` : ``}
       <button id="successDoneBtn" style="
         background:var(--accent);
         border:none;
         padding:9px 16px;
         border-radius:22px;
         font-weight:700;
-        color:#2b0008;
+        color:#020718;
         width:100%;
         font-size:.9rem;
       ">
@@ -954,6 +1086,7 @@ function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethod){
   };
 }
 
+/* place order actual POST */
 async function actuallyPlaceOrder(payload, totalAmount, paymentMethod){
   try{
     const res = await fetch("/api/orders",{
@@ -975,7 +1108,7 @@ async function actuallyPlaceOrder(payload, totalAmount, paymentMethod){
       "Your order has been sent to Abba SEENUUU... FAST FOODS.",
       paymentMethod === "UPI"
         ? ""
-        : "Don’t have change? Pay using UPI: <b>7054699905@ptaxis</b>, else pay to the delivery boy at the time of delivery.",
+        : "Don’t have change? Pay using UPI: 7054699905@ptaxis, else pay to the delivery boy at the time of delivery.",
       totalAmount,
       paymentMethod
     );
@@ -985,6 +1118,7 @@ async function actuallyPlaceOrder(payload, totalAmount, paymentMethod){
   }
 }
 
+/* UPI flow */
 upiPaidBtn.onclick = async () => {
   if(!pendingOrderPayload) {
     upiOverlay.style.display="none";
@@ -1073,6 +1207,7 @@ placeOrderBtn.onclick = async () => {
   placeOrderBtn.disabled=false;
 };
 
+/* request chips */
 document.querySelectorAll(".request-chip").forEach(btn=>{
   btn.onclick=()=>{
     const tag = btn.getAttribute("data-tag");
@@ -1086,6 +1221,7 @@ document.querySelectorAll(".request-chip").forEach(btn=>{
   };
 });
 
+/* chatbot helpers (unchanged logic) */
 function flattenMenu(){
   const list = [];
   Object.entries(menu).forEach(([category, items])=>{
@@ -1220,6 +1356,7 @@ function initChatbot(){
   addBotMessage("Hi 👋 Welcome to Abba SEENUUU... FAST FOODS.\nAsk me for best food, spicy food, veg food, noodles, rice, or budget suggestions.");
 }
 
+/* chatbot events */
 chatFab.onclick = ()=>{
   chatPanel.style.display = chatPanel.style.display === "flex" ? "none" : "flex";
 };
@@ -1243,6 +1380,7 @@ document.querySelectorAll(".faqBtn").forEach(btn=>{
   };
 });
 
+/* service requests */
 function validateServiceRequestContext(type){
   if(!nameInput.value.trim()){
     toast("Enter your name in cart details first");
@@ -1299,6 +1437,7 @@ async function sendServiceRequest(type){
 callWaiterBtn.onclick = ()=> sendServiceRequest("Call Waiter");
 callManagerBtn.onclick = ()=> sendServiceRequest("Call Manager");
 
+/* init */
 build();
 updateCart();
 updateOrderTypeUI();
