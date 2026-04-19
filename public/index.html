@@ -22,33 +22,15 @@
 }
 
 *{box-sizing:border-box}
-html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-}
 body{
+  margin:0;
   background:radial-gradient(circle at top,#101b3b 0,#020718 55%);
   color:var(--text);
   font-family:Poppins,sans-serif;
   overflow:hidden;
 }
-button,input,select,textarea{
-  font:inherit;
-}
-button{
-  cursor:pointer;
-}
-#viewport{
-  width:100vw;
-  height:100vh;
-  overflow:hidden;
-}
-#book{
-  display:flex;
-  height:100%;
-  transition:transform .55s cubic-bezier(.4,0,.2,1);
-}
+#viewport{width:100vw;height:100vh;overflow:hidden}
+#book{display:flex;height:100%;transition:transform .55s cubic-bezier(.4,0,.2,1)}
 .page{
   min-width:100vw;
   height:100vh;
@@ -58,7 +40,6 @@ button{
     linear-gradient(160deg,#050b1c,#08152e);
   position:relative;
   overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
 }
 .page::before{
   content:"ABBA SEENUUU... FAST FOODS";
@@ -69,12 +50,11 @@ button{
   text-align:center;
   color:rgba(255,255,255,.03);
   pointer-events:none;
-  padding:20px;
 }
 h1,h2{
   font-family:"Playfair Display",serif;
   color:var(--accent-soft2);
-  margin:0 0 10px;
+  margin-bottom:10px;
 }
 h1{font-size:2.4rem}
 h2{font-size:1.4rem}
@@ -95,7 +75,6 @@ h2{font-size:1.4rem}
   cursor:pointer;
   z-index:20;
   opacity:.75;
-  user-select:none;
 }
 .nav:hover{opacity:1}
 #prev{left:6px}
@@ -125,7 +104,6 @@ h2{font-size:1.4rem}
   display:grid;
   grid-template-columns:repeat(2,1fr);
   gap:14px;
-  width:100%;
   max-width:440px;
 }
 .contents-card{
@@ -141,59 +119,22 @@ h2{font-size:1.4rem}
 
 .items-grid{
   display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:12px;
-  align-items:stretch;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
 }
 @media(min-width:600px){
-  .items-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .items-grid{grid-template-columns:repeat(3,1fr)}
 }
-
 .item{
   background:var(--paper);
-  border-radius:16px;
+  border-radius:14px;
   padding:10px;
   font-size:.8rem;
   border:1px solid rgba(245,197,24,.4);
-  display:flex;
-  flex-direction:column;
-  min-height:100%;
-  overflow:hidden;
 }
-.itemImageWrap{
-  width:100%;
-  aspect-ratio:4/3;
-  margin-bottom:8px;
-  overflow:hidden;
-  border-radius:12px;
-  background:#000;
-  flex-shrink:0;
-}
-.itemImageWrap img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-.item b{
-  display:block;
-  font-size:.92rem;
-  margin-bottom:4px;
-  color:#fff;
-  line-height:1.3;
-  min-height:2.4em;
-}
-.price{
-  font-size:.76rem;
-  color:var(--accent-soft);
-  margin-bottom:8px;
-}
-.itemControls{
-  margin-top:auto;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
+.item b{display:block;font-size:.9rem;margin-bottom:4px;color:#ffffff}
+.price{font-size:.75rem;color:var(--accent-soft);margin-bottom:6px}
+
 select,input,textarea{
   width:100%;
   padding:10px;
@@ -205,49 +146,20 @@ select,input,textarea{
   color:#fff;
 }
 .item select{
-  padding:9px 10px;
-  font-size:.78rem;
-  margin:0;
+  padding:7px;
+  font-size:.75rem;
+  margin-bottom:6px;
   border:1px solid rgba(245,197,24,.6);
-  min-height:40px;
 }
 .add{
   width:100%;
-  min-height:40px;
-  padding:9px 10px;
+  padding:7px;
   border-radius:18px;
   border:none;
   background:var(--accent);
-  font-weight:700;
-  font-size:.8rem;
-  color:#020718;
-  white-space:nowrap;
-}
-.soldout-text{
-  margin-top:6px;
-  font-size:.85rem;
-  color:#ffb3b3;
   font-weight:600;
-}
-
-.field-block{
-  width:100%;
-  text-align:left;
-}
-.helper{
-  font-size:.72rem;
-  color:var(--muted);
-  margin-bottom:6px;
-}
-.loc-btn{
-  background:var(--paper-soft);
-  color:var(--accent-soft2);
-  border:1px solid rgba(255,255,255,.25);
-  padding:10px 12px;
-  border-radius:999px;
   font-size:.78rem;
-  margin-bottom:6px;
-  width:100%;
+  color:#020718;
 }
 
 #actionDock{
@@ -296,13 +208,10 @@ select,input,textarea{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:10px;
   padding:10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
   z-index:90;
 }
-#cartSummary{
-  font-weight:600;
-}
+#cartSummary{font-weight:600}
 #checkoutBtn{
   background:var(--accent);
   color:#020718;
@@ -310,7 +219,6 @@ select,input,textarea{
   border-radius:22px;
   font-weight:700;
   border:none;
-  flex-shrink:0;
 }
 
 #cartModal{
@@ -332,28 +240,16 @@ select,input,textarea{
   border:1px solid rgba(255,255,255,.18);
   overflow-y:auto;
 }
-#cartBox h3{
-  margin-top:0;
-  color:var(--accent-soft2);
-}
-#cartItems{
-  margin-bottom:10px;
-  max-height:none;
-  overflow:visible;
-}
+#cartBox h3{margin-top:0;color:var(--accent-soft2)}
+#cartItems{margin-bottom:10px;max-height:none;overflow:visible}
 .cart-row{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:10px;
   margin-bottom:8px;
   font-size:.85rem;
 }
 .cart-row small{color:#ccc}
-.qty{
-  flex-shrink:0;
-  white-space:nowrap;
-}
 .qty button{
   background:#182342;
   color:#fff;
@@ -362,10 +258,7 @@ select,input,textarea{
   border-radius:6px;
   margin:0 4px;
 }
-textarea#address, textarea#specialRequest, textarea#pageAddress{
-  resize:vertical;
-  min-height:60px;
-}
+textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 
 .primary{
   background:var(--accent);
@@ -375,6 +268,20 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
   font-weight:700;
   width:100%;
   color:#020718;
+}
+.helper{
+  font-size:.72rem;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+.loc-btn{
+  background:var(--paper-soft);
+  color:var(--accent-soft2);
+  border:1px solid rgba(255,255,255,.25);
+  padding:8px 10px;
+  border-radius:999px;
+  font-size:.75rem;
+  margin-bottom:6px;
 }
 
 #toast{
@@ -389,8 +296,6 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
   font-size:.8rem;
   display:none;
   z-index:110;
-  max-width:90vw;
-  text-align:center;
 }
 #hint{
   position:fixed;
@@ -403,8 +308,6 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
   border-radius:18px;
   font-size:.75rem;
   z-index:110;
-  max-width:90vw;
-  text-align:center;
 }
 
 #upiOverlay{
@@ -566,20 +469,6 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
   display:none;
 }
 
-.page-form{
-  width:100%;
-  max-width:360px;
-  text-align:left;
-}
-.page-form p{
-  font-size:.8rem;
-  color:var(--muted);
-  margin:4px 0 12px;
-}
-.page-sub-fields{
-  width:100%;
-}
-
 @media(max-width:480px){
   :root{
     --dock-h:70px;
@@ -609,39 +498,6 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
     margin:20px auto;
     max-height:84vh;
   }
-  .items-grid{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:10px;
-  }
-  .item{
-    padding:9px;
-    border-radius:14px;
-  }
-  .item b{
-    font-size:.86rem;
-    min-height:2.5em;
-  }
-  .price{
-    font-size:.72rem;
-  }
-  .item select{
-    font-size:.74rem;
-    min-height:38px;
-  }
-  .add{
-    min-height:38px;
-    font-size:.76rem;
-    padding:8px;
-  }
-}
-
-@media(max-width:360px){
-  .items-grid{
-    grid-template-columns:1fr;
-  }
-  #actionDockInner{
-    grid-template-columns:1fr 1fr 1fr;
-  }
 }
 </style>
 </head>
@@ -657,7 +513,7 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
 <div id="actionDock">
   <div id="actionDockInner">
     <button class="dockBtn" id="callWaiterBtn">🔔 Waiter</button>
-    <button class="dockBtn" id="callManagerBtn">👨‍💼 Help</button>
+    <button class="dockBtn" id="callManagerBtn">👨‍💼 Manager</button>
     <button class="dockBtn chat" id="chatFab">💬 Chat</button>
   </div>
 </div>
@@ -723,8 +579,8 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
       </div>
 
       <div id="deliveryFields" class="hidden">
-        <textarea id="address" placeholder="Delivery / takeaway address / landmark"></textarea>
-        <button id="locBtn" class="loc-btn" type="button">📍 Use current live location</button>
+        <textarea id="address" placeholder="Delivery address / landmark"></textarea>
+        <button id="locBtn" class="loc-btn" type="button">📍 Use current location (mandatory for delivery)</button>
         <div id="locStatus" class="helper"></div>
       </div>
     </div>
@@ -757,10 +613,10 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
       <button type="button" class="request-chip" data-tag="Extra sauce">Extra sauce</button>
       <button type="button" class="request-chip" data-tag="Send cutlery">Send cutlery</button>
       <button type="button" class="request-chip" data-tag="Call on arrival">Call on arrival</button>
-      <button type="button" class="request-chip" data-tag="Need help">Need help</button>
+      <button type="button" class="request-chip" data-tag="Talk to manager">Talk to manager</button>
     </div>
 
-    <textarea id="specialRequest" placeholder="Special request for chef / help desk (optional)"></textarea>
+    <textarea id="specialRequest" placeholder="Special request for chef / manager (optional)"></textarea>
 
     <button class="primary" id="placeOrderBtn">Place Order</button>
     <button class="primary" style="margin-top:6px;background:var(--paper-soft);color:#fff;border:1px solid rgba(255,255,255,.25);" onclick="closeCart()">Close</button>
@@ -783,7 +639,7 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
       >
     </div>
     <button id="upiPaidBtn" class="primary" style="margin-top:6px;">I have paid</button>
-    <button id="upiCancelBtn" class="primary" style="margin-top:6px;background:var(--paper-soft);border:1px solid rgba(255,255,255,0.3);color:#fff;">Cancel</button>
+    <button id="upiCancelBtn" class="primary" style="margin-top:6px;background:var(--paper-soft);border:1px solid rgba(255,255,255,.3);color:#fff;">Cancel</button>
   </div>
 </div>
 
@@ -835,12 +691,13 @@ let cart=[],page=0,locked=false,menu={};
 let customerLocation=null;
 let pendingOrderPayload=null;
 let selectedRequestTags=[];
+let submitting=false;
 
 function updateOrderTypeUI(){
   const orderType = orderTypeSel.value;
 
   tableWrap.classList.toggle("hidden", orderType !== "dinein");
-  deliveryFields.classList.toggle("hidden", !(orderType === "delivery" || orderType === "takeaway"));
+  deliveryFields.classList.toggle("hidden", orderType !== "delivery");
 
   const isDineIn = orderType === "dinein";
   paymentWrap.classList.toggle("hidden", isDineIn);
@@ -848,19 +705,32 @@ function updateOrderTypeUI(){
 
   if(isDineIn){
     paymentSel.value = "";
-    addressInput.value = "";
-    customerLocation = null;
-    locStatus.textContent = "";
   }
 
   if(orderType !== "dinein") tableNumberSel.value = "";
-  if(!(orderType === "delivery" || orderType === "takeaway")){
+  if(orderType !== "delivery"){
     addressInput.value = "";
     customerLocation = null;
     locStatus.textContent = "";
   }
 
-  syncPageOrderFieldsUI();
+  const pageOrderType = document.getElementById("pageOrderType");
+  const pageTableWrap = document.getElementById("pageTableWrap");
+  const pageTableNumber = document.getElementById("pageTableNumber");
+
+  if(pageOrderType){
+    pageOrderType.value = orderType;
+  }
+  if(pageTableWrap){
+    pageTableWrap.classList.toggle("hidden", orderType !== "dinein");
+  }
+  if(pageTableNumber){
+    if(orderType === "dinein"){
+      pageTableNumber.value = tableNumberSel.value || "";
+    }else{
+      pageTableNumber.value = "";
+    }
+  }
 }
 orderTypeSel.addEventListener("change", updateOrderTypeUI);
 
@@ -893,8 +763,7 @@ function setUpiQr(totalAmount){
 }
 
 function go(i){
-  locked=true;
-  page=i;
+  locked=true;page=i;
   book.style.transform=`translateX(-${i*100}vw)`;
   setTimeout(()=>locked=false,600);
 }
@@ -923,16 +792,7 @@ function toast(msg){
   const t=document.getElementById("toast");
   t.innerText=msg;
   t.style.display="block";
-  setTimeout(()=>t.style.display="none",1600);
-}
-
-function escapeHtml(str=""){
-  return String(str)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#39;");
+  setTimeout(()=>t.style.display="none",1400);
 }
 
 fetch("/menu.json?_=" + Date.now(), { cache: "no-store" })
@@ -950,7 +810,6 @@ function build(){
       display:flex;flex-direction:column;
       justify-content:center;align-items:center;
       text-align:center;
-      padding:20px;
     ">
       <div style="
         position:absolute;
@@ -1016,13 +875,15 @@ function build(){
 
   book.innerHTML+=`
   <section class="page center">
-    <div class="page-form">
+    <div style="width:100%;max-width:360px;text-align:left;">
       <h2 style="margin-bottom:4px;">Your details</h2>
-      <p>Please share your basic details so we can serve you better.</p>
+      <p style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;">
+        Please share your basic details so we can serve you better.
+      </p>
 
-      <input id="pageName" placeholder="Customer Name" oninput="syncPageToCartFields()" value="">
-      <input id="pageMobile" placeholder="Mobile Number" oninput="syncPageToCartFields()" value="">
-      <input id="pageRegno" placeholder="Registration / Room No. (optional)" oninput="syncPageToCartFields()" value="">
+      <input id="pageName" placeholder="Customer Name" oninput="nameInput.value=this.value">
+      <input id="pageMobile" placeholder="Mobile Number" oninput="mobileInput.value=this.value">
+      <input id="pageRegno" placeholder="Registration / Room No. (optional)" oninput="regInput.value=this.value">
 
       <select id="pageOrderType" onchange="syncPageDetails()">
         <option value="">Select Order Type</option>
@@ -1031,8 +892,8 @@ function build(){
         <option value="delivery">Delivery</option>
       </select>
 
-      <div id="pageTableWrap" class="hidden page-sub-fields">
-        <select id="pageTableNumber" onchange="syncPageDetails()">
+      <div id="pageTableWrap" class="hidden">
+        <select id="pageTableNumber" onchange="tableNumberSel.value=this.value">
           <option value="">Select Table Number</option>
           <option value="T1">Table 1</option>
           <option value="T2">Table 2</option>
@@ -1042,13 +903,9 @@ function build(){
         </select>
       </div>
 
-      <div id="pageDeliveryFields" class="hidden page-sub-fields">
-        <textarea id="pageAddress" placeholder="Delivery / takeaway address / landmark" oninput="syncPageDetails()"></textarea>
-        <button id="pageLocBtn" class="loc-btn" type="button" onclick="captureLocationFromPage()">📍 Use current live location</button>
-        <div id="pageLocStatus" class="helper"></div>
-      </div>
-
-      <p>You can always edit these details later from the cart.</p>
+      <p style="font-size:0.8rem;color:var(--muted);margin:4px 0 12px;">
+        You can always edit these details later from the cart.
+      </p>
       <button class="primary" onclick="goNextFromDetails()">Next</button>
     </div>
     <div class="pageNo">2</div>
@@ -1061,9 +918,9 @@ function build(){
       <ul style="font-size:0.85rem;color:var(--muted);padding-left:18px;margin-bottom:18px;">
         <li>Browse the menu and add your favourite dishes to cart.</li>
         <li>For dine-in, select your table number before placing order.</li>
-        <li>For takeaway or delivery, add your address and live location.</li>
         <li>Dine-in orders do not require payment in the app.</li>
         <li>For takeaway or delivery, payment method is required.</li>
+        <li>For delivery, please share your address and tap on current location.</li>
       </ul>
       <button class="primary" onclick="go(3)">Go to Menu</button>
     </div>
@@ -1078,7 +935,7 @@ function build(){
       ? (window.innerWidth < 500 ? 4 : 6)
       : (window.innerWidth < 500 ? 6 : 8);
     const pagesForCat = Math.ceil(items.length / perPage);
-    contents+=`<div class="contents-card" onclick="go(${start})">${escapeHtml(c)}</div>`;
+    contents+=`<div class="contents-card" onclick="go(${start})">${c}</div>`;
     start+=pagesForCat;
   });
 
@@ -1099,8 +956,7 @@ function build(){
 
     for (let i = 0; i < items.length; i += perPage) {
       let slice = items.slice(i, i + perPage);
-      let html = `<h2>${escapeHtml(i === 0 ? cat : cat + " (Continued)")}</h2><div class="items-grid">`;
-
+      let html = `<h2>${i === 0 ? cat : cat + " (Continued)"}</h2><div class="items-grid">`;
       slice.forEach(it => {
         const min = Math.min(...Object.values(it.variants));
         const img = it.image || "";
@@ -1108,152 +964,87 @@ function build(){
 
         let opts = `<option value="">Choose option</option>` +
           Object.entries(it.variants)
-            .map(v => `<option value="${v[1]}">${escapeHtml(v[0])} — ₹${v[1]}</option>`)
+            .map(v => `<option value="${v[1]}">${v[0]} — ₹${v[1]}</option>`)
             .join("");
 
         html += `
         <div class="item">
-          ${img ? `<div class="itemImageWrap"><img src="${img}" alt="${escapeHtml(it.name)}"></div>` : ``}
-          <b>${escapeHtml(it.name)}</b>
+          ${img ? `<div style="width:100%;height:90px;margin-bottom:6px;overflow:hidden;border-radius:10px;">
+                     <img src="${img}" alt="${it.name}" style="width:100%;height:100%;object-fit:cover;">
+                   </div>` : ``}
+          <b>${it.name}</b>
           <div class="price">From ₹${min}</div>
-          <div class="itemControls">
-            ${
-              inStock
-                ? `
-                  <select>${opts}</select>
-                  <button class="add" onclick="add('${String(it.name).replace(/'/g,"\\\\'")}',this)">Add</button>
-                `
-                : `
-                  <div class="soldout-text">Sold out</div>
-                  <select disabled style="opacity:0.5;">
-                    <option>Choose option</option>
-                  </select>
-                  <button class="add" disabled style="background:#262a3e;color:#888;">Sold out</button>
-                `
-            }
-          </div>
+          ${
+            inStock
+              ? `
+                <select>${opts}</select>
+                <button class="add" onclick="add('${it.name.replace(/'/g,"\\'")}',this)">Add</button>
+              `
+              : `
+                <div style="margin-top:6px;font-size:0.85rem;color:#ffb3b3;font-weight:600;">
+                  Sold out
+                </div>
+                <select disabled style="opacity:0.5;">
+                  <option>Choose option</option>
+                </select>
+                <button class="add" disabled style="background:#262a3e;color:#888;">Sold out</button>
+              `
+          }
         </div>`;
       });
-
       html += `</div>`;
       book.innerHTML += `<section class="page">${html}<div class="pageNo">${pg++}</div></section>`;
     }
   }
 
-  syncPageOrderFieldsUI();
+  restorePageTwoInputs();
+  updateOrderTypeUI();
 }
 
-function syncPageToCartFields(){
+function restorePageTwoInputs(){
   const pageName = document.getElementById("pageName");
   const pageMobile = document.getElementById("pageMobile");
   const pageRegno = document.getElementById("pageRegno");
+  const pageOrderType = document.getElementById("pageOrderType");
+  const pageTableNumber = document.getElementById("pageTableNumber");
+
+  if(pageName) pageName.value = nameInput.value;
+  if(pageMobile) pageMobile.value = mobileInput.value;
+  if(pageRegno) pageRegno.value = regInput.value;
+  if(pageOrderType) pageOrderType.value = orderTypeSel.value;
+  if(pageTableNumber) pageTableNumber.value = tableNumberSel.value;
+}
+
+function syncPageDetails(){
+  const pageName = document.getElementById("pageName");
+  const pageMobile = document.getElementById("pageMobile");
+  const pageRegno = document.getElementById("pageRegno");
+  const pageOrderType = document.getElementById("pageOrderType");
+  const pageTableWrap = document.getElementById("pageTableWrap");
+  const pageTableNumber = document.getElementById("pageTableNumber");
 
   if(pageName) nameInput.value = pageName.value;
   if(pageMobile) mobileInput.value = pageMobile.value;
   if(pageRegno) regInput.value = pageRegno.value;
-}
-
-function syncPageOrderFieldsUI(){
-  const pageOrderType = document.getElementById("pageOrderType");
-  const pageTableWrap = document.getElementById("pageTableWrap");
-  const pageTableNumber = document.getElementById("pageTableNumber");
-  const pageDeliveryFields = document.getElementById("pageDeliveryFields");
-  const pageAddress = document.getElementById("pageAddress");
-  const pageLocStatus = document.getElementById("pageLocStatus");
-
-  if(!pageOrderType) return;
-
-  pageTableWrap.classList.toggle("hidden", pageOrderType.value !== "dinein");
-  pageDeliveryFields.classList.toggle("hidden", !(pageOrderType.value === "delivery" || pageOrderType.value === "takeaway"));
-
-  if(pageOrderType.value !== "dinein" && pageTableNumber){
-    pageTableNumber.value = "";
-  }
-
-  if(!(pageOrderType.value === "delivery" || pageOrderType.value === "takeaway")){
-    if(pageAddress) pageAddress.value = "";
-    if(pageLocStatus) pageLocStatus.textContent = "";
-  }
-}
-
-function syncPageDetails(){
-  syncPageToCartFields();
-
-  const pageOrderType = document.getElementById("pageOrderType");
-  const pageTableNumber = document.getElementById("pageTableNumber");
-  const pageAddress = document.getElementById("pageAddress");
-  const pageLocStatus = document.getElementById("pageLocStatus");
 
   orderTypeSel.value = pageOrderType.value;
-  tableNumberSel.value = pageTableNumber ? pageTableNumber.value : "";
+  pageTableWrap.classList.toggle("hidden", pageOrderType.value !== "dinein");
 
-  if(pageAddress){
-    addressInput.value = pageAddress.value;
-  }
-  if(pageLocStatus){
-    locStatus.textContent = pageLocStatus.textContent;
+  if(pageOrderType.value !== "dinein"){
+    pageTableNumber.value = "";
+    tableNumberSel.value = "";
+  }else{
+    tableNumberSel.value = pageTableNumber.value;
   }
 
-  syncPageOrderFieldsUI();
   updateOrderTypeUI();
 }
 
-function captureLocationCommon(statusSetter){
-  const currentOrderType = orderTypeSel.value || (document.getElementById("pageOrderType") ? document.getElementById("pageOrderType").value : "");
-
-  if(!(currentOrderType === "delivery" || currentOrderType === "takeaway")){
-    statusSetter("Location is required only for delivery or takeaway.");
-    return;
-  }
-
-  if(!navigator.geolocation){
-    statusSetter("Geolocation not supported on this device.");
-    return;
-  }
-
-  statusSetter("Getting your location...");
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      customerLocation = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude
-      };
-      statusSetter("Location captured ✔");
-      locStatus.textContent = "Location captured ✔";
-      const pageLocStatus = document.getElementById("pageLocStatus");
-      if(pageLocStatus) pageLocStatus.textContent = "Location captured ✔";
-    },
-    err => {
-      console.error(err);
-      statusSetter("Could not get location. Please allow permission.");
-    },
-    { enableHighAccuracy:true, timeout:10000 }
-  );
-}
-
-function captureLocationFromPage(){
-  captureLocationCommon(msg=>{
-    const pageLocStatus = document.getElementById("pageLocStatus");
-    if(pageLocStatus) pageLocStatus.textContent = msg;
-  });
-}
-
-locBtn.onclick = () => {
-  captureLocationCommon(msg=>{
-    locStatus.textContent = msg;
-    const pageLocStatus = document.getElementById("pageLocStatus");
-    if(pageLocStatus) pageLocStatus.textContent = msg;
-  });
-};
-
 function goNextFromDetails(){
-  syncPageDetails();
-
   const pageName = document.getElementById("pageName");
   const pageMobile = document.getElementById("pageMobile");
   const pageOrderType = document.getElementById("pageOrderType");
   const pageTableNumber = document.getElementById("pageTableNumber");
-  const pageAddress = document.getElementById("pageAddress");
 
   if(!pageName.value.trim()) return alert("Enter customer name");
   if(!pageMobile.value.trim()) return alert("Enter mobile number");
@@ -1263,23 +1054,13 @@ function goNextFromDetails(){
     return alert("Please select table number");
   }
 
-  if((pageOrderType.value === "delivery" || pageOrderType.value === "takeaway") && !pageAddress.value.trim()){
-    return alert("Please enter address");
-  }
-
-  if((pageOrderType.value === "delivery" || pageOrderType.value === "takeaway") && !customerLocation){
-    return alert("Please use live location");
-  }
-
+  syncPageDetails();
   go(2);
 }
 
 function add(name,btn){
   const sel=btn.previousElementSibling;
-  if(!sel.value){
-    alert("Please choose an option");
-    return;
-  }
+  if(!sel.value){alert("Please choose an option");return;}
   const price=+sel.value;
   const variant=sel.options[sel.selectedIndex].text.split(" — ")[0];
 
@@ -1299,7 +1080,7 @@ function updateCart(){
     cartItemsDiv.innerHTML+=`
     <div class="cart-row">
       <div>
-        ${escapeHtml(i.name)} <small>(${escapeHtml(i.variant)})</small><br>
+        ${i.name} <small>(${i.variant})</small><br>
         ₹${i.price}
       </div>
       <div class="qty">
@@ -1317,6 +1098,33 @@ function chg(i,d){
   if(cart[i].qty<=0)cart.splice(i,1);
   updateCart();
 }
+
+locBtn.onclick = () => {
+  const orderType = orderTypeSel.value;
+  if(orderType !== "delivery"){
+    locStatus.textContent = "Location is only required for delivery orders.";
+    return;
+  }
+  if(!navigator.geolocation){
+    locStatus.textContent = "Geolocation not supported on this device.";
+    return;
+  }
+  locStatus.textContent = "Getting your location…";
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      customerLocation = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+      };
+      locStatus.textContent = "Location captured ✔";
+    },
+    err => {
+      console.error(err);
+      locStatus.textContent = "Could not get location. Please allow permission.";
+    },
+    { enableHighAccuracy:true, timeout:10000 }
+  );
+};
 
 function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethodLabel){
   const overlay=document.createElement("div");
@@ -1375,23 +1183,7 @@ function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethodLabel){
     locStatus.textContent="";
     selectedRequestTags=[];
     document.querySelectorAll(".request-chip").forEach(ch=>ch.classList.remove("active"));
-
-    const pageName = document.getElementById("pageName");
-    const pageMobile = document.getElementById("pageMobile");
-    const pageRegno = document.getElementById("pageRegno");
-    const pageOrderType = document.getElementById("pageOrderType");
-    const pageTableNumber = document.getElementById("pageTableNumber");
-    const pageAddress = document.getElementById("pageAddress");
-    const pageLocStatus = document.getElementById("pageLocStatus");
-
-    if(pageName) pageName.value="";
-    if(pageMobile) pageMobile.value="";
-    if(pageRegno) pageRegno.value="";
-    if(pageOrderType) pageOrderType.value="";
-    if(pageTableNumber) pageTableNumber.value="";
-    if(pageAddress) pageAddress.value="";
-    if(pageLocStatus) pageLocStatus.textContent="";
-
+    restorePageTwoInputs();
     updateOrderTypeUI();
     go(0);
   };
@@ -1441,7 +1233,7 @@ upiPaidBtn.onclick = async () => {
   pendingOrderPayload = null;
   upiOverlay.style.display="none";
 
-  placeOrderBtn.innerText="Placing order...";
+  placeOrderBtn.innerText="Placing order…";
   placeOrderBtn.disabled=true;
   await actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel);
   placeOrderBtn.innerText="Place Order";
@@ -1453,12 +1245,9 @@ upiCancelBtn.onclick = () => {
   upiOverlay.style.display="none";
 };
 
-let submitting=false;
 placeOrderBtn.onclick = async () => {
   if(submitting)return;
   if(cart.length===0)return alert("Cart empty");
-
-  syncPageDetails();
 
   const orderType = orderTypeSel.value;
   if(!orderType) return alert("Select order type");
@@ -1469,12 +1258,12 @@ placeOrderBtn.onclick = async () => {
     return alert("Please select table number");
   }
 
-  if((orderType === "delivery" || orderType === "takeaway") && !addressInput.value.trim()){
-    return alert("Enter address / landmark");
+  if(orderType === "delivery" && !addressInput.value.trim()){
+    return alert("Enter delivery address / hostel / block");
   }
 
-  if((orderType === "delivery" || orderType === "takeaway") && !customerLocation){
-    alert("Please tap 'Use current live location' and allow location access.");
+  if(orderType === "delivery" && !customerLocation){
+    alert("Please tap 'Use current location' and allow location access for delivery orders.");
     return;
   }
 
@@ -1498,8 +1287,8 @@ placeOrderBtn.onclick = async () => {
     registrationNumber:regInput.value.trim(),
     mobile:mobileInput.value.trim(),
     tableNumber: orderType==="dinein" ? tableNumberSel.value : "",
-    address:(orderType==="delivery" || orderType==="takeaway") ? addressInput.value.trim() : "",
-    location:(orderType==="delivery" || orderType==="takeaway") ? customerLocation : null,
+    address:orderType==="delivery" ? addressInput.value.trim() : "",
+    location: orderType==="delivery" ? customerLocation : null,
     items:cart,
     paymentMethod,
     specialRequest: specialRequestInput.value.trim(),
@@ -1519,7 +1308,7 @@ placeOrderBtn.onclick = async () => {
   }
 
   submitting=true;
-  placeOrderBtn.innerText="Placing order...";
+  placeOrderBtn.innerText="Placing order…";
   placeOrderBtn.disabled=true;
 
   await actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel);
@@ -1577,12 +1366,12 @@ function suggestByIntent(msg){
       reply: "Dine-in orders can pay later at the counter. Takeaway and delivery support UPI and COD."
     },
     {
-      match: ["delivery", "location", "address", "takeaway"],
-      reply: "For takeaway and delivery orders, please enter your address and tap 'Use current live location' before placing the order."
+      match: ["delivery", "location", "address"],
+      reply: "For delivery orders, please enter your address and tap 'Use current location' before placing the order."
     },
     {
-      match: ["waiter", "manager", "call waiter", "help", "call manager"],
-      reply: "Use the bottom action buttons to call waiter, ask for help, or open chat."
+      match: ["waiter", "manager", "call waiter", "call manager"],
+      reply: "Use the bottom action buttons to call waiter, call manager, or open chat."
     }
   ];
 
@@ -1593,105 +1382,122 @@ function suggestByIntent(msg){
   const trainedGroups = {
     best: ["Abba special chicken","Chicken 65","Chicken fried rice","Abba special chicken noodles","Paneer fried rice"],
     spicy: ["Chilli chicken","Dragon chicken","Chicken 65","Chicken lollipop","Chicken Manchurian"],
-    veg: ["Veg Manchurian","Paneer fried rice","Veg fried rice","Gobi fried rice"],
-    budget: ["Veg fried rice","Egg fried rice","Veg noodles","Gobi Manchurian"],
-    noodles: all.filter(x => x.lowerName.includes("noodle")).map(x => x.name),
-    rice: all.filter(x => x.lowerName.includes("rice")).map(x => x.name),
-    starters: all.filter(x =>
-      x.lowerName.includes("65") ||
-      x.lowerName.includes("lollipop") ||
-      x.lowerName.includes("manchurian") ||
-      x.lowerName.includes("dragon") ||
-      x.lowerName.includes("chilli")
-    ).map(x => x.name)
+    veg: ["Veg Manchurian","Paneer fried rice","Veg fried rice","Gobi fried rice","Veg noodles","Paneer noodles","Gobi noodles"],
+    nonveg: ["Chilli chicken","Abba special chicken","Chicken lollipop","Chicken 65","Dragon chicken","Chicken Manchurian","Chicken fried rice","Chicken noodles","Abba special chicken rice","Abba special chicken noodles"],
+    budget: all.filter(i => i.minPrice <= 100).sort((a,b)=>a.minPrice-b.minPrice).slice(0,6).map(i=>i.name),
+    rice: all.filter(i => i.category.toLowerCase().includes("rice")).slice(0,6).map(i=>i.name),
+    noodles: all.filter(i => i.category.toLowerCase().includes("noodles")).slice(0,6).map(i=>i.name),
+    starters: all.filter(i => i.category.toLowerCase().includes("starter") || i.category.toLowerCase().includes("chicken")).slice(0,6).map(i=>i.name)
   };
 
-  if(text.includes("best")) return {type:"items", title:"Best picks", items:pickAvailable(trainedGroups.best)};
+  if(text.includes("best")) return {type:"items", title:"Popular picks", items:pickAvailable(trainedGroups.best)};
   if(text.includes("spicy")) return {type:"items", title:"Spicy picks", items:pickAvailable(trainedGroups.spicy)};
   if(text.includes("veg")) return {type:"items", title:"Veg picks", items:pickAvailable(trainedGroups.veg)};
-  if(text.includes("budget") || text.includes("cheap")) return {type:"items", title:"Budget picks", items:pickAvailable(trainedGroups.budget)};
-  if(text.includes("noodle")) return {type:"items", title:"Noodles", items:pickAvailable(trainedGroups.noodles)};
-  if(text.includes("rice")) return {type:"items", title:"Rice dishes", items:pickAvailable(trainedGroups.rice)};
-  if(text.includes("starter")) return {type:"items", title:"Starter suggestions", items:pickAvailable(trainedGroups.starters)};
+  if(text.includes("non veg") || text.includes("nonveg") || text.includes("chicken")) return {type:"items", title:"Non-veg picks", items:pickAvailable(trainedGroups.nonveg)};
+  if(text.includes("budget") || text.includes("cheap") || text.includes("low price")) return {type:"items", title:"Budget picks", items:pickAvailable(trainedGroups.budget)};
+  if(text.includes("rice")) return {type:"items", title:"Rice options", items:pickAvailable(trainedGroups.rice)};
+  if(text.includes("noodles")) return {type:"items", title:"Noodles options", items:pickAvailable(trainedGroups.noodles)};
+  if(text.includes("starter")) return {type:"items", title:"Starter options", items:pickAvailable(trainedGroups.starters)};
 
-  const matched = all.filter(x => text.split(" ").some(w => w && x.lowerName.includes(w))).slice(0,5);
+  const matched = all.filter(item => text.includes(item.lowerName));
   if(matched.length){
-    return {type:"items", title:"You may like", items:matched};
+    return {type:"items", title:"Matching items", items:matched.slice(0,5)};
   }
 
   return {
     type:"text",
-    text:"Try asking: best food, spicy food, veg food, noodles, rice, starters, payment help, or delivery help."
+    text:"I can help with best food, spicy food, veg food, budget items, noodles, rice, payment help, and delivery help."
   };
 }
 
-function formatItemSuggestionBlock(title, items){
-  if(!items || !items.length){
-    return `${title}\nNo matching items found right now.`;
-  }
-  return `${title}\n` + items.map(it => `• ${it.name} — from ₹${it.minPrice}`).join("\n");
-}
-
-function addChatMessage(text,type="bot"){
+function addMsg(text, who="bot"){
   const div=document.createElement("div");
-  div.className=`msg ${type==="bot" ? "botMsg" : "userMsg"}`;
+  div.className=`msg ${who==="bot"?"botMsg":"userMsg"}`;
   div.textContent=text;
   chatMessages.appendChild(div);
   chatMessages.scrollTop=chatMessages.scrollHeight;
 }
 
-function handleChatSend(prefilled){
-  const msg=(prefilled || chatInput.value || "").trim();
-  if(!msg)return;
-  addChatMessage(msg,"user");
-  chatInput.value="";
+function addItemSuggestions(title, items){
+  addMsg(title, "bot");
+  if(!items.length){
+    addMsg("No matching items available right now.", "bot");
+    return;
+  }
+  items.forEach(item=>{
+    addMsg(`${item.name} — from ₹${item.minPrice}`, "bot");
+  });
+}
 
-  const result=suggestByIntent(msg);
-  if(result.type==="items"){
-    addChatMessage(formatItemSuggestionBlock(result.title,result.items),"bot");
-  }else{
-    addChatMessage(result.text,"bot");
+function handleChatQuery(q){
+  if(!q.trim()) return;
+  addMsg(q, "user");
+  const result = suggestByIntent(q);
+  if(result.type === "text"){
+    addMsg(result.text, "bot");
+  }else if(result.type === "items"){
+    addItemSuggestions(result.title, result.items);
   }
 }
 
 function initChatbot(){
-  addChatMessage("Hi 👋 I can help you with menu suggestions, payment help, and delivery info.","bot");
+  addMsg("Hi 👋 Ask me for recommendations like best food, spicy food, veg food, noodles, rice, or payment help.", "bot");
 }
 
-chatFab.onclick=()=>{ chatPanel.style.display="flex"; };
-chatClose.onclick=()=>{ chatPanel.style.display="none"; };
-chatSend.onclick=()=>handleChatSend();
+chatFab.onclick=()=>{
+  chatPanel.style.display = chatPanel.style.display === "flex" ? "none" : "flex";
+};
+chatClose.onclick=()=>chatPanel.style.display="none";
+chatSend.onclick=()=>{
+  const q=chatInput.value.trim();
+  if(!q) return;
+  handleChatQuery(q);
+  chatInput.value="";
+};
 chatInput.addEventListener("keydown",e=>{
-  if(e.key==="Enter") handleChatSend();
+  if(e.key==="Enter"){
+    e.preventDefault();
+    chatSend.click();
+  }
 });
 document.querySelectorAll(".faqBtn").forEach(btn=>{
-  btn.onclick=()=>handleChatSend(btn.dataset.q);
+  btn.onclick=()=>handleChatQuery(btn.getAttribute("data-q") || "");
 });
 
-async function sendServiceRequest(type){
-  syncPageDetails();
-
-  const orderType = orderTypeSel.value || (document.getElementById("pageOrderType")?.value || "");
-  const customerName = nameInput.value.trim() || (document.getElementById("pageName")?.value || "").trim();
-  const mobile = mobileInput.value.trim() || (document.getElementById("pageMobile")?.value || "").trim();
-  const tableNumber = orderType==="dinein" ? tableNumberSel.value : "";
-  const address = (orderType==="delivery" || orderType==="takeaway") ? addressInput.value.trim() : "";
+async function sendServiceRequest(kind){
+  const orderType = orderTypeSel.value || "";
+  const customerName = nameInput.value.trim();
+  const mobile = mobileInput.value.trim();
+  const tableNumber = orderType === "dinein" ? tableNumberSel.value : "";
 
   if(!customerName){
     alert("Please enter customer name first.");
     go(1);
     return;
   }
+  if(!mobile){
+    alert("Please enter mobile number first.");
+    go(1);
+    return;
+  }
+  if(!orderType){
+    alert("Please select order type first.");
+    go(1);
+    return;
+  }
+  if(orderType === "dinein" && !tableNumber){
+    alert("Please select table number first.");
+    go(1);
+    return;
+  }
 
   const payload = {
-    type,
+    type: kind,
     customerName,
     mobile,
     orderType,
     tableNumber,
-    address,
-    location:(orderType==="delivery" || orderType==="takeaway") ? customerLocation : null,
-    source:"customer-menu"
+    source: "customer-menu"
   };
 
   try{
@@ -1700,19 +1506,27 @@ async function sendServiceRequest(type){
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(payload)
     });
+
     if(!res.ok){
-      toast("Could not send request");
+      toast("Request failed");
       return;
     }
-    toast(type === "waiter" ? "Waiter requested" : "Help requested");
+
+    const data = await res.json();
+    if(data.success){
+      toast(`${kind === "waiter" ? "Waiter" : "Manager"} called`);
+    }else{
+      toast("Request failed");
+    }
   }catch(err){
     console.error(err);
-    toast("Request failed");
+    toast("Server error");
   }
 }
 
 callWaiterBtn.onclick=()=>sendServiceRequest("waiter");
-callManagerBtn.onclick=()=>sendServiceRequest("help");
+callManagerBtn.onclick=()=>sendServiceRequest("manager");
 </script>
+
 </body>
 </html>
