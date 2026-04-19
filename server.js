@@ -136,7 +136,7 @@ const tableDraftSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: "available"
+    default: "available" // available | draft | billed
   },
   items: [
     {
@@ -263,21 +263,22 @@ function calcTotal(items = []) {
 async function saveAndBroadcastOrder(orderData) {
   const order = new Order(orderData);
   await order.save();
-  io.emit("newOrder", order);
+  io.emit("newOrder", order); // Managers listen for takeaway/delivery only
   printQueue.push(order);
   return order;
 }
 
 function sanitizeTableDraftPayload(body = {}) {
   const items = Array.isArray(body.items)
-    ? body.items.map((item) => ({
-        name: item?.name || "",
-        variant: item?.variant || "",
-        price: Number(item?.price || 0),
-        qty: Number(item?.qty || 0),
-        category: item?.category || ""
-      }))
-      .filter((x) => x.name && x.qty > 0)
+    ? body.items
+        .map((item) => ({
+          name: item?.name || "",
+          variant: item?.variant || "",
+          price: Number(item?.price || 0),
+          qty: Number(item?.qty || 0),
+          category: item?.category || ""
+        }))
+        .filter((x) => x.name && x.qty > 0)
     : [];
 
   const status =
@@ -298,7 +299,7 @@ function sanitizeTableDraftPayload(body = {}) {
   };
 }
 
-// --- Manager Login API ---
+// ---------------- MANAGER LOGIN APIs ----------------
 app.post("/api/manager/login", (req, res) => {
   const { username, password } = req.body || {};
 
@@ -326,7 +327,7 @@ app.post("/api/manager/login", (req, res) => {
   });
 });
 
-// --- Change Manager ID / Password ---
+// Change Manager ID / Password – intentionally disabled
 app.post("/api/manager/change-credentials", (req, res) => {
   return res.status(400).json({
     success: false,
@@ -335,12 +336,14 @@ app.post("/api/manager/change-credentials", (req, res) => {
   });
 });
 
-// --- Serve menu file ---
+// ---------------- MENU / INVENTORY ----------------
+
+// Serve menu file for customer + manager
 app.get("/menu.json", (req, res) => {
   res.sendFile(path.join(__dirname, "public/menu.json"));
 });
 
-// --- Inventory: update menu.json ---
+// Inventory: update menu.json (from manager portal)
 app.post("/update-menu", (req, res) => {
   try {
     const filePath = path.join(__dirname, "public", "menu.json");
@@ -383,7 +386,7 @@ app.get("/api/orders", async (req, res) => {
   }
 });
 
-// Place new order — dine-in goes to pending queue, others save normally
+// Place new order – Dine-in goes to pending queue; others become orders
 app.post("/api/orders", async (req, res) => {
   try {
     const {
@@ -412,7 +415,7 @@ app.post("/api/orders", async (req, res) => {
 
     const total = calcTotal(normalizedItems);
 
-    // --- DINE-IN: route to pending queue instead of order history ---
+    // DINE-IN: route to pending queue (manager approval) instead of Order history
     if (orderType === "dinein") {
       const pending = new PendingDineIn({
         tableNumber: String(tableNumber || "").trim(),
@@ -429,17 +432,20 @@ app.post("/api/orders", async (req, res) => {
 
       await pending.save();
 
-      // FIX: Convert _id to string so manager.html deduplication works correctly
       const pendingObj = pending.toObject();
+      // Normalize _id for frontend dedup logic
       pendingObj._id = pendingObj._id.toString();
 
-      // Notify manager about the new pending dine-in request
       io.emit("pendingDineIn", pendingObj);
 
-      return res.json({ success: true, pending: true, pendingId: pending._id });
+      return res.json({
+        success: true,
+        pending: true,
+        pendingId: pending._id
+      });
     }
 
-    // --- TAKEAWAY / DELIVERY: save normally ---
+    // TAKEAWAY / DELIVERY – normal flow
     const order = await saveAndBroadcastOrder({
       orderType: orderType || "",
       customerName: customerName || "",
@@ -527,7 +533,7 @@ app.patch("/api/orders/:id/payment-verified", async (req, res) => {
   }
 });
 
-// Hard delete
+// Hard delete order
 app.delete("/api/orders/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -544,7 +550,7 @@ app.delete("/api/orders/:id", async (req, res) => {
 
 // ---------------- SERVICE REQUEST APIs ----------------
 
-// Create a service request
+// Create a service request (customer help panel)
 app.post("/api/service-request", async (req, res) => {
   try {
     const {
@@ -622,12 +628,13 @@ app.get("/api/service-request", async (req, res) => {
 
 // ---------------- PENDING DINE-IN APIs ----------------
 
-// Get all pending dine-in requests (for manager to review on login)
+// Get all pending dine-in requests (for manager on login)
 app.get("/api/pending-dinein", async (req, res) => {
   try {
-    const requests = await PendingDineIn.find({ status: "pending" }).sort({ createdAt: -1 });
+    const requests = await PendingDineIn.find({
+      status: "pending"
+    }).sort({ createdAt: -1 });
 
-    // FIX: Convert _id to string on each record so manager.html deduplication works
     const normalized = requests.map((r) => {
       const obj = r.toObject();
       obj._id = obj._id.toString();
@@ -656,14 +663,16 @@ app.get("/api/pending-dinein/:tableNumber", async (req, res) => {
   }
 });
 
-// Accept a pending dine-in request — merges items into table draft
+// Accept a pending dine-in request — merges into table draft
 app.post("/api/pending-dinein/:id/accept", async (req, res) => {
   try {
     const { id } = req.params;
 
     const pending = await PendingDineIn.findById(id);
     if (!pending) {
-      return res.status(404).json({ success: false, error: "Pending request not found" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Pending request not found" });
     }
 
     const tableNumber = pending.tableNumber;
@@ -686,7 +695,6 @@ app.post("/api/pending-dinein/:id/accept", async (req, res) => {
         total: 0
       });
     } else {
-      // Auto-fill customer name/mobile if table draft has none
       if (!draft.customerName && pending.customerName) {
         draft.customerName = pending.customerName;
       }
@@ -697,9 +705,9 @@ app.post("/api/pending-dinein/:id/accept", async (req, res) => {
 
     // Merge incoming items into existing draft items
     const incomingItems = pending.items || [];
-    incomingItems.forEach(incoming => {
+    incomingItems.forEach((incoming) => {
       const existing = draft.items.find(
-        x => x.name === incoming.name && x.variant === incoming.variant
+        (x) => x.name === incoming.name && x.variant === incoming.variant
       );
       if (existing) {
         existing.qty += incoming.qty;
@@ -720,11 +728,11 @@ app.post("/api/pending-dinein/:id/accept", async (req, res) => {
 
     await draft.save();
 
-    // Notify all manager clients about the updated draft
     io.emit("tableDraftUpdated", draft.toObject());
-
-    // FIX: Convert id to string so manager.html removal by ID works correctly
-    io.emit("pendingDineInAccepted", { id: id.toString(), tableNumber });
+    io.emit("pendingDineInAccepted", {
+      id: id.toString(),
+      tableNumber
+    });
 
     res.json({ success: true, draft: draft.toObject() });
   } catch (err) {
@@ -745,11 +753,15 @@ app.post("/api/pending-dinein/:id/reject", async (req, res) => {
     );
 
     if (!pending) {
-      return res.status(404).json({ success: false, error: "Pending request not found" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Pending request not found" });
     }
 
-    // FIX: Convert id to string so manager.html removal by ID works correctly
-    io.emit("pendingDineInRejected", { id: id.toString(), tableNumber: pending.tableNumber });
+    io.emit("pendingDineInRejected", {
+      id: id.toString(),
+      tableNumber: pending.tableNumber
+    });
 
     res.json({ success: true });
   } catch (err) {
@@ -767,7 +779,9 @@ app.get("/api/table-orders", async (req, res) => {
     res.json(drafts);
   } catch (err) {
     console.error("Get table drafts error:", err);
-    res.status(500).json({ success: false, error: "Could not get table drafts" });
+    res
+      .status(500)
+      .json({ success: false, error: "Could not get table drafts" });
   }
 });
 
@@ -775,12 +789,19 @@ app.get("/api/table-orders", async (req, res) => {
 app.get("/api/table-orders/:tableNumber", async (req, res) => {
   try {
     const { tableNumber } = req.params;
-    const draft = await TableDraft.findOne({ tableNumber: String(tableNumber).trim() });
-    if (!draft) return res.status(404).json({ success: false, error: "Not found" });
+    const draft = await TableDraft.findOne({
+      tableNumber: String(tableNumber).trim()
+    });
+    if (!draft)
+      return res
+        .status(404)
+        .json({ success: false, error: "Not found" });
     res.json(draft);
   } catch (err) {
     console.error("Get single table draft error:", err);
-    res.status(500).json({ success: false, error: "Could not get table draft" });
+    res
+      .status(500)
+      .json({ success: false, error: "Could not get table draft" });
   }
 });
 
@@ -813,7 +834,9 @@ app.post("/api/table-orders/save-draft", async (req, res) => {
     res.json({ success: true, draft });
   } catch (err) {
     console.error("Save table draft error:", err);
-    res.status(500).json({ success: false, error: "Could not save table draft" });
+    res
+      .status(500)
+      .json({ success: false, error: "Could not save table draft" });
   }
 });
 
@@ -835,7 +858,9 @@ app.post("/api/table-orders/clear", async (req, res) => {
     res.json({ success: true, tableNumber });
   } catch (err) {
     console.error("Clear table draft error:", err);
-    res.status(500).json({ success: false, error: "Could not clear table draft" });
+    res
+      .status(500)
+      .json({ success: false, error: "Could not clear table draft" });
   }
 });
 
@@ -858,7 +883,7 @@ app.post("/api/table-orders/finalize", async (req, res) => {
       });
     }
 
-    // Save as a finalized order in Order collection (shows in history)
+    // Save as finalized dine-in order (shows only in history)
     const order = await saveAndBroadcastOrder({
       orderType: "dinein",
       customerName: payload.customerName || "",
@@ -881,12 +906,13 @@ app.post("/api/table-orders/finalize", async (req, res) => {
       status: "delivered"
     });
 
-    // Remove the table draft from DB
     await TableDraft.findOneAndDelete({ tableNumber: payload.tableNumber });
 
-    // Notify all clients
     io.emit("tableDraftCleared", { tableNumber: payload.tableNumber });
-    io.emit("tableOrderFinalized", { tableNumber: payload.tableNumber, order });
+    io.emit("tableOrderFinalized", {
+      tableNumber: payload.tableNumber,
+      order
+    });
 
     res.json({
       success: true,
@@ -901,7 +927,7 @@ app.post("/api/table-orders/finalize", async (req, res) => {
   }
 });
 
-// Legacy print endpoint — redirects to finalize
+// Legacy print endpoint – internally routes to finalize
 app.post("/api/table-orders/print", async (req, res) => {
   req.url = "/api/table-orders/finalize";
   app._router.handle(req, res, () => {});
@@ -1071,7 +1097,8 @@ app.get("/api/next-print-ticket", (req, res) => {
   lines.push(`Order ID: ${order._id}`);
   lines.push(`Type   : ${order.orderType}`);
   if (order.customerName) lines.push(`Name   : ${order.customerName}`);
-  if (order.registrationNumber) lines.push(`Reg No : ${order.registrationNumber}`);
+  if (order.registrationNumber)
+    lines.push(`Reg No : ${order.registrationNumber}`);
   if (order.mobile) lines.push(`Mobile : ${order.mobile}`);
   if (order.tableNumber) lines.push(`Table  : ${order.tableNumber}`);
   if (order.address) lines.push(`Addr   : ${order.address}`);
@@ -1087,14 +1114,16 @@ app.get("/api/next-print-ticket", (req, res) => {
   lines.push("--------------------------");
 
   (order.items || []).forEach((it) => {
-    lines.push(`${it.name}${it.variant ? ` (${it.variant})` : ""} x${it.qty}  ₹${it.price}`);
+    lines.push(
+      `${it.name}${it.variant ? ` (${it.variant})` : ""} x${it.qty}  ₹${it.price}`
+    );
   });
 
   lines.push("--------------------------");
   lines.push(`Total: ₹${order.total}`);
-  lines.push("\n\n\n");
+  lines.push("\\n\\n\\n");
 
-  res.type("text/plain").send(lines.join("\n"));
+  res.type("text/plain").send(lines.join("\\n"));
 });
 
 // ---------------- SOCKET.IO ----------------
@@ -1110,7 +1139,9 @@ app.get("/health", (req, res) => {
 
 // ---------------- SERVER ----------------
 server.listen(PORT, () => {
-  console.log(`🚀 Abba SEENUUU... FAST FOODS server running on http://localhost:${PORT}`);
+  console.log(
+    `🚀 Abba SEENUUU... FAST FOODS server running on http://localhost:${PORT}`
+  );
   console.log(`👤 Manager username: ${managerUser}`);
   console.log(`🔑 Manager password: ${managerPass}`);
 });
