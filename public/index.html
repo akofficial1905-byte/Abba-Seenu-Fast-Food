@@ -510,7 +510,6 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
   display:none;
 }
 
-/* Pending overlay */
 #pendingOverlay{
   position:fixed;
   inset:0;
@@ -831,16 +830,16 @@ const pendingTableLabel = document.getElementById("pendingTableLabel");
 const pendingItemsList  = document.getElementById("pendingItemsList");
 const pendingCloseBtn   = document.getElementById("pendingCloseBtn");
 
-const helpFab       = document.getElementById("helpFab");
-const helpPanel     = document.getElementById("helpPanel");
-const chatFab       = document.getElementById("chatFab");
-const chatPanel     = document.getElementById("chatPanel");
-const chatClose     = document.getElementById("chatClose");
-const chatMessages  = document.getElementById("chatMessages");
-const chatInput     = document.getElementById("chatInput");
-const chatSend      = document.getElementById("chatSend");
-const callWaiterBtn = document.getElementById("callWaiterBtn");
-const callManagerBtn= document.getElementById("callManagerBtn");
+const helpFab        = document.getElementById("helpFab");
+const helpPanel      = document.getElementById("helpPanel");
+const chatFab        = document.getElementById("chatFab");
+const chatPanel      = document.getElementById("chatPanel");
+const chatClose      = document.getElementById("chatClose");
+const chatMessages   = document.getElementById("chatMessages");
+const chatInput      = document.getElementById("chatInput");
+const chatSend       = document.getElementById("chatSend");
+const callWaiterBtn  = document.getElementById("callWaiterBtn");
+const callManagerBtn = document.getElementById("callManagerBtn");
 
 let cart = [], page = 0, locked = false, menu = {};
 let customerLocation = null;
@@ -848,10 +847,22 @@ let pendingOrderPayload = null;
 let selectedRequestTags = [];
 let submitting = false;
 
+function normalizeTableNumber(raw){
+  const v = String(raw || "").trim().toUpperCase();
+  if(!v) return "";
+  const m = v.match(/(\d+)/);
+  return m ? String(Number(m[1])) : "";
+}
+
+function tableDisplayLabel(raw){
+  const n = normalizeTableNumber(raw);
+  return n ? `Table ${n}` : "Table —";
+}
+
 function showPendingApproval(tableNo, items, total){
-  pendingTableLabel.textContent = "Table " + (String(tableNo || "—").replace("T",""));
-  pendingItemsList.innerHTML = items
-    .map(i => `• ${i.name}${i.variant ? " ("+i.variant+")" : ""} × ${i.qty} — ₹${i.qty * i.price}`)
+  pendingTableLabel.textContent = tableDisplayLabel(tableNo);
+  pendingItemsList.textContent = items
+    .map(i => `• ${i.name}${i.variant ? " (" + i.variant + ")" : ""} × ${i.qty} — ₹${i.qty * i.price}`)
     .join("\n") + `\n\nTotal: ₹${total}`;
   pendingOverlay.style.display = "flex";
 }
@@ -875,13 +886,13 @@ pendingCloseBtn.onclick = () => {
   selectedRequestTags = [];
   document.querySelectorAll(".request-chip").forEach(ch => ch.classList.remove("active"));
 
-  const pageName = document.getElementById("pageName");
-  const pageMobile = document.getElementById("pageMobile");
-  const pageRegno = document.getElementById("pageRegno");
-  const pageOrderType = document.getElementById("pageOrderType");
+  const pageName        = document.getElementById("pageName");
+  const pageMobile      = document.getElementById("pageMobile");
+  const pageRegno       = document.getElementById("pageRegno");
+  const pageOrderType   = document.getElementById("pageOrderType");
   const pageTableNumber = document.getElementById("pageTableNumber");
-  const pageAddress = document.getElementById("pageAddress");
-  const pageLocStatus = document.getElementById("pageLocStatus");
+  const pageAddress     = document.getElementById("pageAddress");
+  const pageLocStatus   = document.getElementById("pageLocStatus");
 
   if(pageName) pageName.value = "";
   if(pageMobile) pageMobile.value = "";
@@ -953,9 +964,9 @@ function toggleDetailsInCart(){
 }
 
 function setUpiQr(totalAmount){
-  const upiId = "7054699905@ptaxis";
+  const upiId   = "7054699905@ptaxis";
   const upiName = "Abba SEENUUU... FAST FOODS";
-  const note = "Abba Seenu order";
+  const note    = "Abba Seenu order";
   const upiLink =
     `upi://pay?pa=${encodeURIComponent(upiId)}` +
     `&pn=${encodeURIComponent(upiName)}` +
@@ -967,8 +978,7 @@ function setUpiQr(totalAmount){
 }
 
 function go(i){
-  locked = true;
-  page = i;
+  locked = true; page = i;
   book.style.transform = `translateX(-${i*100}vw)`;
   setTimeout(()=>locked=false,600);
 }
@@ -979,16 +989,16 @@ let sx = 0;
 document.addEventListener("touchstart",e=>sx=e.touches[0].clientX);
 document.addEventListener("touchend",e=>{
   if(locked) return;
-  let dx = e.changedTouches[0].clientX-sx;
+  let dx = e.changedTouches[0].clientX - sx;
   if(dx>80) document.getElementById("prev").onclick();
   if(dx<-80) document.getElementById("next").onclick();
 });
 
-checkoutBtn.onclick=()=>{
+checkoutBtn.onclick = ()=>{
   if(cart.length===0){ toast("Cart is empty"); return; }
-  cartModal.style.display="block";
+  cartModal.style.display = "block";
 };
-function closeCart(){ cartModal.style.display="none"; }
+function closeCart(){ cartModal.style.display = "none"; }
 
 function toast(msg){
   const t=document.getElementById("toast");
@@ -997,41 +1007,118 @@ function toast(msg){
   setTimeout(()=>t.style.display="none",1400);
 }
 
+function updateCart(){
+  const total = cart.reduce((s,i)=>s+i.qty*i.price,0);
+  const count = cart.reduce((s,i)=>s+i.qty,0);
+  cartSummary.textContent = `🛒 ${count} items | ₹${total}`;
+  totalSpan.textContent = total;
+
+  cartItemsDiv.innerHTML = "";
+  if(!cart.length){
+    cartItemsDiv.innerHTML = `<div class="helper">Your cart is empty.</div>`;
+    return;
+  }
+
+  cart.forEach((it,idx)=>{
+    const row = document.createElement("div");
+    row.className = "cart-row";
+    row.innerHTML = `
+      <div>
+        <div><b>${it.name}</b></div>
+        <small>${it.variant || "Standard"} • ₹${it.price}</small>
+      </div>
+      <div class="qty">
+        <button onclick="changeQty(${idx},-1)">−</button>
+        <span>${it.qty}</span>
+        <button onclick="changeQty(${idx},1)">+</button>
+      </div>
+    `;
+    cartItemsDiv.appendChild(row);
+  });
+}
+function changeQty(i,d){
+  if(!cart[i]) return;
+  cart[i].qty += d;
+  if(cart[i].qty<=0) cart.splice(i,1);
+  updateCart();
+}
+window.changeQty = changeQty;
+
+function addToCart(name, price, variant="", category=""){
+  const existing = cart.find(x => x.name===name && x.variant===variant);
+  if(existing) existing.qty++;
+  else cart.push({name, price:Number(price)||0, qty:1, variant, category});
+  updateCart();
+  toast("Added to cart");
+}
+window.addToCart = addToCart;
+
+function syncPageDetails(){
+  const pageName        = document.getElementById("pageName");
+  const pageMobile      = document.getElementById("pageMobile");
+  const pageRegno       = document.getElementById("pageRegno");
+  const pageOrderType   = document.getElementById("pageOrderType");
+  const pageTableNumber = document.getElementById("pageTableNumber");
+  const pageAddress     = document.getElementById("pageAddress");
+
+  if(pageName) nameInput.value = pageName.value;
+  if(pageMobile) mobileInput.value = pageMobile.value;
+  if(pageRegno) regInput.value = pageRegno.value;
+  if(pageOrderType) orderTypeSel.value = pageOrderType.value;
+  if(pageTableNumber) tableNumberSel.value = pageTableNumber.value;
+  if(pageAddress) addressInput.value = pageAddress.value;
+
+  updateOrderTypeUI();
+}
+
+function goNextFromDetails(){
+  syncPageDetails();
+  if(!nameInput.value.trim()) return toast("Enter customer name");
+  if(!mobileInput.value.trim()) return toast("Enter mobile number");
+  if(!orderTypeSel.value) return toast("Select order type");
+  if(orderTypeSel.value==="dinein" && !normalizeTableNumber(tableNumberSel.value)) return toast("Select table number");
+  if(orderTypeSel.value==="delivery" && !addressInput.value.trim()) return toast("Enter delivery address");
+  go(2);
+}
+window.goNextFromDetails = goNextFromDetails;
+window.syncPageDetails = syncPageDetails;
+
 function captureDeliveryLocation(fromPage=false){
   const statusEl = fromPage ? document.getElementById("pageLocStatus") : locStatus;
-  if(orderTypeSel.value !== "delivery" && (!fromPage || document.getElementById("pageOrderType")?.value !== "delivery")){
-    statusEl.textContent="Location is only required for delivery orders.";
+  if(orderTypeSel.value !== "delivery"){
+    statusEl.textContent = "Location is only required for delivery orders.";
     return;
   }
   if(!navigator.geolocation){
-    statusEl.textContent="Geolocation not supported on this device.";
+    statusEl.textContent = "Geolocation not supported on this device.";
     return;
   }
-  statusEl.textContent="Getting your location...";
+  statusEl.textContent = "Getting your location...";
   navigator.geolocation.getCurrentPosition(
     pos=>{
-      customerLocation={lat:pos.coords.latitude,lng:pos.coords.longitude};
-      statusEl.textContent="Location captured ✔";
-      if(fromPage) locStatus.textContent="Location captured ✔";
+      customerLocation = {lat:pos.coords.latitude,lng:pos.coords.longitude};
+      statusEl.textContent = "Location captured ✔";
+      if(fromPage) locStatus.textContent = "Location captured ✔";
     },
     err=>{
       console.error(err);
-      statusEl.textContent="Could not get location. Please allow permission.";
+      statusEl.textContent = "Could not get location. Please allow permission.";
     },
     {enableHighAccuracy:true, timeout:10000}
   );
 }
-locBtn.onclick=()=>captureDeliveryLocation(false);
+locBtn.onclick = ()=>captureDeliveryLocation(false);
+window.captureDeliveryLocation = captureDeliveryLocation;
 
-fetch("/menu.json?_="+Date.now(),{cache:"no-store"})
+fetch("/menu.json?_=" + Date.now(),{cache:"no-store"})
   .then(r=>r.json())
   .then(m=>{menu=m; build(); initChatbot();})
   .catch(()=>toast("Could not load menu"));
 
 function build(){
-  book.innerHTML="";
+  book.innerHTML = "";
 
-  book.innerHTML+=`
+  book.innerHTML += `
   <section class="page">
     <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
       <div style="position:absolute;top:12px;left:12px;text-align:left;font-size:0.7rem;line-height:1.3;color:var(--muted);font-family:'Poppins',sans-serif;">
@@ -1051,7 +1138,7 @@ function build(){
     </div>
   </section>`;
 
-  book.innerHTML+=`
+  book.innerHTML += `
   <section class="page center">
     <div style="width:100%;max-width:360px;text-align:left;">
       <h2 style="margin-bottom:4px;">Your details</h2>
@@ -1086,7 +1173,7 @@ function build(){
     <div class="pageNo">2</div>
   </section>`;
 
-  book.innerHTML+=`
+  book.innerHTML += `
   <section class="page center">
     <div style="max-width:360px;text-align:left;">
       <h2>How it works</h2>
@@ -1102,17 +1189,17 @@ function build(){
     <div class="pageNo">3</div>
   </section>`;
 
-  let contents="", start=4;
+  let contents = "", start = 4;
   Object.keys(menu).forEach(c=>{
-    const items=menu[c];
-    const hasImages=items.some(it=>it.image);
-    const perPage=hasImages?(window.innerWidth<500?4:6):(window.innerWidth<500?6:8);
-    const pagesForCat=Math.ceil(items.length/perPage);
-    contents+=`<div class="contents-card" onclick="go(${start})">${c}</div>`;
-    start+=pagesForCat;
+    const items = menu[c];
+    const hasImages = items.some(it=>it.image);
+    const perPage = hasImages ? (window.innerWidth<500?4:6) : (window.innerWidth<500?6:8);
+    const pagesForCat = Math.ceil(items.length/perPage);
+    contents += `<div class="contents-card" onclick="go(${start})">${c}</div>`;
+    start += pagesForCat;
   });
 
-  book.innerHTML+=`
+  book.innerHTML += `
   <section class="page center">
     <h2>Menu</h2>
     <div class="contents-grid">${contents}</div>
@@ -1120,209 +1207,297 @@ function build(){
     <div class="pageNo">4</div>
   </section>`;
 
-  let pg=5;
-  for(let [cat,items] of Object.entries(menu)){
-    const hasImages=items.some(it=>it.image);
-    const perPage=hasImages?(window.innerWidth<500?4:6):(window.innerWidth<500?6:8);
+  let pageCounter = 5;
+
+  Object.keys(menu).forEach(category=>{
+    const items = menu[category];
+    const hasImages = items.some(it=>it.image);
+    const perPage = hasImages ? (window.innerWidth<500?4:6) : (window.innerWidth<500?6:8);
+
     for(let i=0;i<items.length;i+=perPage){
-      let slice=items.slice(i,i+perPage);
-      let html=`<h2>${i===0?cat:cat+" (Continued)"}</h2><div class="items-grid">`;
-      slice.forEach(it=>{
-        const variantValues = Object.values(it.variants || {});
-        const min = variantValues.length ? Math.min(...variantValues) : Number(it.price || 0);
-        const img=it.image||"";
-        const inStock=it.available!==false;
-        let opts = "";
-        if(it.variants && Object.keys(it.variants).length){
-          opts = `<option value="">Choose option</option>` +
-            Object.entries(it.variants).map(v=>`<option value="${v[1]}">${v[0]} — ₹${v[1]}</option>`).join("");
-        }else{
-          opts = `<option value="${Number(it.price||0)}">Plate — ₹${Number(it.price||0)}</option>`;
+      const chunk = items.slice(i,i+perPage);
+
+      let html = `<section class="page menu-page"><h2>${category}</h2><div class="items-grid">`;
+
+      chunk.forEach(item=>{
+        const imgHtml = item.image ? `
+          <img src="${item.image}" alt="${item.name}" style="width:100%;height:110px;object-fit:cover;border-radius:10px;margin-bottom:8px;border:1px solid rgba(255,255,255,.12);" loading="lazy">
+        ` : "";
+
+        let variantSelect = "";
+        if(item.variants && Object.keys(item.variants).length){
+          variantSelect = `
+            <select id="variant-${category}-${item.name}">
+              ${Object.entries(item.variants).map(([v,p])=>`<option value="${v}__${p}">${v} - ₹${p}</option>`).join("")}
+            </select>
+          `;
         }
-        html+=`
-        <div class="item">
-          ${img?`<div style="width:100%;height:90px;margin-bottom:6px;overflow:hidden;border-radius:10px;">
-                   <img src="${img}" alt="${it.name}" style="width:100%;height:100%;object-fit:cover;">
-                 </div>`:""}
-          <b>${it.name}</b>
-          <div class="price">From ₹${min}</div>
-          ${inStock
-            ?`<select>${opts}</select>
-              <button class="add" onclick="add('${it.name.replace(/'/g,"\\'")}',this)">Add</button>`
-            :`<div style="margin-top:6px;font-size:0.85rem;color:#ffb3b3;font-weight:600;">Sold out</div>
-              <select disabled style="opacity:0.5;"><option>Choose option</option></select>
-              <button class="add" disabled style="background:#262a3e;color:#888;">Sold out</button>`}
-        </div>`;
+
+        const basePrice = item.price || 0;
+        const available = item.available !== false;
+
+        html += `
+          <div class="item" style="${available ? '' : 'opacity:.55;'}">
+            ${imgHtml}
+            <b>${item.name}</b>
+            <div class="price">${item.variants ? "Choose size below" : "₹" + basePrice}</div>
+            ${variantSelect}
+            <button class="add" ${available ? "" : "disabled style='opacity:.5;cursor:not-allowed;'"} onclick="handleAdd('${escapeJs(category)}','${escapeJs(item.name)}',${basePrice},${item.variants ? "true":"false"})">
+              ${available ? "Add to Cart" : "Currently Unavailable"}
+            </button>
+          </div>
+        `;
       });
-      html+=`</div>`;
-      book.innerHTML+=`<section class="page menu-page">${html}<div class="pageNo">${pg++}</div></section>`;
+
+      html += `</div><div class="pageNo">${pageCounter++}</div></section>`;
+      book.innerHTML += html;
     }
-  }
-  setPageModeClasses();
-}
-
-function syncPageDetails(){
-  const pageName         = document.getElementById("pageName");
-  const pageMobile       = document.getElementById("pageMobile");
-  const pageRegno        = document.getElementById("pageRegno");
-  const pageOrderType    = document.getElementById("pageOrderType");
-  const pageTableWrap    = document.getElementById("pageTableWrap");
-  const pageTableNumber  = document.getElementById("pageTableNumber");
-  const pageDeliveryWrap = document.getElementById("pageDeliveryWrap");
-  const pageAddress      = document.getElementById("pageAddress");
-  const pageLocStatus    = document.getElementById("pageLocStatus");
-
-  nameInput.value = pageName.value;
-  mobileInput.value = pageMobile.value;
-  regInput.value = pageRegno.value;
-  orderTypeSel.value = pageOrderType.value;
-  addressInput.value = pageAddress ? pageAddress.value : addressInput.value;
-
-  pageTableWrap.classList.toggle("hidden", pageOrderType.value!=="dinein");
-  pageDeliveryWrap.classList.toggle("hidden", pageOrderType.value!=="delivery");
-
-  if(pageOrderType.value!=="dinein"){
-    pageTableNumber.value="";
-    tableNumberSel.value="";
-  }else{
-    tableNumberSel.value=pageTableNumber.value;
-  }
-
-  if(pageOrderType.value!=="delivery"){
-    if(pageAddress) pageAddress.value="";
-    addressInput.value="";
-    customerLocation=null;
-    if(pageLocStatus) pageLocStatus.textContent="";
-  }else{
-    addressInput.value=pageAddress.value;
-  }
-
-  updateOrderTypeUI();
-}
-
-function goNextFromDetails(){
-  const pageOrderType = document.getElementById("pageOrderType");
-  const pageTableNumber = document.getElementById("pageTableNumber");
-  const pageAddress = document.getElementById("pageAddress");
-
-  if(!nameInput.value.trim()) return alert("Enter customer name");
-  if(!mobileInput.value.trim()) return alert("Enter mobile number");
-  if(!pageOrderType.value) return alert("Select order type");
-  if(pageOrderType.value==="dinein" && !pageTableNumber.value) return alert("Please select table number");
-  if(pageOrderType.value==="delivery" && !pageAddress.value.trim()) return alert("Enter delivery address / hostel / block");
-  if(pageOrderType.value==="delivery" && !customerLocation) return alert("Please tap 'Use current location' and allow location access for delivery orders.");
-
-  syncPageDetails();
-  go(2);
-}
-
-function add(name,btn){
-  const sel=btn.previousElementSibling;
-  if(!sel.value){alert("Please choose an option");return;}
-  const price=+sel.value;
-  const variant=sel.options[sel.selectedIndex].text.split(" — ")[0];
-  let f=cart.find(i=>i.name===name&&i.price===price&&i.variant===variant);
-  if(f) f.qty++;
-  else cart.push({name,variant,price,qty:1});
-  toast(`${name} (${variant}) added`);
-  updateCart();
-}
-
-function updateCart(){
-  cartItemsDiv.innerHTML="";
-  let total=0;
-  cart.forEach((i,idx)=>{
-    total+=i.qty*i.price;
-    cartItemsDiv.innerHTML+=`
-    <div class="cart-row">
-      <div>${i.name} <small>(${i.variant})</small><br>₹${i.price}</div>
-      <div class="qty">
-        <button onclick="chg(${idx},-1)">−</button>${i.qty}<button onclick="chg(${idx},1)">+</button>
-      </div>
-    </div>`;
   });
-  totalSpan.innerText=total;
-  cartSummary.innerText=`🛒 ${cart.reduce((s,i)=>s+i.qty,0)} items | ₹${total}`;
-}
 
-function chg(i,d){
-  cart[i].qty+=d;
-  if(cart[i].qty<=0) cart.splice(i,1);
+  setPageModeClasses();
   updateCart();
 }
+window.go = go;
 
-function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethodLabel){
-  const overlay=document.createElement("div");
-  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:130;";
-  overlay.innerHTML=`
-    <div style="background:#050c1d;padding:18px;border-radius:18px;width:88%;max-width:360px;text-align:center;border:1px solid rgba(255,255,255,.35);font-family:Poppins,sans-serif;color:#f5f5f5;">
-      <h3 style="margin-top:0;color:var(--accent-soft2);">Order placed</h3>
-      <p style="font-size:.9rem;margin:8px 0 10px;">${mainMsg}</p>
-      <div style="font-weight:600;margin-bottom:6px;">Bill Amount: ₹${total}</div>
-      <div style="font-size:.83rem;margin-bottom:10px;">Payment: <b>${paymentMethodLabel}</b></div>
-      ${extraMsg?`<div style="font-size:0.78rem;margin-bottom:12px;color:var(--accent-soft);">${extraMsg}</div>`:""}
-      <button id="successDoneBtn" style="background:var(--accent);border:none;padding:9px 16px;border-radius:22px;font-weight:700;color:#020718;width:100%;font-size:.9rem;">Done</button>
-    </div>`;
-  document.body.appendChild(overlay);
-
-  document.getElementById("successDoneBtn").onclick=()=>{
-    document.body.removeChild(overlay);
-    resetEverything();
-  };
+function escapeJs(str){
+  return String(str).replaceAll("\\","\\\\").replaceAll("'","\\'");
 }
 
-function resetEverything(){
-  cart=[];
+function handleAdd(category, itemName, basePrice, hasVariants){
+  const items = menu[category] || [];
+  const item = items.find(x => x.name === itemName);
+  if(!item || item.available === false) return toast("Item unavailable");
+
+  if(hasVariants){
+    const sel = document.getElementById(`variant-${category}-${itemName}`);
+    if(!sel) return;
+    const [variant, price] = sel.value.split("__");
+    addToCart(itemName, Number(price)||0, variant, category);
+  }else{
+    addToCart(itemName, Number(basePrice)||0, "", category);
+  }
+}
+window.handleAdd = handleAdd;
+
+document.querySelectorAll(".request-chip").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const tag = btn.dataset.tag;
+    if(selectedRequestTags.includes(tag)){
+      selectedRequestTags = selectedRequestTags.filter(x=>x!==tag);
+      btn.classList.remove("active");
+    }else{
+      selectedRequestTags.push(tag);
+      btn.classList.add("active");
+    }
+  });
+});
+
+function buildSpecialRequestText(){
+  const freeText = specialRequestInput.value.trim();
+  const tags = selectedRequestTags.join(", ");
+  if(tags && freeText) return `${tags}. ${freeText}`;
+  return tags || freeText || "";
+}
+
+function showSuccessAndReset(title, note="", totalAmount=0, paymentMethodLabel=""){
+  alert(
+    `${title}\n\n` +
+    `Total: ₹${totalAmount}\n` +
+    `${paymentMethodLabel ? "Payment: " + paymentMethodLabel + "\n" : ""}` +
+    `${note || ""}`
+  );
+
+  cart = [];
   updateCart();
   closeCart();
 
-  orderTypeSel.value="";
-  regInput.value="";
-  nameInput.value="";
-  mobileInput.value="";
-  addressInput.value="";
-  paymentSel.value="";
-  specialRequestInput.value="";
-  tableNumberSel.value="";
-  customerLocation=null;
-  locStatus.textContent="";
-  selectedRequestTags=[];
-  document.querySelectorAll(".request-chip").forEach(ch=>ch.classList.remove("active"));
+  orderTypeSel.value = "";
+  regInput.value = "";
+  nameInput.value = "";
+  mobileInput.value = "";
+  addressInput.value = "";
+  paymentSel.value = "";
+  specialRequestInput.value = "";
+  tableNumberSel.value = "";
+  customerLocation = null;
+  locStatus.textContent = "";
+  selectedRequestTags = [];
+  document.querySelectorAll(".request-chip").forEach(ch => ch.classList.remove("active"));
 
-  const pageName = document.getElementById("pageName");
-  const pageMobile = document.getElementById("pageMobile");
-  const pageRegno = document.getElementById("pageRegno");
-  const pageOrderType = document.getElementById("pageOrderType");
+  const pageName        = document.getElementById("pageName");
+  const pageMobile      = document.getElementById("pageMobile");
+  const pageRegno       = document.getElementById("pageRegno");
+  const pageOrderType   = document.getElementById("pageOrderType");
   const pageTableNumber = document.getElementById("pageTableNumber");
-  const pageAddress = document.getElementById("pageAddress");
-  const pageLocStatus = document.getElementById("pageLocStatus");
+  const pageAddress     = document.getElementById("pageAddress");
+  const pageLocStatus   = document.getElementById("pageLocStatus");
 
-  if(pageName) pageName.value="";
-  if(pageMobile) pageMobile.value="";
-  if(pageRegno) pageRegno.value="";
-  if(pageOrderType) pageOrderType.value="";
-  if(pageTableNumber) pageTableNumber.value="";
-  if(pageAddress) pageAddress.value="";
-  if(pageLocStatus) pageLocStatus.textContent="";
+  if(pageName) pageName.value = "";
+  if(pageMobile) pageMobile.value = "";
+  if(pageRegno) pageRegno.value = "";
+  if(pageOrderType) pageOrderType.value = "";
+  if(pageTableNumber) pageTableNumber.value = "";
+  if(pageAddress) pageAddress.value = "";
+  if(pageLocStatus) pageLocStatus.textContent = "";
 
   updateOrderTypeUI();
   go(0);
 }
 
+async function sendServiceRequest(requestType){
+  const orderType = orderTypeSel.value || document.getElementById("pageOrderType")?.value || "";
+  const tableValue = tableNumberSel.value || document.getElementById("pageTableNumber")?.value || "";
+  const payload = {
+    requestType,
+    customerName: nameInput.value.trim() || document.getElementById("pageName")?.value?.trim() || "",
+    mobile: mobileInput.value.trim() || document.getElementById("pageMobile")?.value?.trim() || "",
+    orderType: orderType || "",
+    tableNumber: normalizeTableNumber(tableValue) || ""
+  };
+
+  try{
+    const res = await fetch("/api/service-request",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+    const data = await res.json().catch(()=>({}));
+    if(res.ok && data.success){
+      toast(requestType === "manager" ? "Manager called" : "Waiter called");
+      helpPanel.classList.remove("open");
+    }else{
+      toast("Could not send request");
+    }
+  }catch(e){
+    console.error(e);
+    toast("Could not send request");
+  }
+}
+callWaiterBtn.onclick = ()=>sendServiceRequest("waiter");
+callManagerBtn.onclick = ()=>sendServiceRequest("manager");
+
+function addMsg(text, who="bot"){
+  const div = document.createElement("div");
+  div.className = `msg ${who==="bot" ? "botMsg" : "userMsg"}`;
+  div.textContent = text;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function openChat(){
+  chatPanel.style.display = "flex";
+  helpPanel.classList.remove("open");
+}
+chatFab.onclick = openChat;
+chatClose.onclick = ()=>chatPanel.style.display = "none";
+
+function initChatbot(){
+  if(chatMessages.dataset.ready) return;
+  chatMessages.dataset.ready = "1";
+  addMsg("Hi! I can help you with menu suggestions, spicy food, veg food, budget picks, delivery help, and payment help.");
+
+  document.querySelectorAll(".faqBtn").forEach(btn=>{
+    btn.onclick = ()=>handleChat(btn.dataset.q);
+  });
+
+  chatSend.onclick = ()=>{
+    const q = chatInput.value.trim();
+    if(!q) return;
+    handleChat(q);
+    chatInput.value = "";
+  };
+  chatInput.addEventListener("keydown",(e)=>{
+    if(e.key==="Enter"){
+      e.preventDefault();
+      chatSend.onclick();
+    }
+  });
+}
+
+function findMenuMatches(termFn){
+  const out = [];
+  Object.entries(menu).forEach(([cat,items])=>{
+    items.forEach(item=>{
+      if(termFn(item,cat)) out.push({cat,item});
+    });
+  });
+  return out;
+}
+
+function handleChat(q){
+  addMsg(q,"user");
+  const text = q.toLowerCase();
+
+  if(text.includes("payment")){
+    return addMsg("For takeaway or delivery, choose UPI or COD in cart. For dine-in, payment selection is hidden because the order first goes to manager approval.");
+  }
+  if(text.includes("delivery")){
+    return addMsg("For delivery, please enter your address and tap 'Use current location'. Location is mandatory before placing the order.");
+  }
+  if(text.includes("veg")){
+    const matches = findMenuMatches((item,cat)=>/veg|paneer|mushroom|gobi|aloo|cheese/i.test(item.name+" "+cat)).slice(0,6);
+    return addMsg(matches.length ? "Veg suggestions:\n" + matches.map(x=>`• ${x.item.name}`).join("\n") : "I couldn't find clear veg-tagged items, but you can browse categories for paneer, mushroom, or veg options.");
+  }
+  if(text.includes("spicy")){
+    const matches = findMenuMatches((item)=>/chilli|spicy|pepper|manchurian|schezwan|65/i.test(item.name)).slice(0,6);
+    return addMsg(matches.length ? "Spicy picks:\n" + matches.map(x=>`• ${x.item.name}`).join("\n") : "Try adding 'Extra spicy' from Quick Requests for a hotter version.");
+  }
+  if(text.includes("budget") || text.includes("cheap") || text.includes("low price")){
+    const all = [];
+    Object.entries(menu).forEach(([cat,items])=>{
+      items.forEach(item=>{
+        if(item.variants && Object.keys(item.variants).length){
+          Object.entries(item.variants).forEach(([variant,price])=>{
+            all.push({name:item.name + " (" + variant + ")", price:Number(price)||0});
+          });
+        }else{
+          all.push({name:item.name, price:Number(item.price)||0});
+        }
+      });
+    });
+    all.sort((a,b)=>a.price-b.price);
+    return addMsg("Budget options:\n" + all.slice(0,6).map(x=>`• ${x.name} — ₹${x.price}`).join("\n"));
+  }
+  if(text.includes("best")){
+    const picks = findMenuMatches(()=>true).slice(0,6);
+    return addMsg(picks.length ? "Popular starting suggestions:\n" + picks.map(x=>`• ${x.item.name}`).join("\n") : "Menu is loading or unavailable right now.");
+  }
+  if(text.includes("noodles")){
+    const matches = findMenuMatches((item,cat)=>/noodle/i.test(item.name+" "+cat)).slice(0,6);
+    return addMsg(matches.length ? "Noodles options:\n" + matches.map(x=>`• ${x.item.name}`).join("\n") : "I couldn't find noodles right now.");
+  }
+  if(text.includes("rice")){
+    const matches = findMenuMatches((item,cat)=>/rice|fried rice|biryani/i.test(item.name+" "+cat)).slice(0,6);
+    return addMsg(matches.length ? "Rice options:\n" + matches.map(x=>`• ${x.item.name}`).join("\n") : "I couldn't find rice items right now.");
+  }
+  if(text.includes("starter")){
+    const matches = findMenuMatches((item,cat)=>/starter|65|manchurian|finger|chicken fry|crispy/i.test(item.name+" "+cat)).slice(0,6);
+    return addMsg(matches.length ? "Starter suggestions:\n" + matches.map(x=>`• ${x.item.name}`).join("\n") : "Try browsing the starter-related categories in the menu.");
+  }
+
+  addMsg("I can help with best food, spicy food, veg food, budget picks, noodles, rice, starters, payment help, and delivery help.");
+}
+
 async function actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel){
   try{
-    const res=await fetch("/api/orders",{
+    const res = await fetch("/api/orders",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(payload)
     });
 
-    if(!res.ok){ alert("Could not place order. Please try again."); return false; }
+    if(!res.ok){
+      alert("Could not place order. Please try again.");
+      return false;
+    }
 
-    const data=await res.json();
-    if(!data.success){ alert("Order failed. Please try again."); return false; }
+    const data = await res.json();
+    if(!data.success){
+      alert(data.message || "Order failed. Please try again.");
+      return false;
+    }
 
-    if(payload.orderType==="dinein"){
+    if(payload.orderType === "dinein"){
       closeCart();
       showPendingApproval(payload.tableNumber, payload.items, totalAmount);
       return true;
@@ -1330,11 +1505,9 @@ async function actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel){
 
     showSuccessAndReset(
       "Your order has been sent to Abba SEENUUU... FAST FOODS.",
-      paymentMethodLabel==="Counter later"
-        ? "Please pay at the counter after dine-in."
-        : paymentMethodLabel==="COD"
-          ? "Don't have change? You can also pay using UPI: 7054699905@ptaxis."
-          : "",
+      paymentMethodLabel === "COD"
+        ? "Don't have change? You can also pay using UPI: 7054699905@ptaxis."
+        : "",
       totalAmount,
       paymentMethodLabel
     );
@@ -1346,286 +1519,93 @@ async function actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel){
   }
 }
 
-upiPaidBtn.onclick=async()=>{
+upiPaidBtn.onclick = async ()=>{
   if(!pendingOrderPayload){ upiOverlay.style.display="none"; return; }
-  const {payload,total,paymentMethodLabel}=pendingOrderPayload;
-  pendingOrderPayload=null;
-  upiOverlay.style.display="none";
-  placeOrderBtn.innerText="Placing order...";
-  placeOrderBtn.disabled=true;
-  const ok=await actuallyPlaceOrder(payload,total,paymentMethodLabel);
-  placeOrderBtn.innerText="Place Order";
-  placeOrderBtn.disabled=false;
-  submitting=false;
+  const {payload,total,paymentMethodLabel} = pendingOrderPayload;
+  pendingOrderPayload = null;
+  upiOverlay.style.display = "none";
+  placeOrderBtn.innerText = "Placing order...";
+  placeOrderBtn.disabled = true;
+  const ok = await actuallyPlaceOrder(payload,total,paymentMethodLabel);
+  placeOrderBtn.innerText = "Place Order";
+  placeOrderBtn.disabled = false;
+  submitting = false;
 };
 
-upiCancelBtn.onclick=()=>{
-  pendingOrderPayload=null;
-  upiOverlay.style.display="none";
+upiCancelBtn.onclick = ()=>{
+  pendingOrderPayload = null;
+  upiOverlay.style.display = "none";
+  submitting = false;
 };
 
-placeOrderBtn.onclick=async()=>{
+placeOrderBtn.onclick = async ()=>{
   if(submitting) return;
   if(cart.length===0) return alert("Cart empty");
 
-  const orderType=orderTypeSel.value;
+  const orderType = orderTypeSel.value;
   if(!orderType) return alert("Select order type");
   if(!nameInput.value.trim()) return alert("Enter name");
   if(!mobileInput.value.trim()) return alert("Enter mobile");
-  if(orderType==="dinein" && !tableNumberSel.value) return alert("Please select table number");
+
+  const normalizedTableNumber = normalizeTableNumber(tableNumberSel.value);
+
+  if(orderType==="dinein" && !normalizedTableNumber) return alert("Please select table number");
   if(orderType==="delivery" && !addressInput.value.trim()) return alert("Enter delivery address / hostel / block");
   if(orderType==="delivery" && !customerLocation){
     alert("Please tap 'Use current location' and allow location access for delivery orders.");
     return;
   }
 
-  const totalAmount=cart.reduce((s,i)=>s+i.qty*i.price,0);
+  const totalAmount = cart.reduce((s,i)=>s+i.qty*i.price,0);
 
-  let paymentMethod="", paymentMethodLabel="";
+  let paymentMethod = "", paymentMethodLabel = "";
+
   if(orderType==="dinein"){
-    paymentMethod="PAYLATERDINEIN";
-    paymentMethodLabel="Counter later";
+    paymentMethod = "PAYLATERDINEIN";
+    paymentMethodLabel = "Pending manager approval";
   }else{
-    paymentMethod=paymentSel.value;
-    if(!paymentMethod) return alert("Select payment method: UPI or COD");
-    paymentMethodLabel=paymentMethod;
+    if(!paymentSel.value) return alert("Select payment method");
+    paymentMethod = paymentSel.value;
+    paymentMethodLabel = paymentMethod;
   }
 
-  const rawTable = tableNumberSel.value;
-  const tableNumParsed = rawTable ? Number(rawTable.replace(/\D/g,"")) : "";
-
-  const payload={
+  const payload = {
+    customerName: nameInput.value.trim(),
+    mobile: mobileInput.value.trim(),
+    regno: regInput.value.trim(),
     orderType,
-    customerName:nameInput.value.trim(),
-    registrationNumber:regInput.value.trim(),
-    mobile:mobileInput.value.trim(),
-    tableNumber:orderType==="dinein" ? tableNumParsed : "",
-    address:orderType==="delivery" ? addressInput.value.trim() : "",
-    location:orderType==="delivery" ? customerLocation : null,
-    items:cart,
+    tableNumber: orderType==="dinein" ? normalizedTableNumber : "",
+    address: orderType==="delivery" ? addressInput.value.trim() : "",
+    location: orderType==="delivery" ? customerLocation : null,
     paymentMethod,
-    specialRequest:specialRequestInput.value.trim(),
-    requestTags:selectedRequestTags,
-    total:totalAmount,
-    isDraft:orderType==="dinein" ? true : false,
-    source:"customer-menu"
+    paymentVerified: paymentMethod==="UPI",
+    specialRequest: buildSpecialRequestText(),
+    items: cart.map(i=>({
+      name:i.name,
+      variant:i.variant || "",
+      qty:Number(i.qty)||1,
+      price:Number(i.price)||0,
+      category:i.category || ""
+    })),
+    total: totalAmount
   };
 
-  if(orderType!=="dinein" && paymentMethod==="UPI"){
-    pendingOrderPayload={payload, total:totalAmount, paymentMethodLabel};
+  submitting = true;
+
+  if(orderType !== "dinein" && paymentMethod === "UPI"){
+    pendingOrderPayload = {payload,total:totalAmount,paymentMethodLabel};
     setUpiQr(totalAmount);
-    upiOverlay.style.display="flex";
+    upiOverlay.style.display = "flex";
     return;
   }
 
-  submitting=true;
-  placeOrderBtn.innerText="Placing order...";
-  placeOrderBtn.disabled=true;
-
-  await actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel);
-
-  submitting=false;
-  placeOrderBtn.innerText="Place Order";
-  placeOrderBtn.disabled=false;
+  placeOrderBtn.innerText = "Placing order...";
+  placeOrderBtn.disabled = true;
+  await actuallyPlaceOrder(payload,totalAmount,paymentMethodLabel);
+  placeOrderBtn.innerText = "Place Order";
+  placeOrderBtn.disabled = false;
+  submitting = false;
 };
-
-document.querySelectorAll(".request-chip").forEach(btn=>{
-  btn.onclick=()=>{
-    const tag=btn.getAttribute("data-tag");
-    if(selectedRequestTags.includes(tag)){
-      selectedRequestTags=selectedRequestTags.filter(t=>t!==tag);
-      btn.classList.remove("active");
-    }else{
-      selectedRequestTags.push(tag);
-      btn.classList.add("active");
-    }
-  };
-});
-
-function flattenMenu(){
-  const list=[];
-  Object.entries(menu).forEach(([category,items])=>{
-    items.forEach(item=>{
-      const variantVals = Object.values(item.variants || {});
-      const minPrice = variantVals.length ? Math.min(...variantVals) : Number(item.price || 0);
-      list.push({...item, category, minPrice, lowerName:item.name.toLowerCase()});
-    });
-  });
-  return list;
-}
-
-function pickAvailable(names){
-  const all=flattenMenu();
-  return names.map(n=>all.find(x=>x.lowerName===n.toLowerCase()&&x.available!==false)).filter(Boolean);
-}
-
-function suggestByIntent(msg){
-  const text=msg.toLowerCase().trim();
-  const all=flattenMenu().filter(x=>x.available!==false);
-
-  const directAnswers=[
-    {match:["hi","hello","hey","hlo"],reply:"Hi! Welcome to Abba SEENUUU... FAST FOODS. Ask me things like best food, spicy food, veg food, budget food, noodles, rice, or starters."},
-    {match:["payment","upi","cod","cash"],reply:"Dine-in orders can pay later at the counter. Takeaway and delivery support UPI and COD."},
-    {match:["delivery","location","address"],reply:"For delivery orders, please enter your address and tap 'Use current location' before placing the order."},
-    {match:["waiter","manager","call waiter","call manager","help"],reply:"Use the Help button to call waiter, call manager, or open chat."}
-  ];
-  for(const item of directAnswers){
-    if(item.match.some(k=>text.includes(k))) return {type:"text",text:item.reply};
-  }
-
-  const trainedGroups={
-    best:["Abba special chicken","Chicken 65","Chicken fried rice","Abba special chicken noodles","Paneer fried rice"],
-    spicy:["Chilli chicken","Dragon chicken","Chicken 65","Chicken lollipop","Chicken Manchurian"],
-    veg:["Veg Manchurian","Paneer fried rice","Veg fried rice","Gobi fried rice","Veg noodles","Paneer noodles","Gobi noodles"],
-    nonveg:["Chilli chicken","Abba special chicken","Chicken lollipop","Chicken 65","Dragon chicken","Chicken Manchurian","Chicken fried rice","Chicken noodles","Abba special chicken rice","Abba special chicken noodles"],
-    budget:all.filter(i=>i.minPrice<=100).sort((a,b)=>a.minPrice-b.minPrice).slice(0,6).map(i=>i.name),
-    rice:all.filter(i=>i.category.toLowerCase().includes("rice")).slice(0,6).map(i=>i.name),
-    noodles:all.filter(i=>i.category.toLowerCase().includes("noodles")).slice(0,6).map(i=>i.name),
-    starters:all.filter(i=>i.category.toLowerCase().includes("starters")).slice(0,6).map(i=>i.name),
-    egg:all.filter(i=>i.lowerName.includes("egg")).map(i=>i.name),
-    paneer:all.filter(i=>i.lowerName.includes("paneer")).map(i=>i.name),
-    chicken:all.filter(i=>i.lowerName.includes("chicken")).map(i=>i.name)
-  };
-
-  const intentChecks=[
-    {keys:["best","popular","famous","recommend","suggest"],group:"best",title:"Popular picks"},
-    {keys:["spicy","hot"],group:"spicy",title:"Spicy picks"},
-    {keys:["veg","vegetarian"],group:"veg",title:"Veg suggestions"},
-    {keys:["non veg","nonveg","chicken"],group:"nonveg",title:"Non-veg suggestions"},
-    {keys:["budget","cheap","under 100","low price"],group:"budget",title:"Budget-friendly options"},
-    {keys:["rice","fried rice"],group:"rice",title:"Rice options"},
-    {keys:["noodles","noodle"],group:"noodles",title:"Noodles options"},
-    {keys:["starter","starters","snacks"],group:"starters",title:"Starter options"},
-    {keys:["egg"],group:"egg",title:"Egg options"},
-    {keys:["paneer"],group:"paneer",title:"Paneer options"}
-  ];
-
-  for(const rule of intentChecks){
-    if(rule.keys.some(k=>text.includes(k))){
-      const picks=pickAvailable(trainedGroups[rule.group]);
-      if(picks.length) return {type:"items",title:rule.title,items:picks.slice(0,5)};
-    }
-  }
-
-  const nameMatch=all.filter(i=>text.includes(i.lowerName)||i.lowerName.includes(text)).slice(0,5);
-  if(nameMatch.length) return {type:"items",title:"Here's what I found",items:nameMatch};
-
-  return {type:"text",text:"I can help with best food, spicy food, veg, non-veg, budget food, rice, noodles, starters, payment help, or delivery help."};
-}
-
-function addBotMessage(text){
-  const div=document.createElement("div");
-  div.className="msg botMsg";
-  div.textContent=text;
-  chatMessages.appendChild(div);
-  chatMessages.scrollTop=chatMessages.scrollHeight;
-}
-function addUserMessage(text){
-  const div=document.createElement("div");
-  div.className="msg userMsg";
-  div.textContent=text;
-  chatMessages.appendChild(div);
-  chatMessages.scrollTop=chatMessages.scrollHeight;
-}
-function addBotItemReply(title,items){
-  const lines=items.map(i=>`• ${i.name} — from ₹${i.minPrice}`);
-  addBotMessage(`${title}\n${lines.join("\n")}`);
-}
-function runChatQuery(q){
-  if(!q.trim()) return;
-  addUserMessage(q);
-  const result=suggestByIntent(q);
-  setTimeout(()=>{
-    if(result.type==="items") addBotItemReply(result.title,result.items);
-    else addBotMessage(result.text);
-  },250);
-}
-function initChatbot(){
-  chatMessages.innerHTML="";
-  addBotMessage("Hi 👋 Welcome to Abba SEENUUU... FAST FOODS.\nAsk me for best food, spicy food, veg food, noodles, rice, or budget suggestions.");
-}
-
-chatFab.onclick=()=>{
-  helpPanel.classList.remove("open");
-  chatPanel.style.display=chatPanel.style.display==="flex"?"none":"flex";
-};
-chatClose.onclick=()=>chatPanel.style.display="none";
-chatSend.onclick=()=>{
-  const q=chatInput.value.trim();
-  if(!q) return;
-  runChatQuery(q);
-  chatInput.value="";
-};
-chatInput.addEventListener("keydown",e=>{
-  if(e.key==="Enter"){e.preventDefault();chatSend.click();}
-});
-document.querySelectorAll(".faqBtn").forEach(btn=>{
-  btn.onclick=()=>runChatQuery(btn.getAttribute("data-q"));
-});
-
-function validateServiceRequestContext(){
-  if(!nameInput.value.trim()){
-    toast("Enter your name in cart details first");
-    cartModal.style.display="block";
-    return false;
-  }
-  if(!mobileInput.value.trim()){
-    toast("Enter mobile number first");
-    cartModal.style.display="block";
-    return false;
-  }
-  if(orderTypeSel.value==="dinein" && !tableNumberSel.value){
-    toast("Select your table number first");
-    cartModal.style.display="block";
-    return false;
-  }
-  if(orderTypeSel.value==="delivery" && !addressInput.value.trim()){
-    toast("Enter delivery address first");
-    cartModal.style.display="block";
-    return false;
-  }
-  if(orderTypeSel.value==="delivery" && !customerLocation){
-    toast("Capture live location first");
-    cartModal.style.display="block";
-    return false;
-  }
-  return true;
-}
-
-async function sendServiceRequest(type){
-  if(!validateServiceRequestContext()) return;
-  const payload={
-    type,
-    customerName:nameInput.value.trim()||"",
-    mobile:mobileInput.value.trim()||"",
-    registrationNumber:regInput.value.trim()||"",
-    orderType:orderTypeSel.value||"",
-    tableNumber:orderTypeSel.value==="dinein" ? tableNumberSel.value : "",
-    address:orderTypeSel.value==="delivery" ? addressInput.value.trim() : "",
-    location:customerLocation||null,
-    createdAt:new Date().toISOString(),
-    source:"customer-menu"
-  };
-  try{
-    const res=await fetch("/api/service-request",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(payload)
-    });
-    if(res.ok){ toast(`${type} request sent`); helpPanel.classList.remove("open"); }
-    else toast(`Could not send ${type.toLowerCase()} request`);
-  }catch(e){
-    console.error(e);
-    toast(`Could not send ${type.toLowerCase()} request`);
-  }
-}
-
-callWaiterBtn.onclick=()=>sendServiceRequest("Call Waiter");
-callManagerBtn.onclick=()=>sendServiceRequest("Call Manager");
-
-build();
-updateCart();
-updateOrderTypeUI();
 </script>
 
 </body>
