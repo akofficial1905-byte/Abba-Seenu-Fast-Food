@@ -5,26 +5,23 @@
 <title>Abba SEENUUU... FAST FOODS — Digital Menu</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
 :root{
   --bg:#020718;
   --paper:#081225;
   --paper-soft:#0d1b33;
-  --paper-2:#0a1730;
   --accent:#f5c518;
   --accent-soft:#ffe9a6;
   --accent-soft2:#f9d869;
   --text:#f5f5f5;
   --muted:#a9b3cf;
-  --dock-h:0px;
-  --cart-h:66px;
-  --fab-size:58px;
+  --dock-h:64px;
+  --cart-h:62px;
 }
 
 *{box-sizing:border-box}
-html,body{height:100%}
 body{
   margin:0;
   background:radial-gradient(circle at top,#101b3b 0,#020718 55%);
@@ -37,7 +34,7 @@ body{
 .page{
   min-width:100vw;
   height:100vh;
-  padding:18px 14px calc(var(--cart-h) + var(--dock-h) + 26px);
+  padding:18px 14px calc(var(--cart-h) + var(--dock-h) + 34px);
   background:
     radial-gradient(circle at center, rgba(245,197,24,.06), transparent 60%),
     linear-gradient(160deg,#050b1c,#08152e);
@@ -78,13 +75,10 @@ h2{font-size:1.4rem}
   cursor:pointer;
   z-index:20;
   opacity:.75;
-  background:rgba(2,7,24,.18);
-  padding:8px 6px;
-  border-radius:10px;
 }
 .nav:hover{opacity:1}
-#prev{left:4px}
-#next{right:4px}
+#prev{left:6px}
+#next{right:6px}
 .pageNo{
   position:absolute;
   bottom:14px;
@@ -125,212 +119,85 @@ h2{font-size:1.4rem}
 
 .items-grid{
   display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:12px;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
 }
-@media(min-width:700px){
-  .items-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(min-width:600px){
+  .items-grid{grid-template-columns:repeat(3,1fr)}
 }
 .item{
   background:var(--paper);
-  border-radius:16px;
+  border-radius:14px;
   padding:10px;
   font-size:.8rem;
-  border:1px solid rgba(245,197,24,.42);
-  min-height:100%;
+  border:1px solid rgba(245,197,24,.4);
 }
-.item b{
-  display:-webkit-box;
-  -webkit-line-clamp:2;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
-  font-size:.9rem;
-  margin-bottom:6px;
-  color:#ffffff;
-  min-height:2.5em;
-}
-.price{
-  font-size:.75rem;
-  color:var(--accent-soft);
-  margin-bottom:8px;
-}
-.item-image{
-  width:100%;
-  aspect-ratio:1.35/1;
-  margin-bottom:8px;
-  overflow:hidden;
-  border-radius:12px;
-  background:#000;
-}
-.item-image img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
+.item b{display:block;font-size:.9rem;margin-bottom:4px;color:#ffffff}
+.price{font-size:.75rem;color:var(--accent-soft);margin-bottom:6px}
 
 select,input,textarea{
   width:100%;
   padding:10px;
-  border-radius:12px;
+  border-radius:10px;
   border:1px solid rgba(255,255,255,.25);
-  font-size:.92rem;
+  font-size:.9rem;
   margin-bottom:8px;
   background:#030817;
   color:#fff;
 }
 .item select{
-  padding:9px 10px;
-  font-size:.8rem;
-  margin-bottom:8px;
+  padding:7px;
+  font-size:.75rem;
+  margin-bottom:6px;
   border:1px solid rgba(245,197,24,.6);
-  border-radius:14px;
-  background:#050d1e;
 }
 .add{
   width:100%;
-  padding:10px;
-  border-radius:999px;
+  padding:7px;
+  border-radius:18px;
   border:none;
   background:var(--accent);
-  font-weight:700;
-  font-size:.9rem;
+  font-weight:600;
+  font-size:.78rem;
   color:#020718;
 }
 
-#desktopDock{
+#actionDock{
   position:fixed;
   left:0;right:0;
   bottom:var(--cart-h);
   z-index:85;
-  padding:10px 10px calc(env(safe-area-inset-bottom, 0px) + 8px);
-  background:linear-gradient(to top, rgba(2,7,24,.98), rgba(2,7,24,.92));
+  padding:8px 10px calc(env(safe-area-inset-bottom, 0px) + 6px);
+  background:linear-gradient(to top, rgba(2,7,24,.98), rgba(2,7,24,.9));
   border-top:1px solid rgba(245,197,24,.18);
-  display:none;
 }
-#desktopDockInner{
+#actionDockInner{
   display:grid;
-  grid-template-columns:1fr 1fr .95fr;
+  grid-template-columns:repeat(3,1fr);
   gap:8px;
   max-width:760px;
   margin:0 auto;
 }
 .dockBtn{
-  min-height:52px;
+  min-height:46px;
   border:none;
-  border-radius:16px;
+  border-radius:14px;
   background:var(--paper-soft);
   color:var(--accent-soft2);
   border:1px solid rgba(245,197,24,.45);
-  font-size:.84rem;
+  font-size:.78rem;
   font-weight:700;
-  padding:10px 8px;
+  padding:8px 6px;
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:8px;
-  text-align:center;
-  line-height:1.1;
-  -webkit-tap-highlight-color:transparent;
-}
-.dockBtn:active{transform:scale(.98)}
-.dockBtn:disabled{opacity:.7}
-.dockIcon{font-size:1rem;line-height:1}
-.dockBtn.service{background:linear-gradient(180deg,#0d1b33,#091427)}
-.dockBtn.chat{background:var(--accent);color:#020718}
-
-#mobileFabWrap{
-  position:fixed;
-  right:14px;
-  bottom:calc(var(--cart-h) + env(safe-area-inset-bottom, 0px) + 14px);
-  z-index:96;
-}
-#helpFab{
-  width:var(--fab-size);
-  height:var(--fab-size);
-  border-radius:50%;
-  border:none;
-  background:var(--accent);
-  color:#020718;
-  box-shadow:0 10px 24px rgba(0,0,0,.35);
-  font-weight:700;
-  font-size:1rem;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-#helpFab span{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:2px;
-  line-height:1;
-  font-size:.72rem;
-}
-#helpFab strong{
-  font-size:1.15rem;
-}
-
-#mobileActionSheet{
-  position:fixed;
-  left:0;right:0;bottom:0;
-  z-index:115;
-  background:#07101f;
-  border-top-left-radius:22px;
-  border-top-right-radius:22px;
-  border:1px solid rgba(245,197,24,.2);
-  box-shadow:0 -14px 36px rgba(0,0,0,.45);
-  transform:translateY(105%);
-  transition:transform .28s ease;
-  padding:10px 12px calc(var(--cart-h) + env(safe-area-inset-bottom, 0px) + 12px);
-}
-#mobileActionSheet.open{transform:translateY(0)}
-.sheet-handle{
-  width:54px;
-  height:5px;
-  border-radius:999px;
-  background:rgba(255,255,255,.22);
-  margin:4px auto 12px;
-}
-.sheet-title{
-  font-size:.95rem;
-  font-weight:700;
-  color:var(--accent-soft2);
-  margin-bottom:10px;
+  gap:6px;
   text-align:center;
 }
-.mobile-actions{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:10px;
-}
-.sheetBtn{
-  min-height:52px;
-  border:none;
-  border-radius:16px;
-  background:var(--paper-soft);
-  color:var(--accent-soft2);
-  border:1px solid rgba(245,197,24,.35);
-  font-size:.92rem;
-  font-weight:700;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-}
-.sheetBtn.chat{
+.dockBtn.chat{
   background:var(--accent);
   color:#020718;
 }
-#sheetBackdrop{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  z-index:110;
-  display:none;
-}
-#sheetBackdrop.show{display:block}
 
 #cartBar{
   position:fixed;
@@ -344,19 +211,14 @@ select,input,textarea{
   padding:10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
   z-index:90;
 }
-#cartSummary{
-  font-weight:700;
-  max-width:55%;
-  line-height:1.2;
-}
+#cartSummary{font-weight:600}
 #checkoutBtn{
   background:var(--accent);
   color:#020718;
   padding:10px 18px;
-  border-radius:999px;
+  border-radius:22px;
   font-weight:700;
   border:none;
-  min-width:120px;
 }
 
 #cartModal{
@@ -370,7 +232,7 @@ select,input,textarea{
   width:92%;
   max-width:480px;
   max-height:88vh;
-  margin:24px auto;
+  margin:30px auto;
   padding:16px;
   border-radius:18px;
   display:flex;
@@ -384,16 +246,10 @@ select,input,textarea{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:12px;
-  margin-bottom:10px;
+  margin-bottom:8px;
   font-size:.85rem;
 }
 .cart-row small{color:#ccc}
-.qty{
-  display:flex;
-  align-items:center;
-  white-space:nowrap;
-}
 .qty button{
   background:#182342;
   color:#fff;
@@ -427,9 +283,10 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   font-size:.75rem;
   margin-bottom:6px;
 }
+
 #toast{
   position:fixed;
-  bottom:calc(var(--cart-h) + 18px);
+  bottom:calc(var(--cart-h) + var(--dock-h) + 18px);
   left:50%;
   transform:translateX(-50%);
   background:#0b1325;
@@ -438,13 +295,11 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   border-radius:20px;
   font-size:.8rem;
   display:none;
-  z-index:140;
-  text-align:center;
-  max-width:88vw;
+  z-index:110;
 }
 #hint{
   position:fixed;
-  bottom:calc(var(--cart-h) + 46px);
+  bottom:calc(var(--cart-h) + var(--dock-h) + 48px);
   left:50%;
   transform:translateX(-50%);
   background:rgba(0,0,0,.7);
@@ -453,8 +308,6 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   border-radius:18px;
   font-size:.75rem;
   z-index:110;
-  max-width:86vw;
-  text-align:center;
 }
 
 #upiOverlay{
@@ -482,7 +335,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   position:fixed;
   right:10px;
   left:10px;
-  bottom:calc(var(--cart-h) + env(safe-area-inset-bottom, 0px) + 12px);
+  bottom:calc(var(--cart-h) + var(--dock-h) + 12px);
   height:min(62vh,520px);
   max-width:420px;
   margin-left:auto;
@@ -492,7 +345,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   display:none;
   flex-direction:column;
   overflow:hidden;
-  z-index:125;
+  z-index:115;
   box-shadow:0 14px 40px rgba(0,0,0,.45);
 }
 #chatHeader{
@@ -611,101 +464,39 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   border:1px solid rgba(255,255,255,.16);
   margin-bottom:10px;
 }
-.payment-wrap.hidden{display:none}
 
-@media(min-width:821px){
+.payment-wrap.hidden{
+  display:none;
+}
+
+@media(max-width:480px){
   :root{
-    --dock-h:74px;
-    --cart-h:62px;
+    --dock-h:70px;
+    --cart-h:68px;
   }
-  #desktopDock{display:block}
-  #mobileFabWrap{display:none}
   .page{
-    padding:18px 14px calc(var(--cart-h) + var(--dock-h) + 30px);
+    padding:16px 12px calc(var(--cart-h) + var(--dock-h) + 34px);
   }
-  #toast{
-    bottom:calc(var(--cart-h) + var(--dock-h) + 18px);
+  #actionDockInner{
+    gap:6px;
   }
-  #hint{
-    bottom:calc(var(--cart-h) + var(--dock-h) + 48px);
-  }
-  #chatPanel{
-    bottom:calc(var(--cart-h) + var(--dock-h) + 12px);
-  }
-}
-
-@media(max-width:820px){
-  .page{
-    padding:16px 12px calc(var(--cart-h) + 20px);
-  }
-  .nav{
-    top:auto;
-    bottom:calc(var(--cart-h) + 110px);
-    transform:none;
-    padding:6px 4px;
-    font-size:22px;
-    z-index:40;
-    background:rgba(2,7,24,.55);
-  }
-  .item{
-    padding:9px;
-    border-radius:14px;
-  }
-  .item b{
-    font-size:.84rem;
-    min-height:2.45em;
-  }
-  .price{font-size:.72rem}
-  .add{
-    padding:9px;
-    font-size:.84rem;
-  }
-  .item select{
-    font-size:.76rem;
-    padding:8px 9px;
-  }
-  #checkoutBtn{
-    padding:10px 16px;
-    font-size:.84rem;
-    min-width:112px;
+  .dockBtn{
+    min-height:48px;
+    font-size:.72rem;
+    padding:8px 4px;
   }
   #cartSummary{
-    font-size:.9rem;
-  }
-  #contentsBtn{
-    padding:8px 14px;
     font-size:.86rem;
-  }
-}
-
-@media(max-width:430px){
-  .items-grid{
-    gap:10px;
-  }
-  .item-image{
-    aspect-ratio:1.22/1;
-  }
-  .item b{
-    font-size:.8rem;
-  }
-  .price{
-    margin-bottom:6px;
-  }
-  .item select{
-    margin-bottom:6px;
-  }
-  #cartBox{
-    width:94%;
-    margin:16px auto;
-    max-height:86vh;
-  }
-  #cartSummary{
-    max-width:50%;
-    font-size:.86rem;
+    max-width:52%;
+    line-height:1.2;
   }
   #checkoutBtn{
     padding:10px 14px;
-    min-width:108px;
+    font-size:.82rem;
+  }
+  #cartBox{
+    margin:20px auto;
+    max-height:84vh;
   }
 }
 </style>
@@ -719,46 +510,11 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 <div id="next" class="nav">❯</div>
 <button id="contentsBtn" onclick="go(3)">📑 Menu</button>
 
-<div id="desktopDock">
-  <div id="desktopDockInner">
-    <button class="dockBtn service waiter" id="callWaiterBtn">
-      <span class="dockIcon">🛎️</span>
-      <span>Call Waiter</span>
-    </button>
-    <button class="dockBtn service manager" id="callManagerBtn">
-      <span class="dockIcon">👨‍💼</span>
-      <span>Call Manager</span>
-    </button>
-    <button class="dockBtn chat" id="chatFabDesktop">
-      <span class="dockIcon">💬</span>
-      <span>Chat</span>
-    </button>
-  </div>
-</div>
-
-<div id="mobileFabWrap">
-  <button id="helpFab" aria-label="Open help options">
-    <span><strong>☰</strong>Help</span>
-  </button>
-</div>
-
-<div id="sheetBackdrop"></div>
-<div id="mobileActionSheet">
-  <div class="sheet-handle"></div>
-  <div class="sheet-title">Need help?</div>
-  <div class="mobile-actions">
-    <button class="sheetBtn" id="callWaiterMobile">
-      <span>🛎️</span>
-      <span>Call Waiter</span>
-    </button>
-    <button class="sheetBtn" id="callManagerMobile">
-      <span>👨‍💼</span>
-      <span>Call Manager</span>
-    </button>
-    <button class="sheetBtn chat" id="chatFabMobile">
-      <span>💬</span>
-      <span>Open Chat</span>
-    </button>
+<div id="actionDock">
+  <div id="actionDockInner">
+    <button class="dockBtn" id="callWaiterBtn">🔔 Waiter</button>
+    <button class="dockBtn" id="callManagerBtn">👨‍💼 Manager</button>
+    <button class="dockBtn chat" id="chatFab">💬 Chat</button>
   </div>
 </div>
 
@@ -921,6 +677,7 @@ const upiPaidBtn=document.getElementById("upiPaidBtn");
 const upiCancelBtn=document.getElementById("upiCancelBtn");
 const upiQrImg=document.getElementById("upiQrImg");
 
+const chatFab=document.getElementById("chatFab");
 const chatPanel=document.getElementById("chatPanel");
 const chatClose=document.getElementById("chatClose");
 const chatMessages=document.getElementById("chatMessages");
@@ -929,69 +686,12 @@ const chatSend=document.getElementById("chatSend");
 
 const callWaiterBtn=document.getElementById("callWaiterBtn");
 const callManagerBtn=document.getElementById("callManagerBtn");
-const chatFabDesktop=document.getElementById("chatFabDesktop");
-
-const helpFab=document.getElementById("helpFab");
-const sheetBackdrop=document.getElementById("sheetBackdrop");
-const mobileActionSheet=document.getElementById("mobileActionSheet");
-const callWaiterMobile=document.getElementById("callWaiterMobile");
-const callManagerMobile=document.getElementById("callManagerMobile");
-const chatFabMobile=document.getElementById("chatFabMobile");
 
 let cart=[],page=0,locked=false,menu={};
 let customerLocation=null;
 let pendingOrderPayload=null;
 let selectedRequestTags=[];
 let submitting=false;
-
-function isMobileView(){
-  return window.innerWidth <= 820;
-}
-
-function detailsAreFilled(){
-  const nameOk = !!nameInput.value.trim();
-  const mobileOk = !!mobileInput.value.trim();
-  const typeOk = !!orderTypeSel.value;
-
-  if(!nameOk || !mobileOk || !typeOk) return false;
-  if(orderTypeSel.value === "dinein" && !tableNumberSel.value) return false;
-  return true;
-}
-
-function syncPage2FromMain(){
-  const pageName = document.getElementById("pageName");
-  const pageMobile = document.getElementById("pageMobile");
-  const pageReg = document.getElementById("pageReg");
-  const pageOrderType = document.getElementById("pageOrderType");
-  const pageTableWrap = document.getElementById("pageTableWrap");
-  const pageTableNumber = document.getElementById("pageTableNumber");
-
-  if(pageName) pageName.value = nameInput.value;
-  if(pageMobile) pageMobile.value = mobileInput.value;
-  if(pageReg) pageReg.value = regInput.value;
-  if(pageOrderType) pageOrderType.value = orderTypeSel.value;
-  if(pageTableNumber) pageTableNumber.value = tableNumberSel.value;
-
-  if(pageTableWrap){
-    pageTableWrap.classList.toggle("hidden", orderTypeSel.value !== "dinein");
-  }
-}
-
-function redirectToDetailsPage(msg){
-  closeCart();
-  closeActionSheet();
-  if(msg) toast(msg);
-  syncPage2FromMain();
-  go(1);
-}
-
-function ensureDetailsBeforeAction(msg){
-  if(!detailsAreFilled()){
-    redirectToDetailsPage(msg || "Please fill your basic details first");
-    return false;
-  }
-  return true;
-}
 
 function updateOrderTypeUI(){
   const orderType = orderTypeSel.value;
@@ -1013,8 +713,6 @@ function updateOrderTypeUI(){
     customerLocation = null;
     locStatus.textContent = "";
   }
-
-  syncPage2FromMain();
 }
 orderTypeSel.addEventListener("change", updateOrderTypeUI);
 
@@ -1063,31 +761,9 @@ document.addEventListener("touchend",e=>{
   if(dx<-80)document.getElementById("next").onclick();
 });
 
-function openActionSheet(){
-  mobileActionSheet.classList.add("open");
-  sheetBackdrop.classList.add("show");
-}
-function closeActionSheet(){
-  mobileActionSheet.classList.remove("open");
-  sheetBackdrop.classList.remove("show");
-}
-helpFab.onclick=()=>openActionSheet();
-sheetBackdrop.onclick=()=>closeActionSheet();
-
-function openChat(){
-  closeActionSheet();
-  chatPanel.style.display="flex";
-}
-function closeChat(){
-  chatPanel.style.display="none";
-}
-chatClose.onclick=closeChat;
-chatFabDesktop.onclick=openChat;
-chatFabMobile.onclick=openChat;
-
 checkoutBtn.onclick=()=>{
-  if(!detailsAreFilled()){
-    redirectToDetailsPage("Please fill your details first");
+  if(cart.length===0){
+    toast("Cart is empty");
     return;
   }
   cartModal.style.display="block";
@@ -1098,13 +774,12 @@ function toast(msg){
   const t=document.getElementById("toast");
   t.innerText=msg;
   t.style.display="block";
-  clearTimeout(window.__toastTimer);
-  window.__toastTimer=setTimeout(()=>t.style.display="none",1600);
+  setTimeout(()=>t.style.display="none",1400);
 }
 
 fetch("/menu.json?_=" + Date.now(), { cache: "no-store" })
   .then(r=>r.json())
-  .then(m=>{menu=m;build();initChatbot();syncPage2FromMain();})
+  .then(m=>{menu=m;build();initChatbot();})
   .catch(()=>toast("Could not load menu"));
 
 function build(){
@@ -1187,11 +862,9 @@ function build(){
       <p style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;">
         Please share your basic details so we can serve you better.
       </p>
-
-      <input id="pageName" placeholder="Customer Name" oninput="nameInput.value=this.value">
-      <input id="pageMobile" placeholder="Mobile Number" oninput="mobileInput.value=this.value">
-      <input id="pageReg" placeholder="Registration / Room No. (optional)" oninput="regInput.value=this.value">
-
+      <input placeholder="Customer Name" oninput="nameInput.value=this.value" value="">
+      <input placeholder="Mobile Number" oninput="mobileInput.value=this.value" value="">
+      <input placeholder="Registration / Room No. (optional)" oninput="regInput.value=this.value" value="">
       <select id="pageOrderType" onchange="syncPageDetails()">
         <option value="">Select Order Type</option>
         <option value="dinein">Dine-in</option>
@@ -1276,8 +949,8 @@ function build(){
 
         html += `
         <div class="item">
-          ${img ? `<div class="item-image">
-                     <img src="${img}" alt="${it.name}">
+          ${img ? `<div style="width:100%;height:90px;margin-bottom:6px;overflow:hidden;border-radius:10px;">
+                     <img src="${img}" alt="${it.name}" style="width:100%;height:100%;object-fit:cover;">
                    </div>` : ``}
           <b>${it.name}</b>
           <div class="price">From ₹${min}</div>
@@ -1310,10 +983,6 @@ function syncPageDetails(){
   const pageTableWrap = document.getElementById("pageTableWrap");
   const pageTableNumber = document.getElementById("pageTableNumber");
 
-  if(document.getElementById("pageName")) nameInput.value = document.getElementById("pageName").value;
-  if(document.getElementById("pageMobile")) mobileInput.value = document.getElementById("pageMobile").value;
-  if(document.getElementById("pageReg")) regInput.value = document.getElementById("pageReg").value;
-
   orderTypeSel.value = pageOrderType.value;
   pageTableWrap.classList.toggle("hidden", pageOrderType.value !== "dinein");
 
@@ -1328,14 +997,8 @@ function syncPageDetails(){
 }
 
 function goNextFromDetails(){
-  const pageName = document.getElementById("pageName");
-  const pageMobile = document.getElementById("pageMobile");
   const pageOrderType = document.getElementById("pageOrderType");
   const pageTableNumber = document.getElementById("pageTableNumber");
-
-  nameInput.value = pageName.value;
-  mobileInput.value = pageMobile.value;
-  regInput.value = document.getElementById("pageReg").value;
 
   if(!nameInput.value.trim()) return alert("Enter customer name");
   if(!mobileInput.value.trim()) return alert("Enter mobile number");
@@ -1350,8 +1013,6 @@ function goNextFromDetails(){
 }
 
 function add(name,btn){
-  if(!ensureDetailsBeforeAction("Fill basic details first")) return;
-
   const sel=btn.previousElementSibling;
   if(!sel.value){alert("Please choose an option");return;}
   const price=+sel.value;
@@ -1477,7 +1138,6 @@ function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethodLabel){
     selectedRequestTags=[];
     document.querySelectorAll(".request-chip").forEach(ch=>ch.classList.remove("active"));
     updateOrderTypeUI();
-    syncPage2FromMain();
     go(0);
   };
 }
@@ -1539,17 +1199,16 @@ upiCancelBtn.onclick = () => {
 };
 
 placeOrderBtn.onclick = async () => {
-  if(!ensureDetailsBeforeAction("Please fill your details first")) return;
   if(submitting)return;
   if(cart.length===0)return alert("Cart empty");
 
   const orderType = orderTypeSel.value;
   if(!orderType) return alert("Select order type");
-  if(!nameInput.value.trim()) return redirectToDetailsPage("Enter name first");
-  if(!mobileInput.value.trim()) return redirectToDetailsPage("Enter mobile first");
+  if(!nameInput.value.trim()) return alert("Enter name");
+  if(!mobileInput.value.trim()) return alert("Enter mobile");
 
   if(orderType === "dinein" && !tableNumberSel.value){
-    return redirectToDetailsPage("Please select table number");
+    return alert("Please select table number");
   }
 
   if(orderType === "delivery" && !addressInput.value.trim()){
@@ -1665,7 +1324,7 @@ function suggestByIntent(msg){
     },
     {
       match: ["waiter", "manager", "call waiter", "call manager"],
-      reply: "Use Help to call waiter, call manager, or open chat."
+      reply: "Use the bottom action buttons to call waiter, call manager, or open chat."
     }
   ];
 
@@ -1695,146 +1354,132 @@ function suggestByIntent(msg){
     { keys:["budget", "cheap", "under 100", "under ₹100", "low price"], group:"budget", title:"Budget-friendly options" },
     { keys:["rice", "fried rice"], group:"rice", title:"Rice options" },
     { keys:["noodles", "noodle"], group:"noodles", title:"Noodles options" },
-    { keys:["starter", "starters", "snacks"], group:"starters", title:"Starter options" },
-    { keys:["egg"], group:"egg", title:"Egg options" },
-    { keys:["paneer"], group:"paneer", title:"Paneer options" }
+    { keys:["starter", "starters"], group:"starters", title:"Starter options" },
+    { keys:["egg"], group:"egg", title:"Egg items" },
+    { keys:["paneer"], group:"paneer", title:"Paneer items" }
   ];
 
-  for(const rule of intentChecks){
-    if(rule.keys.some(k => text.includes(k))){
-      const picks = pickAvailable(trainedGroups[rule.group] || []);
-      if(picks.length){
-        return { type:"items", title:rule.title, items:picks.slice(0,5) };
-      }
+  for(const check of intentChecks){
+    if(check.keys.some(k => text.includes(k))){
+      const picks = pickAvailable(trainedGroups[check.group]).slice(0,5);
+      if(!picks.length) break;
+      return {
+        type:"items",
+        title:check.title,
+        items:picks
+      };
     }
   }
 
-  const nameMatch = all.filter(i => text.includes(i.lowerName) || i.lowerName.includes(text)).slice(0,5);
-  if(nameMatch.length){
-    return { type:"items", title:"Here’s what I found", items:nameMatch };
+  const searchMatches = all.filter(i =>
+    text.split(/\s+/).some(word => word.length > 2 && (i.lowerName.includes(word) || i.category.toLowerCase().includes(word)))
+  ).slice(0,5);
+
+  if(searchMatches.length){
+    return {
+      type:"items",
+      title:"You may like",
+      items:searchMatches
+    };
   }
 
   return {
     type:"text",
-    text:"I can help with:\n• best food\n• spicy food\n• veg / non-veg\n• budget food\n• rice / noodles / starters\n• payment / delivery help"
+    text:"Try asking about best food, spicy food, veg food, budget food, noodles, rice, starters, payment help, or delivery help."
   };
 }
 
-function addBotMessage(text){
-  const div = document.createElement("div");
-  div.className = "msg botMsg";
-  div.textContent = text;
+function addMsg(text, who="bot"){
+  const div=document.createElement("div");
+  div.className=`msg ${who==="bot" ? "botMsg" : "userMsg"}`;
+  div.textContent=text;
   chatMessages.appendChild(div);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  chatMessages.scrollTop=chatMessages.scrollHeight;
 }
 
-function addUserMessage(text){
-  const div = document.createElement("div");
-  div.className = "msg userMsg";
-  div.textContent = text;
-  chatMessages.appendChild(div);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function addBotItemReply(title, items){
-  const lines = items.map(i => `• ${i.name} — from ₹${i.minPrice}`);
-  addBotMessage(`${title}\n${lines.join("\n")}`);
-}
-
-function runChatQuery(q){
+function handleChatAsk(q){
   if(!q.trim()) return;
-  addUserMessage(q);
+  addMsg(q,"user");
   const result = suggestByIntent(q);
-  setTimeout(()=>{
-    if(result.type === "items"){
-      addBotItemReply(result.title, result.items);
-    }else{
-      addBotMessage(result.text);
-    }
-  }, 250);
+
+  if(result.type === "text"){
+    addMsg(result.text,"bot");
+    return;
+  }
+
+  let lines = [result.title + ":"];
+  result.items.forEach(i=>{
+    lines.push(`• ${i.name} — from ₹${i.minPrice}`);
+  });
+  addMsg(lines.join("\n"),"bot");
 }
 
 function initChatbot(){
-  chatMessages.innerHTML = "";
-  addBotMessage("Hi 👋 Welcome to Abba SEENUUU... FAST FOODS.\nAsk me for best food, spicy food, veg food, noodles, rice, or budget suggestions.");
+  addMsg("Hi 👋 I can help you choose food, explain payment, and guide delivery steps.","bot");
+
+  document.querySelectorAll(".faqBtn").forEach(btn=>{
+    btn.onclick=()=>handleChatAsk(btn.getAttribute("data-q") || "");
+  });
+
+  chatSend.onclick=()=>{
+    const q = chatInput.value.trim();
+    if(!q) return;
+    handleChatAsk(q);
+    chatInput.value="";
+  };
+
+  chatInput.addEventListener("keydown",e=>{
+    if(e.key==="Enter"){
+      e.preventDefault();
+      chatSend.onclick();
+    }
+  });
 }
 
-chatSend.onclick = ()=>{
-  const q = chatInput.value.trim();
-  if(!q) return;
-  runChatQuery(q);
-  chatInput.value = "";
+chatFab.onclick=()=>{
+  chatPanel.style.display = chatPanel.style.display === "flex" ? "none" : "flex";
 };
-chatInput.addEventListener("keydown", e=>{
-  if(e.key === "Enter"){
-    e.preventDefault();
-    chatSend.click();
-  }
-});
-document.querySelectorAll(".faqBtn").forEach(btn=>{
-  btn.onclick = ()=>{
-    const q = btn.getAttribute("data-q");
-    runChatQuery(q);
-  };
-});
+chatClose.onclick=()=>chatPanel.style.display="none";
 
-async function sendServiceRequest(type, btn){
-  if(!ensureDetailsBeforeAction("Please fill your basic details first")) return;
-
-  const originalHtml = btn ? btn.innerHTML : "";
-  if(btn){
-    btn.disabled = true;
-    btn.innerHTML = `<span>⏳</span><span>Sending...</span>`;
+async function sendServiceRequest(type){
+  if(!nameInput.value.trim()) return alert("Please enter customer name first.");
+  if(!mobileInput.value.trim()) return alert("Please enter mobile number first.");
+  if(!orderTypeSel.value) return alert("Please select order type first.");
+  if(orderTypeSel.value === "dinein" && !tableNumberSel.value){
+    return alert("Please select table number first.");
   }
 
   const payload = {
     type,
-    customerName: nameInput.value.trim() || "",
-    mobile: mobileInput.value.trim() || "",
-    registrationNumber: regInput.value.trim() || "",
-    orderType: orderTypeSel.value || "",
+    customerName: nameInput.value.trim(),
+    mobile: mobileInput.value.trim(),
+    orderType: orderTypeSel.value,
     tableNumber: orderTypeSel.value === "dinein" ? tableNumberSel.value : "",
-    address: orderTypeSel.value === "delivery" ? addressInput.value.trim() : "",
-    location: customerLocation || null,
-    createdAt: new Date().toISOString(),
+    registrationNumber: regInput.value.trim(),
     source: "customer-menu"
   };
 
   try{
-    const res = await fetch("/api/service-request", {
+    const res = await fetch("/api/service-request",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body: JSON.stringify(payload)
+      body:JSON.stringify(payload)
     });
 
-    if(res.ok){
-      toast(`${type} request sent`);
-      closeActionSheet();
-    }else{
-      toast(`Could not send ${type.toLowerCase()} request`);
-    }
-  }catch(e){
-    console.error(e);
-    toast(`Could not send ${type.toLowerCase()} request`);
-  }finally{
-    if(btn){
-      setTimeout(()=>{
-        btn.disabled = false;
-        btn.innerHTML = originalHtml;
-      }, 700);
-    }
+    if(!res.ok) throw new Error("Request failed");
+
+    const data = await res.json();
+    if(!data.success) throw new Error("Request failed");
+
+    toast(type === "waiter" ? "Waiter called" : "Manager called");
+  }catch(err){
+    console.error(err);
+    alert("Could not send request. Please try again.");
   }
 }
 
-callWaiterBtn.onclick = ()=> sendServiceRequest("Call Waiter", callWaiterBtn);
-callManagerBtn.onclick = ()=> sendServiceRequest("Call Manager", callManagerBtn);
-callWaiterMobile.onclick = ()=> sendServiceRequest("Call Waiter", callWaiterMobile);
-callManagerMobile.onclick = ()=> sendServiceRequest("Call Manager", callManagerMobile);
-
-build();
-updateCart();
-updateOrderTypeUI();
-window.addEventListener("resize", ()=>syncPage2FromMain());
+callWaiterBtn.onclick=()=>sendServiceRequest("waiter");
+callManagerBtn.onclick=()=>sendServiceRequest("manager");
 </script>
 
 </body>
