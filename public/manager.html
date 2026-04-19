@@ -654,7 +654,6 @@
         if (res.ok && data.success) {
           loginOverlay.style.display = "none";
           managerApp.style.display   = "block";
-
           await initializeManagerApp();
         } else {
           loginError.textContent = data.message || `Login failed (status ${res.status})`;
@@ -1232,9 +1231,7 @@
         if (!res.ok) return;
 
         const list = await res.json();
-        pendingDineInRequests = Array.isArray(list)
-          ? list.filter(Boolean)
-          : [];
+        pendingDineInRequests = Array.isArray(list) ? list.filter(Boolean) : [];
 
         updatePendingTabBadge();
         renderPendingDineInSection();
@@ -1337,6 +1334,23 @@
       });
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // FIXED acceptPendingDineIn
+    //
+    // KEY FIXES:
+    // 1. On server success, the response now contains { draft } with the full
+    //    updated draft. We apply it directly to tableOrders[tableNo] instead
+    //    of doing a separate fetch — this removes a race condition where the
+    //    re-fetch could return stale data.
+    //
+    // 2. We ALWAYS call selectTable(tableNo) after updating tableOrders so the
+    //    right-side POS panel reflects the new items, even if the manager is
+    //    currently viewing a different table.
+    //
+    // 3. We do NOT rely on the tableDraftUpdated socket event to update the
+    //    draft because socket events can arrive before or after the accept
+    //    response finishes, causing double-render confusion.
+    // ═══════════════════════════════════════════════════════════════════════
     async function acceptPendingDineIn(requestId) {
       const req = pendingDineInRequests.find(r => getPendingRequestId(r) === requestId);
       if (!req || !requestId) return;
@@ -1358,19 +1372,35 @@
           headers: { "Content-Type": "application/json" }
         });
 
-        if (!res.ok) throw new Error("Server accept failed");
+        if (!res.ok) {
+          let errMsg = "Server error";
+          try { const errData = await res.json(); errMsg = errData.detail || errData.error || errMsg; } catch(e) {}
+          throw new Error(errMsg);
+        }
 
-        await loadSingleTableDraft(tableNo);
+        const data = await res.json();
+
+        if (data.success && data.draft) {
+          // Apply the returned draft directly — no extra fetch needed
+          tableOrders[tableNo] = normalizeTablePayload(data.draft, tableNo);
+        } else {
+          // Fallback: fetch the draft if server didn't return it
+          await loadSingleTableDraft(tableNo);
+        }
+
+        // Remove from pending list
         removePendingRequestById(requestId);
 
+        // Switch to tables tab and show the updated table
         setActiveTab("tables");
         selectTable(tableNo);
-        toast(`Accepted: items added to Table ${tableNo}`);
+
+        toast(`✅ Accepted! Items added to Table ${tableNo}`);
       } catch(e) {
-        console.error(e);
+        console.error("Accept error:", e);
         pendingActionIds.delete(requestId);
         renderPendingDineInSection();
-        toast("Could not accept: server error. Please try again.");
+        toast(`Could not accept: ${e.message}. Please try again.`);
       }
     }
 
@@ -1479,22 +1509,46 @@
       }
     }
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // FIXED loadSingleTableDraft
+    //
+    // BUG: Old code only called selectTable(tableNo) if selectedTable === tableNo,
+    // meaning if the manager was on a different table, the draft would load
+    // silently into tableOrders[tableNo] but the selected table's UI would
+    // never re-render with the new items.
+    //
+    // FIX: Always update tableOrders[tableNo] and always re-render the tables
+    // list. If tableNo IS the selected table, also re-render the draft panel.
+    // ═══════════════════════════════════════════════════════════════════════
     async function loadSingleTableDraft(tableNo) {
       try {
         const res = await fetch(`/api/table-orders/${tableNo}`);
-        if (!res.ok) return;
-
-        const draft = await res.json();
-        if (draft) {
+        if (res.ok) {
+          const draft = await res.json();
           tableOrders[tableNo] = normalizeTablePayload(draft, tableNo);
-        } else {
+        } else if (res.status === 404) {
           tableOrders[tableNo] = createEmptyTable(tableNo);
         }
-
-        if (selectedTable === tableNo) selectTable(tableNo);
-        else renderTablesList();
       } catch(e) {
         console.warn("Could not load table draft", e);
+        tableOrders[tableNo] = createEmptyTable(tableNo);
+      }
+
+      // Always re-render the tables list sidebar
+      renderTablesList();
+
+      // If this is the currently selected table, re-render the full right panel
+      if (selectedTable === tableNo) {
+        // Re-populate the customer detail inputs from the loaded draft
+        const table = tableOrders[tableNo];
+        tableCustomerName.value   = table.customerName;
+        tableCustomerMobile.value = table.mobile;
+        tableGuestCount.value     = table.guestCount || 1;
+
+        selectedTableBadge.textContent = table.status === "draft" ? "Draft" : table.status === "billed" ? "Billed" : "Available";
+        selectedTableBadge.className   = `table-status-badge ${table.status === "draft" ? "status-draft" : table.status === "billed" ? "status-billed" : "status-available"}`;
+
+        renderSelectedTableDraft();
       }
     }
 
@@ -1823,10 +1877,37 @@
       toast(`Table ${selectedTable} finalized, bill printed, added to Order History`);
     };
 
-    socket.on("tableDraftUpdated", async (payload) => {
+    // ═══════════════════════════════════════════════════════════════════════
+    // FIXED socket handlers for tableDraftUpdated and pendingDineInAccepted
+    //
+    // BUG: tableDraftUpdated was calling loadSingleTableDraft which would make
+    // a NEW fetch to the server. But we already have the full draft object in
+    // the payload. Applying it directly avoids a race-condition fetch.
+    //
+    // BUG: pendingDineInAccepted was only removing from pending list, but not
+    // updating the table draft in memory. The draft update is now handled by
+    // tableDraftUpdated which always fires before or alongside this event.
+    // ═══════════════════════════════════════════════════════════════════════
+    socket.on("tableDraftUpdated", (payload) => {
+      if (!payload) return;
       const tableNo = Number(payload?.tableNumber || 0);
       if (!tableNo || tableNo < 1 || tableNo > TABLECOUNT) return;
-      await loadSingleTableDraft(tableNo);
+
+      // Apply the draft directly from the payload (no extra server round-trip)
+      tableOrders[tableNo] = normalizeTablePayload(payload, tableNo);
+
+      // Re-render the tables list so the sidebar shows updated item count/total
+      renderTablesList();
+
+      // If this is the selected table, update the full right panel
+      if (selectedTable === tableNo) {
+        tableCustomerName.value   = tableOrders[tableNo].customerName;
+        tableCustomerMobile.value = tableOrders[tableNo].mobile;
+        tableGuestCount.value     = tableOrders[tableNo].guestCount || 1;
+        selectedTableBadge.textContent = tableOrders[tableNo].status === "draft" ? "Draft" : tableOrders[tableNo].status === "billed" ? "Billed" : "Available";
+        selectedTableBadge.className   = `table-status-badge ${tableOrders[tableNo].status === "draft" ? "status-draft" : tableOrders[tableNo].status === "billed" ? "status-billed" : "status-available"}`;
+        renderSelectedTableDraft();
+      }
     });
 
     socket.on("tableDraftCleared", (payload) => {
@@ -1846,16 +1927,16 @@
       await renderDashboard();
     });
 
-   socket.on("pendingDineInAccepted", async (payload) => {
-  removePendingRequestById(payload?.id || payload);   // FIX: extract .id from payload object
-  await loadAllTableDrafts();
-  renderTablesList();
-  selectTable(selectedTable);
-});
+    socket.on("pendingDineInAccepted", (payload) => {
+      // Just remove from pending list; the draft update is handled by tableDraftUpdated
+      const id = payload?.id || payload;
+      removePendingRequestById(id);
+    });
 
-socket.on("pendingDineInRejected", (payload) => {
-  removePendingRequestById(payload?.id || payload);   // FIX: same fix
-});
+    socket.on("pendingDineInRejected", (payload) => {
+      const id = payload?.id || payload;
+      removePendingRequestById(id);
+    });
 
     renderTablesList();
     renderSelectedTableDraft();
