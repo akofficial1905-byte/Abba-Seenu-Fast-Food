@@ -372,64 +372,63 @@ app.post("/api/pending-dinein/:id/accept", async (req, res) => {
       return res.json({ success: true, draft: null });
     }
 
-    // Mark accepted to prevent double-processing
-    await PendingDineIn.findByIdAndUpdate(id, { status: "accepted" });
+   // Mark accepted safely
+pending.status = "accepted";
+await pending.save();
 
-    // Merge incoming items into existing draft items
-    const existingDraft = await TableDraft.findOne({ tableNumber });
-    const baseItems = (existingDraft?.items || []).map((i) => ({
-      name: i.name || "", variant: i.variant || "",
-      price: Number(i.price || 0), qty: Number(i.qty || 0), category: i.category || ""
-    }));
+// Get or create draft
+let draft = await TableDraft.findOne({ tableNumber });
 
-    (pending.items || []).forEach((inc) => {
-      if (!inc.name || !inc.qty) return;
-      const idx = baseItems.findIndex(
-        (x) => x.name === inc.name && (x.variant || "") === (inc.variant || "")
-      );
-      if (idx >= 0) baseItems[idx].qty += Number(inc.qty || 1);
-      else baseItems.push({
-        name: inc.name, variant: inc.variant || "",
-        price: Number(inc.price || 0), qty: Number(inc.qty || 1),
-        category: inc.category || ""
-      });
-    });
+if (!draft) {
+  draft = new TableDraft({
+    tableNumber,
+    customerName: pending.customerName || "",
+    mobile: pending.mobile || "",
+    guestCount: pending.guestCount || 1,
+    items: pending.items || [],
+    status: "draft"
+  });
+} else {
+  const mergedItems = [...(draft.items || [])];
 
-    const finalTotal = calcTotal(baseItems);
-
-    // Use findOneAndUpdate with upsert to avoid the pre-save hook entirely
-    // This is the safest pattern — no hook, no next(), no mongoose version issues
-    const draft = await TableDraft.findOneAndUpdate(
-      { tableNumber },
-      {
-        $set: {
-          status:    "draft",
-          items:     baseItems,
-          total:     finalTotal,
-          updatedAt: new Date(),
-          // Auto-fill customer details only if the draft fields are currently blank
-          ...(existingDraft?.customerName ? {} : { customerName: pending.customerName || "" }),
-          ...(existingDraft?.mobile       ? {} : { mobile:       pending.mobile       || "" })
-        },
-        $setOnInsert: {
-          tableNumber,
-          customerName: pending.customerName || "",
-          mobile:       pending.mobile       || "",
-          guestCount:   pending.guestCount   || 1,
-          createdAt:    new Date()
-        }
-      },
-      { new: true, upsert: true }
+  (pending.items || []).forEach((pItem) => {
+    const existing = mergedItems.find(
+      (i) => i.name === pItem.name && i.variant === pItem.variant
     );
 
-    const draftObj = draft.toObject ? draft.toObject() : draft;
-    draftObj._id   = draftObj._id.toString();
+    if (existing) {
+      existing.qty += Number(pItem.qty || 0);
+    } else {
+      mergedItems.push({
+        name: pItem.name || "",
+        variant: pItem.variant || "",
+        price: Number(pItem.price || 0),
+        qty: Number(pItem.qty || 0),
+        category: pItem.category || ""
+      });
+    }
+  });
 
-    io.emit("tableDraftUpdated",     draftObj);
-    io.emit("pendingDineInAccepted", { id: id.toString(), tableNumber });
+  draft.items = mergedItems;
 
-    console.log(`✅ Table ${tableNumber} accepted: ${baseItems.length} items ₹${finalTotal}`);
-    res.json({ success: true, draft: draftObj });
+  if (!draft.customerName) draft.customerName = pending.customerName || "";
+  if (!draft.mobile) draft.mobile = pending.mobile || "";
+
+  draft.status = "draft";
+}
+
+await draft.save();
+
+const obj = draft.toObject();
+obj._id = obj._id.toString();
+
+io.emit("tableDraftUpdated", obj);
+io.emit("pendingDineInAccepted", {
+  id: id.toString(),
+  tableNumber
+});
+
+return res.json({ success: true, draft: obj });
   } catch (err) {
     console.error("Accept error:", err.message);
     res.status(500).json({ success: false, error: "Could not accept", detail: err.message });
