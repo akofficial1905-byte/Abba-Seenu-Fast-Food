@@ -110,6 +110,12 @@
       color:#fde68a;
     }
 
+    .mini-btn-primary {
+      background:#fbbf24;
+      color:#111827;
+      border-color:#fbbf24;
+    }
+
     .pos-menu-item {
       border:1px solid #334155;
       border-radius:14px;
@@ -199,7 +205,6 @@
 </head>
 <body class="bg-gradient-to-b from-slate-900 via-gray-900 to-black text-gray-100 min-h-screen">
 
-  <!-- LOGIN -->
   <div id="loginOverlay">
     <div class="bg-slate-900 border border-amber-400 rounded-2xl px-6 py-6 w-[92%] max-w-sm shadow-2xl">
       <h2 class="text-xl font-extrabold text-amber-300 mb-2 text-center">Manager Login</h2>
@@ -223,7 +228,6 @@
     </div>
   </div>
 
-  <!-- APP -->
   <div id="managerApp" class="max-w-7xl mx-auto p-4 md:p-6" style="display:none;">
     <header class="flex justify-between items-start mb-4 gap-3 mobile-stack">
       <div>
@@ -250,7 +254,6 @@
       </div>
     </header>
 
-    <!-- TABS -->
     <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
       <button id="tabOrders" class="tab-btn tab-btn-active">Orders</button>
       <button id="tabAnalytics" class="tab-btn">Analytics &amp; Insights</button>
@@ -258,14 +261,13 @@
       <button id="tabTables" class="tab-btn">Tables / Dine-In POS</button>
     </div>
 
-    <!-- ORDERS TAB -->
     <div id="ordersTab">
       <div class="bg-red-950/30 rounded-2xl border border-red-500/40 p-4 mb-4">
         <div class="flex items-center justify-between gap-3 mb-3 mobile-stack">
           <div>
             <h2 class="text-sm md:text-base font-bold text-red-300">Live Service Requests</h2>
             <p class="text-[11px] md:text-xs text-gray-400 mt-1">
-              Customer calls from the new index page will appear here with name, order type and table number.
+              Customer calls from the customer page will appear here with name, order type and table number.
             </p>
           </div>
           <button id="clearServiceRequestsBtn" class="mini-btn">Clear</button>
@@ -280,7 +282,7 @@
             <input id="datePicker" type="date" class="bg-slate-800 border border-amber-400 rounded-full px-3 py-1.5 text-xs md:text-sm" />
           </div>
           <div class="text-[11px] md:text-xs text-gray-400">
-            Showing orders for selected date. Auto-refreshes on every new order.
+            Live Orders shows takeaway/delivery only. Finalized dine-in bills appear in history.
           </div>
         </div>
       </div>
@@ -303,7 +305,6 @@
       </div>
     </div>
 
-    <!-- ANALYTICS TAB -->
     <div id="analyticsTab" style="display:none;">
       <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6 mb-4">
         <h2 class="text-lg md:text-xl font-extrabold text-amber-300 mb-3">Daily Snapshot</h2>
@@ -391,7 +392,6 @@
       </section>
     </div>
 
-    <!-- INVENTORY TAB -->
     <div id="inventoryTab" style="display:none;">
       <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-3 mobile-stack">
@@ -426,7 +426,6 @@
       </section>
     </div>
 
-    <!-- TABLES TAB -->
     <div id="tablesTab" style="display:none;">
       <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6">
         <div class="flex items-center justify-between gap-3 mb-4 table-top-actions">
@@ -435,24 +434,22 @@
               Tables / Dine-In POS
             </h2>
             <p class="text-[11px] md:text-xs text-gray-400 mt-1">
-              Manage 5 dine-in tables, add dishes without photos, keep draft orders open, and print when needed.
+              Dine-in stays here as a shared draft by table number until Save &amp; Print finalizes the bill.
             </p>
           </div>
 
           <div class="flex gap-2 flex-wrap">
             <button id="saveTableDraftBtn" class="mini-btn">Save Draft</button>
-            <button id="printTableBillBtn" class="mini-btn">Print Bill</button>
+            <button id="saveAndPrintTableBillBtn" class="mini-btn mini-btn-primary">Save &amp; Print</button>
             <button id="clearTableBtn" class="mini-btn">Clear Table</button>
           </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 table-pos-grid">
-          <!-- LEFT: TABLES -->
           <div class="space-y-3">
             <div id="tablesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3"></div>
           </div>
 
-          <!-- RIGHT: TABLE EDITOR -->
           <div class="space-y-4">
             <div class="bg-slate-950/60 rounded-2xl border border-slate-700 p-4">
               <div class="flex items-start justify-between gap-3 mobile-stack">
@@ -479,7 +476,6 @@
               </div>
             </div>
 
-            <!-- ADD ITEMS -->
             <div class="bg-slate-950/60 rounded-2xl border border-slate-700 p-4">
               <div class="flex items-center justify-between gap-3 mb-3 mobile-stack">
                 <div>
@@ -492,12 +488,11 @@
               <div id="tableMenuList" class="grid md:grid-cols-2 gap-3 max-h-[340px] overflow-y-auto pr-1"></div>
             </div>
 
-            <!-- CURRENT TABLE CART -->
             <div class="bg-slate-950/60 rounded-2xl border border-slate-700 p-4">
               <div class="flex items-center justify-between gap-3 mb-3 mobile-stack">
                 <div>
                   <h3 class="text-base md:text-lg font-extrabold text-amber-300">Current Draft</h3>
-                  <p class="text-[11px] md:text-xs text-gray-400">Keep adding items until final bill.</p>
+                  <p class="text-[11px] md:text-xs text-gray-400">Customer and manager edits should stay in the same draft until final bill.</p>
                 </div>
                 <div class="text-right">
                   <div class="text-[11px] text-gray-400">Draft Total</div>
@@ -513,7 +508,6 @@
     </div>
   </div>
 
-  <!-- CHANGE LOGIN MODAL -->
   <div id="changeLoginModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50" style="display:none;">
     <div class="bg-slate-900 rounded-2xl border border-amber-400 p-5 w-[92%] max-w-sm">
       <h2 class="text-lg font-extrabold text-amber-300 mb-2 text-center">Change Manager Login</h2>
@@ -602,8 +596,9 @@
           await loadInventory();
           await loadMenuForTables();
           syncRestaurantToggleWithInventory();
-          fetchOrders(getLocalToday());
-          renderDashboard();
+          await loadAllTableDrafts();
+          await fetchOrders(getLocalToday());
+          await renderDashboard();
           renderTablesList();
           selectTable(1);
         } else {
@@ -673,7 +668,6 @@
       }
     };
 
-    // TABS
     const tabOrders = document.getElementById("tabOrders");
     const tabAnalytics = document.getElementById("tabAnalytics");
     const tabInventory = document.getElementById("tabInventory");
@@ -699,7 +693,6 @@
     tabInventory.onclick = () => setActiveTab("inventory");
     tabTables.onclick = () => setActiveTab("tables");
 
-    // INVENTORY / MENU DATA
     let menuData = null;
     let tableMenuFlat = [];
 
@@ -857,7 +850,6 @@
       await loadMenuForTables();
     };
 
-    // DATE / ORDERS
     function getLocalToday() {
       const d = new Date();
       const off = d.getTimezoneOffset();
@@ -880,77 +872,91 @@
       }
     }
 
-    async function fetchOrders(dateStr) {
-      try {
-        const res = await fetch(`/api/orders?date=${dateStr}`);
-        const orders = await res.json();
+    function isLiveOrder(o) {
+      if (!o) return false;
+      if (o.orderType === "dinein") return false;
+      return o.status !== "delivered";
+    }
 
-        ordersList.innerHTML = "";
-        historyList.innerHTML = "";
+    function isHistoryOrder(o) {
+      if (!o) return false;
+      if (o.orderType === "dinein") return true;
+      return o.status === "delivered";
+    }
 
-        orders.forEach(o => {
-          const card = document.createElement("div");
-          card.className = "border border-slate-700 rounded-xl p-3 bg-slate-900/60";
+    function buildOrderCard(o) {
+      const card = document.createElement("div");
+      card.className = "border border-slate-700 rounded-xl p-3 bg-slate-900/60";
 
-          const typeClass =
-            o.orderType === "dinein" ? "order-type-dinein" :
-            o.orderType === "takeaway" ? "order-type-takeaway" :
-            "order-type-delivery";
+      const typeClass =
+        o.orderType === "dinein" ? "order-type-dinein" :
+        o.orderType === "takeaway" ? "order-type-takeaway" :
+        "order-type-delivery";
 
-          const itemsText = (o.items || [])
-            .map(i => `${i.name}${i.variant ? ` (${i.variant})` : ""} x${i.qty}`)
-            .join(", ");
+      const itemsText = (o.items || [])
+        .map(i => `${i.name}${i.variant ? ` (${i.variant})` : ""} x${i.qty}`)
+        .join(", ");
 
-          card.innerHTML = `
-            <div class="flex justify-between items-start mb-2 gap-2">
-              <div>
-                <div class="flex items-center mb-1 flex-wrap">
-                  <span class="order-type-badge ${typeClass}">
-                    ${o.orderType || ""}
-                  </span>
-                  <span class="order-card-title">
-                    ${o.customerName || "No name"} • ₹${o.total || 0}
-                  </span>
-                </div>
-                <div class="order-card-meta text-gray-400">
-                  ${o.mobile ? `📞 ${o.mobile}` : ""}${o.tableNumber ? ` • Table ${o.tableNumber}` : ""}
-                </div>
-                ${renderOrderDetails(o)}
-              </div>
+      const statusButtons = o.orderType === "dinein"
+        ? ""
+        : `
+          <div class="flex flex-wrap gap-2 text-[11px]">
+            <button data-action="status" data-status="delivered" class="px-2 py-1 rounded-full border border-slate-600 text-gray-200">
+              Delivered
+            </button>
+            <button data-action="payment" class="px-2 py-1 rounded-full border border-emerald-500 text-emerald-300">
+              Paid
+            </button>
+          </div>
+        `;
 
-              <div class="text-right text-[11px] text-gray-400">
-                ${o.createdAt ? new Date(o.createdAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}) : ""}
-              </div>
+      const dineinMeta = o.orderType === "dinein"
+        ? `<div class="text-[11px] text-amber-300 mt-2">Finalized from table workflow</div>`
+        : "";
+
+      card.innerHTML = `
+        <div class="flex justify-between items-start mb-2 gap-2">
+          <div>
+            <div class="flex items-center mb-1 flex-wrap">
+              <span class="order-type-badge ${typeClass}">
+                ${o.orderType || ""}
+              </span>
+              <span class="order-card-title">
+                ${o.customerName || "No name"} • ₹${o.total || 0}
+              </span>
             </div>
-
-            <div class="order-card-items text-gray-100 mb-2">${itemsText || "No items"}</div>
-
-            <div class="flex flex-wrap gap-2 text-[11px]">
-              <button data-action="status" data-status="delivered" class="px-2 py-1 rounded-full border border-slate-600 text-gray-200">
-                Delivered
-              </button>
-
-              <button data-action="payment" class="px-2 py-1 rounded-full border border-emerald-500 text-emerald-300">
-                Paid
-              </button>
+            <div class="order-card-meta text-gray-400">
+              ${o.mobile ? `📞 ${o.mobile}` : ""}${o.tableNumber ? ` • Table ${o.tableNumber}` : ""}
             </div>
-          `;
+            ${renderOrderDetails(o)}
+            ${dineinMeta}
+          </div>
+          <div class="text-right text-[11px] text-gray-400">
+            ${o.createdAt ? new Date(o.createdAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}) : ""}
+          </div>
+        </div>
 
-          card.querySelectorAll("button[data-action='status']").forEach(btn => {
-            btn.onclick = async () => {
-              const status = btn.getAttribute("data-status");
-              try {
-                await fetch(`/api/orders/${o._id}/status`, {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ status })
-                });
-                fetchOrders(datePicker.value);
-              } catch (e) { console.error(e); }
-            };
-          });
+        <div class="order-card-items text-gray-100 mb-2">${itemsText || "No items"}</div>
+        ${statusButtons}
+      `;
 
-          const paidBtn = card.querySelector("button[data-action='payment']");
+      if (o.orderType !== "dinein") {
+        card.querySelectorAll("button[data-action='status']").forEach(btn => {
+          btn.onclick = async () => {
+            const status = btn.getAttribute("data-status");
+            try {
+              await fetch(`/api/orders/${o._id}/status`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status })
+              });
+              fetchOrders(datePicker.value);
+            } catch (e) { console.error(e); }
+          };
+        });
+
+        const paidBtn = card.querySelector("button[data-action='payment']");
+        if (paidBtn) {
           paidBtn.onclick = async () => {
             try {
               await fetch(`/api/orders/${o._id}/payment-verified`, {
@@ -961,16 +967,47 @@
               fetchOrders(datePicker.value);
             } catch (e) { console.error(e); }
           };
+        }
+      }
 
-          if (o.status === "delivered") historyList.appendChild(card);
-          else ordersList.appendChild(card);
-        });
+      return card;
+    }
+
+    async function fetchOrders(dateStr) {
+      try {
+        const res = await fetch(`/api/orders?date=${dateStr}`);
+        const orders = await res.json();
+
+        ordersList.innerHTML = "";
+        historyList.innerHTML = "";
+
+        const liveOrders = orders.filter(isLiveOrder);
+        const historyOrders = orders.filter(isHistoryOrder);
+
+        if (!liveOrders.length) {
+          ordersList.innerHTML = `
+            <div class="border border-dashed border-slate-700 rounded-xl p-3 text-sm text-gray-400">
+              No live takeaway/delivery orders for this date.
+            </div>
+          `;
+        } else {
+          liveOrders.forEach(o => ordersList.appendChild(buildOrderCard(o)));
+        }
+
+        if (!historyOrders.length) {
+          historyList.innerHTML = `
+            <div class="border border-dashed border-slate-700 rounded-xl p-3 text-sm text-gray-400">
+              No completed/finalized orders for this date.
+            </div>
+          `;
+        } else {
+          historyOrders.forEach(o => historyList.appendChild(buildOrderCard(o)));
+        }
       } catch (e) {
         console.error(e);
       }
     }
 
-    // ANALYTICS
     const dashboardPeriod = document.getElementById("dashboardPeriod");
     const dashboardDate = document.getElementById("dashboardDate");
     dashboardDate.value = getLocalToday();
@@ -1076,22 +1113,21 @@
 
     window.runInsight = runInsight;
 
-    datePicker.onchange = () => {
-      fetchOrders(datePicker.value);
-      renderDashboard();
+    datePicker.onchange = async () => {
+      await fetchOrders(datePicker.value);
+      await renderDashboard();
     };
 
-    socket.on("newOrder", () => {
-      fetchOrders(datePicker.value);
-      renderDashboard();
+    socket.on("newOrder", async () => {
+      await fetchOrders(datePicker.value);
+      await renderDashboard();
     });
 
-    socket.on("orderUpdated", () => {
-      fetchOrders(datePicker.value);
-      renderDashboard();
+    socket.on("orderUpdated", async () => {
+      await fetchOrders(datePicker.value);
+      await renderDashboard();
     });
 
-    // LIVE SERVICE REQUESTS
     const serviceRequestList = document.getElementById("serviceRequestList");
     const clearServiceRequestsBtn = document.getElementById("clearServiceRequestsBtn");
     let serviceRequests = [];
@@ -1146,7 +1182,6 @@
 
     renderServiceRequests();
 
-    // TABLE POS
     const TABLE_COUNT = 5;
     const tablesList = document.getElementById("tablesList");
     const selectedTableTitle = document.getElementById("selectedTableTitle");
@@ -1159,13 +1194,12 @@
     const tableDraftItems = document.getElementById("tableDraftItems");
     const tableDraftTotal = document.getElementById("tableDraftTotal");
     const saveTableDraftBtn = document.getElementById("saveTableDraftBtn");
-    const printTableBillBtn = document.getElementById("printTableBillBtn");
+    const saveAndPrintTableBillBtn = document.getElementById("saveAndPrintTableBillBtn");
     const clearTableBtn = document.getElementById("clearTableBtn");
 
-    const tableOrders = {};
-    for (let i = 1; i <= TABLE_COUNT; i++) {
-      tableOrders[i] = {
-        tableNumber: i,
+    function createEmptyTable(tableNumber) {
+      return {
+        tableNumber,
         customerName: "",
         mobile: "",
         guestCount: 1,
@@ -1174,10 +1208,63 @@
       };
     }
 
+    const tableOrders = {};
+    for (let i = 1; i <= TABLE_COUNT; i++) {
+      tableOrders[i] = createEmptyTable(i);
+    }
+
     let selectedTable = 1;
+
+    function normalizeTablePayload(raw, tableNo) {
+      return {
+        tableNumber: Number(raw?.tableNumber || tableNo),
+        customerName: raw?.customerName || "",
+        mobile: raw?.mobile || "",
+        guestCount: Number(raw?.guestCount || 1),
+        status: raw?.status || ((raw?.items || []).length ? "draft" : "available"),
+        items: Array.isArray(raw?.items) ? raw.items.map(item => ({
+          name: item.name || "",
+          variant: item.variant || "",
+          price: Number(item.price || 0),
+          qty: Number(item.qty || 0),
+          category: item.category || ""
+        })) : []
+      };
+    }
 
     function getTableTotal(tableNo) {
       return (tableOrders[tableNo]?.items || []).reduce((sum, item) => sum + ((item.price || 0) * (item.qty || 0)), 0);
+    }
+
+    async function loadAllTableDrafts() {
+      try {
+        const res = await fetch("/api/table-orders");
+        if (!res.ok) return;
+        const drafts = await res.json();
+        if (!Array.isArray(drafts)) return;
+
+        for (let i = 1; i <= TABLE_COUNT; i++) {
+          const found = drafts.find(t => Number(t.tableNumber) === i);
+          tableOrders[i] = found ? normalizeTablePayload(found, i) : createEmptyTable(i);
+        }
+      } catch (e) {
+        console.warn("Could not load table drafts:", e);
+      }
+    }
+
+    async function loadSingleTableDraft(tableNo) {
+      try {
+        const res = await fetch(`/api/table-orders/${tableNo}`);
+        if (!res.ok) return;
+        const draft = await res.json();
+        if (draft) {
+          tableOrders[tableNo] = normalizeTablePayload(draft, tableNo);
+          if (selectedTable === tableNo) selectTable(tableNo);
+          else renderTablesList();
+        }
+      } catch (e) {
+        console.warn("Could not load table draft:", e);
+      }
     }
 
     function renderTablesList() {
@@ -1227,8 +1314,8 @@
       table.customerName = tableCustomerName.value.trim();
       table.mobile = tableCustomerMobile.value.trim();
       table.guestCount = Number(tableGuestCount.value || 1);
-      if (table.items.length) table.status = "draft";
-      else table.status = "available";
+      if (table.items.length && table.status !== "billed") table.status = "draft";
+      else if (!table.items.length) table.status = "available";
       renderTablesList();
     }
 
@@ -1298,7 +1385,6 @@
               Subtotal: <span class="font-extrabold text-white">₹${item.qty * item.price}</span>
             </div>
           `;
-
           row.querySelector('[data-act="minus"]').onclick = () => changeTableItemQty(idx, -1);
           row.querySelector('[data-act="plus"]').onclick = () => changeTableItemQty(idx, 1);
 
@@ -1350,37 +1436,43 @@
 
     tableMenuSearch.oninput = renderTableMenuList;
 
-    saveTableDraftBtn.onclick = async () => {
+    async function saveSelectedTableDraft(showToast = true) {
       syncSelectedTableMeta();
       const table = tableOrders[selectedTable];
       table.status = table.items.length ? "draft" : "available";
       renderTablesList();
       renderSelectedTableDraft();
 
-      // optional backend save hook:
       try {
-        await fetch("/api/table-orders/save-draft", {
+        const res = await fetch("/api/table-orders/save-draft", {
           method: "POST",
           headers: { "Content-Type":"application/json" },
-          body: JSON.stringify(table)
-        }).catch(() => null);
-      } catch (_) {}
+          body: JSON.stringify({
+            ...table,
+            orderType: "dinein",
+            total: getTableTotal(selectedTable),
+            isDraft: true
+          })
+        });
+        if (!res.ok) throw new Error("Failed to save draft");
+      } catch (e) {
+        console.error(e);
+        if (showToast) toast(`Draft save failed for Table ${selectedTable}`);
+        return false;
+      }
 
-      toast(`Draft saved for Table ${selectedTable}`);
+      if (showToast) toast(`Draft saved for Table ${selectedTable}`);
+      return true;
+    }
+
+    saveTableDraftBtn.onclick = async () => {
+      await saveSelectedTableDraft(true);
     };
 
     clearTableBtn.onclick = async () => {
       if (!confirm(`Clear Table ${selectedTable}?`)) return;
 
-      tableOrders[selectedTable] = {
-        tableNumber: selectedTable,
-        customerName: "",
-        mobile: "",
-        guestCount: 1,
-        status: "available",
-        items: []
-      };
-
+      tableOrders[selectedTable] = createEmptyTable(selectedTable);
       selectTable(selectedTable);
 
       try {
@@ -1388,74 +1480,132 @@
           method: "POST",
           headers: { "Content-Type":"application/json" },
           body: JSON.stringify({ tableNumber: selectedTable })
-        }).catch(() => null);
-      } catch (_) {}
+        });
+      } catch (e) {
+        console.error(e);
+      }
 
       toast(`Table ${selectedTable} cleared`);
     };
 
-    function buildPrintTextForSelectedTable() {
-      const table = tableOrders[selectedTable];
+    function buildPrintTextForSelectedTable(finalizedOrder) {
+      const table = finalizedOrder || tableOrders[selectedTable];
       const lines = [];
       lines.push("ABBA SEENUUU... FAST FOODS");
       lines.push("DINE-IN BILL");
       lines.push("------------------------------");
-      lines.push(`Table: ${selectedTable}`);
+      lines.push(`Table: ${table.tableNumber || selectedTable}`);
       lines.push(`Customer: ${table.customerName || "-"}`);
       lines.push(`Mobile: ${table.mobile || "-"}`);
       lines.push(`Guests: ${table.guestCount || 1}`);
       lines.push(`Time: ${new Date().toLocaleString("en-IN")}`);
       lines.push("------------------------------");
 
-      table.items.forEach(item => {
+      (table.items || []).forEach(item => {
         const label = `${item.name}${item.variant ? ` (${item.variant})` : ""}`;
         lines.push(`${label}`);
         lines.push(`${item.qty} x ${item.price} = ${item.qty * item.price}`);
       });
 
       lines.push("------------------------------");
-      lines.push(`TOTAL: ₹${getTableTotal(selectedTable)}`);
+      lines.push(`TOTAL: ₹${table.total || getTableTotal(selectedTable)}`);
       lines.push("------------------------------");
       lines.push("Thank you!");
       lines.push("\n\n\n");
       return lines.join("\n");
     }
 
-    printTableBillBtn.onclick = async () => {
-      const table = tableOrders[selectedTable];
-      if (!table.items.length) {
-        toast("No items in this table draft");
-        return;
-      }
-
-      const billText = buildPrintTextForSelectedTable();
-
+    async function openPrintWindow(text) {
       try {
-        // RAWBT / print bridge friendly approach
         const win = window.open("", "_blank");
         win.document.write(`
-          <pre style="font-family: monospace; white-space: pre-wrap; padding: 16px;">${billText.replace(/</g, "&lt;")}</pre>
+          <pre style="font-family: monospace; white-space: pre-wrap; padding: 16px;">${text.replace(/</g, "&lt;")}</pre>
           <script>window.print();<\/script>
         `);
         win.document.close();
       } catch (e) {
         console.error(e);
       }
+    }
 
-      table.status = "billed";
+    saveAndPrintTableBillBtn.onclick = async () => {
+      syncSelectedTableMeta();
+      const table = tableOrders[selectedTable];
+
+      if (!table.items.length) {
+        toast("No items in this table draft");
+        return;
+      }
+
+      const saved = await saveSelectedTableDraft(false);
+      if (!saved) {
+        toast("Please save draft first");
+        return;
+      }
+
+      const finalizePayload = {
+        ...table,
+        tableNumber: selectedTable,
+        orderType: "dinein",
+        total: getTableTotal(selectedTable),
+        isDraft: false,
+        status: "delivered",
+        finalizedAt: new Date().toISOString()
+      };
+
+      let finalizedOrder = finalizePayload;
+
+      try {
+        const res = await fetch("/api/table-orders/finalize", {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify(finalizePayload)
+        });
+
+        if (!res.ok) throw new Error("Finalize failed");
+
+        const data = await res.json().catch(() => null);
+        if (data && data.order) finalizedOrder = data.order;
+      } catch (e) {
+        console.error(e);
+        toast(`Save & Print failed for Table ${selectedTable}`);
+        return;
+      }
+
+      const billText = buildPrintTextForSelectedTable(finalizedOrder);
+      await openPrintWindow(billText);
+
+      tableOrders[selectedTable] = createEmptyTable(selectedTable);
       renderTablesList();
       selectTable(selectedTable);
 
-      try {
-        await fetch("/api/table-orders/print", {
-          method: "POST",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify({ ...table, total: getTableTotal(selectedTable) })
-        }).catch(() => null);
-      } catch (_) {}
+      await fetchOrders(datePicker.value);
+      await renderDashboard();
 
-      toast(`Print opened for Table ${selectedTable}`);
+      toast(`Table ${selectedTable} finalized and print opened`);
     };
+
+    socket.on("tableDraftUpdated", async (payload) => {
+      const tableNo = Number(payload?.tableNumber || 0);
+      if (!tableNo || tableNo < 1 || tableNo > TABLE_COUNT) return;
+      await loadSingleTableDraft(tableNo);
+    });
+
+    socket.on("tableDraftCleared", (payload) => {
+      const tableNo = Number(payload?.tableNumber || 0);
+      if (!tableNo || tableNo < 1 || tableNo > TABLE_COUNT) return;
+      tableOrders[tableNo] = createEmptyTable(tableNo);
+      if (selectedTable === tableNo) selectTable(tableNo);
+      else renderTablesList();
+    });
+
+    socket.on("tableOrderFinalized", async () => {
+      await loadAllTableDrafts();
+      renderTablesList();
+      selectTable(selectedTable);
+      await fetchOrders(datePicker.value);
+      await renderDashboard();
+    });
 
     renderTablesList();
     renderSelectedTableDraft();
