@@ -659,7 +659,74 @@ app.get("/api/next-print-ticket", (req, res) => {
   lines.push(`Total: ₹${o.total}\n\n\n`);
   res.type("text/plain").send(lines.join("\n"));
 });
+// ─── AI RECOMMENDATIONS ─────────────────────────────────────────────
+app.post("/api/recommendations", async (req, res) => {
+  try {
+    const cartItems = req.body.items || [];
 
+    if (!cartItems.length) {
+      return res.json({ success: true, suggestions: [] });
+    }
+
+    // Fetch past orders (limit for performance)
+    const orders = await Order.find({}, { items: 1 })
+      .sort({ createdAt: -1 })
+      .limit(500);
+
+    const pairCount = {};
+    const itemCount = {};
+
+    // Build frequency map
+    orders.forEach(order => {
+      const names = (order.items || []).map(i => i.name).filter(Boolean);
+
+      names.forEach(a => {
+        itemCount[a] = (itemCount[a] || 0) + 1;
+
+        names.forEach(b => {
+          if (a === b) return;
+
+          const key = `${a}||${b}`;
+          pairCount[key] = (pairCount[key] || 0) + 1;
+        });
+      });
+    });
+
+    const cartNames = cartItems.map(i => i.name);
+
+    const suggestionsMap = {};
+
+    cartNames.forEach(name => {
+      Object.keys(pairCount).forEach(key => {
+        const [a, b] = key.split("||");
+
+        if (a === name && !cartNames.includes(b)) {
+          const confidence = pairCount[key] / (itemCount[a] || 1);
+
+          if (!suggestionsMap[b]) suggestionsMap[b] = 0;
+          suggestionsMap[b] += confidence;
+        }
+      });
+    });
+
+    const suggestions = Object.entries(suggestionsMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([name, score]) => ({
+        name,
+        score,
+        reason: score > 0.6
+          ? "🔥 Frequently ordered together"
+          : "⭐ Popular add-on"
+      }));
+
+    res.json({ success: true, suggestions });
+
+  } catch (err) {
+    console.error("Recommendation error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 // ─── SOCKET / HEALTH ──────────────────────────────────────────────────────────
 io.on("connection", (socket) => {
   console.log("🟢 Client connected:", socket.id);
