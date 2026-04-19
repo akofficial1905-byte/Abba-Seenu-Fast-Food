@@ -1572,7 +1572,7 @@ placeOrderBtn.onclick = async ()=>{
   const payload = {
     customerName: nameInput.value.trim(),
     mobile: mobileInput.value.trim(),
-    regno: regInput.value.trim(),
+    registrationNumber: regInput.value.trim(),
     orderType,
     tableNumber: orderType==="dinein" ? normalizedTableNumber : "",
     address: orderType==="delivery" ? addressInput.value.trim() : "",
