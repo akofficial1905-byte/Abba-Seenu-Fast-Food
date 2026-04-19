@@ -17,7 +17,7 @@
   --accent-soft2:#f9d869;
   --text:#f5f5f5;
   --muted:#a9b3cf;
-  --dock-h:64px;
+  --dock-h:72px;
   --cart-h:62px;
 }
 
@@ -167,32 +167,56 @@ select,input,textarea{
   left:0;right:0;
   bottom:var(--cart-h);
   z-index:85;
-  padding:8px 10px calc(env(safe-area-inset-bottom, 0px) + 6px);
-  background:linear-gradient(to top, rgba(2,7,24,.98), rgba(2,7,24,.9));
+  padding:10px 10px calc(env(safe-area-inset-bottom, 0px) + 8px);
+  background:linear-gradient(to top, rgba(2,7,24,.98), rgba(2,7,24,.92));
   border-top:1px solid rgba(245,197,24,.18);
 }
 #actionDockInner{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:1fr 1fr .95fr;
   gap:8px;
   max-width:760px;
   margin:0 auto;
 }
 .dockBtn{
-  min-height:46px;
+  min-height:54px;
   border:none;
-  border-radius:14px;
+  border-radius:16px;
   background:var(--paper-soft);
   color:var(--accent-soft2);
   border:1px solid rgba(245,197,24,.45);
-  font-size:.78rem;
+  font-size:.84rem;
   font-weight:700;
-  padding:8px 6px;
+  padding:10px 8px;
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:6px;
+  gap:8px;
   text-align:center;
+  line-height:1.1;
+  -webkit-tap-highlight-color:transparent;
+}
+.dockBtn:active{
+  transform:scale(.98);
+}
+.dockBtn:disabled{
+  opacity:.7;
+}
+.dockIcon{
+  font-size:1rem;
+  line-height:1;
+}
+.dockLabel{
+  white-space:nowrap;
+}
+.dockBtn.service{
+  background:linear-gradient(180deg,#0d1b33,#091427);
+}
+.dockBtn.waiter{
+  border-color:rgba(245,197,24,.55);
+}
+.dockBtn.manager{
+  border-color:rgba(255,255,255,.22);
 }
 .dockBtn.chat{
   background:var(--accent);
@@ -283,7 +307,6 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   font-size:.75rem;
   margin-bottom:6px;
 }
-
 #toast{
   position:fixed;
   bottom:calc(var(--cart-h) + var(--dock-h) + 18px);
@@ -471,19 +494,26 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 
 @media(max-width:480px){
   :root{
-    --dock-h:70px;
+    --dock-h:124px;
     --cart-h:68px;
   }
   .page{
     padding:16px 12px calc(var(--cart-h) + var(--dock-h) + 34px);
   }
   #actionDockInner{
-    gap:6px;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  #chatFab{
+    grid-column:1 / -1;
   }
   .dockBtn{
-    min-height:48px;
-    font-size:.72rem;
-    padding:8px 4px;
+    min-height:52px;
+    font-size:.8rem;
+    padding:10px 8px;
+  }
+  .dockLabel{
+    white-space:normal;
   }
   #cartSummary{
     font-size:.86rem;
@@ -512,9 +542,18 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 
 <div id="actionDock">
   <div id="actionDockInner">
-    <button class="dockBtn" id="callWaiterBtn">🔔 Waiter</button>
-    <button class="dockBtn" id="callManagerBtn">👨‍💼 Manager</button>
-    <button class="dockBtn chat" id="chatFab">💬 Chat</button>
+    <button class="dockBtn service waiter" id="callWaiterBtn">
+      <span class="dockIcon">🛎️</span>
+      <span class="dockLabel">Call Waiter</span>
+    </button>
+    <button class="dockBtn service manager" id="callManagerBtn">
+      <span class="dockIcon">👨‍💼</span>
+      <span class="dockLabel">Call Manager</span>
+    </button>
+    <button class="dockBtn chat" id="chatFab">
+      <span class="dockIcon">💬</span>
+      <span class="dockLabel">Chat</span>
+    </button>
   </div>
 </div>
 
@@ -1460,8 +1499,14 @@ function validateServiceRequestContext(){
   return true;
 }
 
-async function sendServiceRequest(type){
+async function sendServiceRequest(type, btn){
   if(!validateServiceRequestContext()) return;
+
+  const originalHtml = btn ? btn.innerHTML : "";
+  if(btn){
+    btn.disabled = true;
+    btn.innerHTML = `<span class="dockIcon">⏳</span><span class="dockLabel">Sending...</span>`;
+  }
 
   const payload = {
     type,
@@ -1491,11 +1536,18 @@ async function sendServiceRequest(type){
   }catch(e){
     console.error(e);
     toast(`Could not send ${type.toLowerCase()} request`);
+  }finally{
+    if(btn){
+      setTimeout(()=>{
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }, 700);
+    }
   }
 }
 
-callWaiterBtn.onclick = ()=> sendServiceRequest("Call Waiter");
-callManagerBtn.onclick = ()=> sendServiceRequest("Call Manager");
+callWaiterBtn.onclick = ()=> sendServiceRequest("Call Waiter", callWaiterBtn);
+callManagerBtn.onclick = ()=> sendServiceRequest("Call Manager", callManagerBtn);
 
 build();
 updateCart();
