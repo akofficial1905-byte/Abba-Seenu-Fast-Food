@@ -510,7 +510,7 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
   display:none;
 }
 
-/* ── Pending / Approval overlay for dine-in ── */
+/* Pending overlay */
 #pendingOverlay{
   position:fixed;
   inset:0;
@@ -573,6 +573,7 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
   margin-bottom:14px;
   line-height:1.8;
   border:1px solid rgba(255,255,255,.08);
+  white-space:pre-wrap;
 }
 #pendingCloseBtn{
   background:var(--accent);
@@ -777,7 +778,6 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
   </div>
 </div>
 
-<!-- ── Pending approval overlay (dine-in only) ── -->
 <div id="pendingOverlay">
   <div id="pendingBox">
     <div class="pending-icon">⏳</div>
@@ -806,20 +806,20 @@ const totalSpan      = document.getElementById("total");
 const checkoutBtn    = document.getElementById("checkoutBtn");
 const placeOrderBtn  = document.getElementById("placeOrderBtn");
 
-const regInput           = document.getElementById("regno");
-const nameInput          = document.getElementById("name");
-const mobileInput        = document.getElementById("mobile");
-const addressInput       = document.getElementById("address");
-const orderTypeSel       = document.getElementById("orderType");
-const paymentSel         = document.getElementById("paymentMethod");
-const paymentWrap        = document.getElementById("paymentWrap");
-const dineInHelpText     = document.getElementById("dineInHelpText");
-const locBtn             = document.getElementById("locBtn");
-const locStatus          = document.getElementById("locStatus");
-const specialRequestInput= document.getElementById("specialRequest");
-const tableWrap          = document.getElementById("tableWrap");
-const deliveryFields     = document.getElementById("deliveryFields");
-const tableNumberSel     = document.getElementById("tableNumber");
+const regInput            = document.getElementById("regno");
+const nameInput           = document.getElementById("name");
+const mobileInput         = document.getElementById("mobile");
+const addressInput        = document.getElementById("address");
+const orderTypeSel        = document.getElementById("orderType");
+const paymentSel          = document.getElementById("paymentMethod");
+const paymentWrap         = document.getElementById("paymentWrap");
+const dineInHelpText      = document.getElementById("dineInHelpText");
+const locBtn              = document.getElementById("locBtn");
+const locStatus           = document.getElementById("locStatus");
+const specialRequestInput = document.getElementById("specialRequest");
+const tableWrap           = document.getElementById("tableWrap");
+const deliveryFields      = document.getElementById("deliveryFields");
+const tableNumberSel      = document.getElementById("tableNumber");
 
 const upiOverlay   = document.getElementById("upiOverlay");
 const upiPaidBtn   = document.getElementById("upiPaidBtn");
@@ -831,74 +831,70 @@ const pendingTableLabel = document.getElementById("pendingTableLabel");
 const pendingItemsList  = document.getElementById("pendingItemsList");
 const pendingCloseBtn   = document.getElementById("pendingCloseBtn");
 
-const helpFab      = document.getElementById("helpFab");
-const helpPanel    = document.getElementById("helpPanel");
-const chatFab      = document.getElementById("chatFab");
-const chatPanel    = document.getElementById("chatPanel");
-const chatClose    = document.getElementById("chatClose");
-const chatMessages = document.getElementById("chatMessages");
-const chatInput    = document.getElementById("chatInput");
-const chatSend     = document.getElementById("chatSend");
-const callWaiterBtn  = document.getElementById("callWaiterBtn");
-const callManagerBtn = document.getElementById("callManagerBtn");
+const helpFab       = document.getElementById("helpFab");
+const helpPanel     = document.getElementById("helpPanel");
+const chatFab       = document.getElementById("chatFab");
+const chatPanel     = document.getElementById("chatPanel");
+const chatClose     = document.getElementById("chatClose");
+const chatMessages  = document.getElementById("chatMessages");
+const chatInput     = document.getElementById("chatInput");
+const chatSend      = document.getElementById("chatSend");
+const callWaiterBtn = document.getElementById("callWaiterBtn");
+const callManagerBtn= document.getElementById("callManagerBtn");
 
-let cart=[], page=0, locked=false, menu={};
-let customerLocation  = null;
+let cart = [], page = 0, locked = false, menu = {};
+let customerLocation = null;
 let pendingOrderPayload = null;
 let selectedRequestTags = [];
 let submitting = false;
 
-// ── Pending overlay ────────────────────────────────────────────────────
 function showPendingApproval(tableNo, items, total){
-  pendingTableLabel.textContent = "Table " + (tableNo || "—").replace("T","");
+  pendingTableLabel.textContent = "Table " + (String(tableNo || "—").replace("T",""));
   pendingItemsList.innerHTML = items
     .map(i => `• ${i.name}${i.variant ? " ("+i.variant+")" : ""} × ${i.qty} — ₹${i.qty * i.price}`)
-    .join("\n") +
-    `\n\nTotal: ₹${total}`;
+    .join("\n") + `\n\nTotal: ₹${total}`;
   pendingOverlay.style.display = "flex";
 }
 
 pendingCloseBtn.onclick = () => {
   pendingOverlay.style.display = "none";
-  // Reset everything after customer closes
   cart = [];
   updateCart();
   closeCart();
 
-  orderTypeSel.value    = "";
-  regInput.value        = "";
-  nameInput.value       = "";
-  mobileInput.value     = "";
-  addressInput.value    = "";
-  paymentSel.value      = "";
+  orderTypeSel.value = "";
+  regInput.value = "";
+  nameInput.value = "";
+  mobileInput.value = "";
+  addressInput.value = "";
+  paymentSel.value = "";
   specialRequestInput.value = "";
-  tableNumberSel.value  = "";
-  customerLocation      = null;
+  tableNumberSel.value = "";
+  customerLocation = null;
   locStatus.textContent = "";
-  selectedRequestTags   = [];
+  selectedRequestTags = [];
   document.querySelectorAll(".request-chip").forEach(ch => ch.classList.remove("active"));
 
-  const pageName        = document.getElementById("pageName");
-  const pageMobile      = document.getElementById("pageMobile");
-  const pageRegno       = document.getElementById("pageRegno");
-  const pageOrderType   = document.getElementById("pageOrderType");
+  const pageName = document.getElementById("pageName");
+  const pageMobile = document.getElementById("pageMobile");
+  const pageRegno = document.getElementById("pageRegno");
+  const pageOrderType = document.getElementById("pageOrderType");
   const pageTableNumber = document.getElementById("pageTableNumber");
-  const pageAddress     = document.getElementById("pageAddress");
-  const pageLocStatus   = document.getElementById("pageLocStatus");
+  const pageAddress = document.getElementById("pageAddress");
+  const pageLocStatus = document.getElementById("pageLocStatus");
 
-  if(pageName)        pageName.value = "";
-  if(pageMobile)      pageMobile.value = "";
-  if(pageRegno)       pageRegno.value = "";
-  if(pageOrderType)   pageOrderType.value = "";
+  if(pageName) pageName.value = "";
+  if(pageMobile) pageMobile.value = "";
+  if(pageRegno) pageRegno.value = "";
+  if(pageOrderType) pageOrderType.value = "";
   if(pageTableNumber) pageTableNumber.value = "";
-  if(pageAddress)     pageAddress.value = "";
-  if(pageLocStatus)   pageLocStatus.textContent = "";
+  if(pageAddress) pageAddress.value = "";
+  if(pageLocStatus) pageLocStatus.textContent = "";
 
   updateOrderTypeUI();
   go(0);
 };
 
-// ── Page helpers ───────────────────────────────────────────────────────
 function setPageModeClasses(){
   [...book.children].forEach((section, index)=>{
     if(index >= 4) section.classList.add("menu-page");
@@ -931,8 +927,8 @@ function updateOrderTypeUI(){
   if(isDineIn) paymentSel.value = "";
   if(orderType !== "dinein") tableNumberSel.value = "";
   if(orderType !== "delivery"){
-    addressInput.value  = "";
-    customerLocation    = null;
+    addressInput.value = "";
+    customerLocation = null;
     locStatus.textContent = "";
   }
   syncPageVisibilityOnly();
@@ -940,9 +936,9 @@ function updateOrderTypeUI(){
 orderTypeSel.addEventListener("change", updateOrderTypeUI);
 
 function syncPageVisibilityOnly(){
-  const pageOrderType   = document.getElementById("pageOrderType");
-  const pageTableWrap   = document.getElementById("pageTableWrap");
-  const pageDeliveryWrap= document.getElementById("pageDeliveryWrap");
+  const pageOrderType    = document.getElementById("pageOrderType");
+  const pageTableWrap    = document.getElementById("pageTableWrap");
+  const pageDeliveryWrap = document.getElementById("pageDeliveryWrap");
   if(!pageOrderType || !pageTableWrap || !pageDeliveryWrap) return;
   pageTableWrap.classList.toggle("hidden", pageOrderType.value !== "dinein");
   pageDeliveryWrap.classList.toggle("hidden", pageOrderType.value !== "delivery");
@@ -957,9 +953,9 @@ function toggleDetailsInCart(){
 }
 
 function setUpiQr(totalAmount){
-  const upiId   = "7054699905@ptaxis";
+  const upiId = "7054699905@ptaxis";
   const upiName = "Abba SEENUUU... FAST FOODS";
-  const note    = "Abba Seenu order";
+  const note = "Abba Seenu order";
   const upiLink =
     `upi://pay?pa=${encodeURIComponent(upiId)}` +
     `&pn=${encodeURIComponent(upiName)}` +
@@ -971,19 +967,20 @@ function setUpiQr(totalAmount){
 }
 
 function go(i){
-  locked=true; page=i;
-  book.style.transform=`translateX(-${i*100}vw)`;
+  locked = true;
+  page = i;
+  book.style.transform = `translateX(-${i*100}vw)`;
   setTimeout(()=>locked=false,600);
 }
-document.getElementById("prev").onclick=()=>page>0&&go(page-1);
-document.getElementById("next").onclick=()=>page<book.children.length-1&&go(page+1);
+document.getElementById("prev").onclick = ()=>page>0&&go(page-1);
+document.getElementById("next").onclick = ()=>page<book.children.length-1&&go(page+1);
 
-let sx=0;
+let sx = 0;
 document.addEventListener("touchstart",e=>sx=e.touches[0].clientX);
 document.addEventListener("touchend",e=>{
-  if(locked)return;
-  let dx=e.changedTouches[0].clientX-sx;
-  if(dx>80)  document.getElementById("prev").onclick();
+  if(locked) return;
+  let dx = e.changedTouches[0].clientX-sx;
+  if(dx>80) document.getElementById("prev").onclick();
   if(dx<-80) document.getElementById("next").onclick();
 });
 
@@ -1002,7 +999,7 @@ function toast(msg){
 
 function captureDeliveryLocation(fromPage=false){
   const statusEl = fromPage ? document.getElementById("pageLocStatus") : locStatus;
-  if(orderTypeSel.value !== "delivery"){
+  if(orderTypeSel.value !== "delivery" && (!fromPage || document.getElementById("pageOrderType")?.value !== "delivery")){
     statusEl.textContent="Location is only required for delivery orders.";
     return;
   }
@@ -1026,7 +1023,6 @@ function captureDeliveryLocation(fromPage=false){
 }
 locBtn.onclick=()=>captureDeliveryLocation(false);
 
-// ── Menu load & build ──────────────────────────────────────────────────
 fetch("/menu.json?_="+Date.now(),{cache:"no-store"})
   .then(r=>r.json())
   .then(m=>{menu=m; build(); initChatbot();})
@@ -1132,11 +1128,17 @@ function build(){
       let slice=items.slice(i,i+perPage);
       let html=`<h2>${i===0?cat:cat+" (Continued)"}</h2><div class="items-grid">`;
       slice.forEach(it=>{
-        const min=Math.min(...Object.values(it.variants));
+        const variantValues = Object.values(it.variants || {});
+        const min = variantValues.length ? Math.min(...variantValues) : Number(it.price || 0);
         const img=it.image||"";
         const inStock=it.available!==false;
-        let opts=`<option value="">Choose option</option>`+
-          Object.entries(it.variants).map(v=>`<option value="${v[1]}">${v[0]} — ₹${v[1]}</option>`).join("");
+        let opts = "";
+        if(it.variants && Object.keys(it.variants).length){
+          opts = `<option value="">Choose option</option>` +
+            Object.entries(it.variants).map(v=>`<option value="${v[1]}">${v[0]} — ₹${v[1]}</option>`).join("");
+        }else{
+          opts = `<option value="${Number(it.price||0)}">Plate — ₹${Number(it.price||0)}</option>`;
+        }
         html+=`
         <div class="item">
           ${img?`<div style="width:100%;height:90px;margin-bottom:6px;overflow:hidden;border-radius:10px;">
@@ -1160,19 +1162,19 @@ function build(){
 }
 
 function syncPageDetails(){
-  const pageName        = document.getElementById("pageName");
-  const pageMobile      = document.getElementById("pageMobile");
-  const pageRegno       = document.getElementById("pageRegno");
-  const pageOrderType   = document.getElementById("pageOrderType");
-  const pageTableWrap   = document.getElementById("pageTableWrap");
-  const pageTableNumber = document.getElementById("pageTableNumber");
-  const pageDeliveryWrap= document.getElementById("pageDeliveryWrap");
-  const pageAddress     = document.getElementById("pageAddress");
-  const pageLocStatus   = document.getElementById("pageLocStatus");
+  const pageName         = document.getElementById("pageName");
+  const pageMobile       = document.getElementById("pageMobile");
+  const pageRegno        = document.getElementById("pageRegno");
+  const pageOrderType    = document.getElementById("pageOrderType");
+  const pageTableWrap    = document.getElementById("pageTableWrap");
+  const pageTableNumber  = document.getElementById("pageTableNumber");
+  const pageDeliveryWrap = document.getElementById("pageDeliveryWrap");
+  const pageAddress      = document.getElementById("pageAddress");
+  const pageLocStatus    = document.getElementById("pageLocStatus");
 
-  nameInput.value    = pageName.value;
-  mobileInput.value  = pageMobile.value;
-  regInput.value     = pageRegno.value;
+  nameInput.value = pageName.value;
+  mobileInput.value = pageMobile.value;
+  regInput.value = pageRegno.value;
   orderTypeSel.value = pageOrderType.value;
   addressInput.value = pageAddress ? pageAddress.value : addressInput.value;
 
@@ -1180,7 +1182,8 @@ function syncPageDetails(){
   pageDeliveryWrap.classList.toggle("hidden", pageOrderType.value!=="delivery");
 
   if(pageOrderType.value!=="dinein"){
-    pageTableNumber.value=""; tableNumberSel.value="";
+    pageTableNumber.value="";
+    tableNumberSel.value="";
   }else{
     tableNumberSel.value=pageTableNumber.value;
   }
@@ -1198,13 +1201,13 @@ function syncPageDetails(){
 }
 
 function goNextFromDetails(){
-  const pageOrderType   = document.getElementById("pageOrderType");
+  const pageOrderType = document.getElementById("pageOrderType");
   const pageTableNumber = document.getElementById("pageTableNumber");
-  const pageAddress     = document.getElementById("pageAddress");
+  const pageAddress = document.getElementById("pageAddress");
 
-  if(!nameInput.value.trim())  return alert("Enter customer name");
+  if(!nameInput.value.trim()) return alert("Enter customer name");
   if(!mobileInput.value.trim()) return alert("Enter mobile number");
-  if(!pageOrderType.value)     return alert("Select order type");
+  if(!pageOrderType.value) return alert("Select order type");
   if(pageOrderType.value==="dinein" && !pageTableNumber.value) return alert("Please select table number");
   if(pageOrderType.value==="delivery" && !pageAddress.value.trim()) return alert("Enter delivery address / hostel / block");
   if(pageOrderType.value==="delivery" && !customerLocation) return alert("Please tap 'Use current location' and allow location access for delivery orders.");
@@ -1219,7 +1222,7 @@ function add(name,btn){
   const price=+sel.value;
   const variant=sel.options[sel.selectedIndex].text.split(" — ")[0];
   let f=cart.find(i=>i.name===name&&i.price===price&&i.variant===variant);
-  if(f)f.qty++;
+  if(f) f.qty++;
   else cart.push({name,variant,price,qty:1});
   toast(`${name} (${variant}) added`);
   updateCart();
@@ -1248,7 +1251,6 @@ function chg(i,d){
   updateCart();
 }
 
-// ── Success overlay (takeaway / delivery only) ─────────────────────────
 function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethodLabel){
   const overlay=document.createElement("div");
   overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:130;";
@@ -1274,34 +1276,39 @@ function resetEverything(){
   updateCart();
   closeCart();
 
-  orderTypeSel.value=""; regInput.value=""; nameInput.value="";
-  mobileInput.value=""; addressInput.value=""; paymentSel.value="";
-  specialRequestInput.value=""; tableNumberSel.value="";
-  customerLocation=null; locStatus.textContent="";
+  orderTypeSel.value="";
+  regInput.value="";
+  nameInput.value="";
+  mobileInput.value="";
+  addressInput.value="";
+  paymentSel.value="";
+  specialRequestInput.value="";
+  tableNumberSel.value="";
+  customerLocation=null;
+  locStatus.textContent="";
   selectedRequestTags=[];
   document.querySelectorAll(".request-chip").forEach(ch=>ch.classList.remove("active"));
 
-  const pageName        = document.getElementById("pageName");
-  const pageMobile      = document.getElementById("pageMobile");
-  const pageRegno       = document.getElementById("pageRegno");
-  const pageOrderType   = document.getElementById("pageOrderType");
+  const pageName = document.getElementById("pageName");
+  const pageMobile = document.getElementById("pageMobile");
+  const pageRegno = document.getElementById("pageRegno");
+  const pageOrderType = document.getElementById("pageOrderType");
   const pageTableNumber = document.getElementById("pageTableNumber");
-  const pageAddress     = document.getElementById("pageAddress");
-  const pageLocStatus   = document.getElementById("pageLocStatus");
+  const pageAddress = document.getElementById("pageAddress");
+  const pageLocStatus = document.getElementById("pageLocStatus");
 
-  if(pageName)        pageName.value="";
-  if(pageMobile)      pageMobile.value="";
-  if(pageRegno)       pageRegno.value="";
-  if(pageOrderType)   pageOrderType.value="";
+  if(pageName) pageName.value="";
+  if(pageMobile) pageMobile.value="";
+  if(pageRegno) pageRegno.value="";
+  if(pageOrderType) pageOrderType.value="";
   if(pageTableNumber) pageTableNumber.value="";
-  if(pageAddress)     pageAddress.value="";
-  if(pageLocStatus)   pageLocStatus.textContent="";
+  if(pageAddress) pageAddress.value="";
+  if(pageLocStatus) pageLocStatus.textContent="";
 
   updateOrderTypeUI();
   go(0);
 }
 
-// ── Place order ────────────────────────────────────────────────────────
 async function actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel){
   try{
     const res=await fetch("/api/orders",{
@@ -1315,14 +1322,12 @@ async function actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel){
     const data=await res.json();
     if(!data.success){ alert("Order failed. Please try again."); return false; }
 
-    // ── Dine-in: show pending approval screen ──────────────────────────
     if(payload.orderType==="dinein"){
       closeCart();
       showPendingApproval(payload.tableNumber, payload.items, totalAmount);
       return true;
     }
 
-    // ── Takeaway / Delivery: show standard success ─────────────────────
     showSuccessAndReset(
       "Your order has been sent to Abba SEENUUU... FAST FOODS.",
       paymentMethodLabel==="Counter later"
@@ -1341,7 +1346,6 @@ async function actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel){
   }
 }
 
-// ── UPI flow (takeaway/delivery only) ─────────────────────────────────
 upiPaidBtn.onclick=async()=>{
   if(!pendingOrderPayload){ upiOverlay.style.display="none"; return; }
   const {payload,total,paymentMethodLabel}=pendingOrderPayload;
@@ -1360,16 +1364,15 @@ upiCancelBtn.onclick=()=>{
   upiOverlay.style.display="none";
 };
 
-// ── Main place order handler ───────────────────────────────────────────
 placeOrderBtn.onclick=async()=>{
   if(submitting) return;
   if(cart.length===0) return alert("Cart empty");
 
   const orderType=orderTypeSel.value;
-  if(!orderType)                          return alert("Select order type");
-  if(!nameInput.value.trim())             return alert("Enter name");
-  if(!mobileInput.value.trim())           return alert("Enter mobile");
-  if(orderType==="dinein" && !tableNumberSel.value)       return alert("Please select table number");
+  if(!orderType) return alert("Select order type");
+  if(!nameInput.value.trim()) return alert("Enter name");
+  if(!mobileInput.value.trim()) return alert("Enter mobile");
+  if(orderType==="dinein" && !tableNumberSel.value) return alert("Please select table number");
   if(orderType==="delivery" && !addressInput.value.trim()) return alert("Enter delivery address / hostel / block");
   if(orderType==="delivery" && !customerLocation){
     alert("Please tap 'Use current location' and allow location access for delivery orders.");
@@ -1379,38 +1382,35 @@ placeOrderBtn.onclick=async()=>{
   const totalAmount=cart.reduce((s,i)=>s+i.qty*i.price,0);
 
   let paymentMethod="", paymentMethodLabel="";
-
   if(orderType==="dinein"){
-    paymentMethod      = "PAYLATERDINEIN";
-    paymentMethodLabel = "Counter later";
+    paymentMethod="PAYLATERDINEIN";
+    paymentMethodLabel="Counter later";
   }else{
     paymentMethod=paymentSel.value;
     if(!paymentMethod) return alert("Select payment method: UPI or COD");
     paymentMethodLabel=paymentMethod;
   }
 
-  // Parse table number: "T1" → 1
-  const rawTable = tableNumberSel.value; // e.g. "T1"
+  const rawTable = tableNumberSel.value;
   const tableNumParsed = rawTable ? Number(rawTable.replace(/\D/g,"")) : "";
 
   const payload={
     orderType,
-    customerName:    nameInput.value.trim(),
-    registrationNumber: regInput.value.trim(),
-    mobile:          mobileInput.value.trim(),
-    tableNumber:     orderType==="dinein" ? tableNumParsed : "",
-    address:         orderType==="delivery" ? addressInput.value.trim() : "",
-    location:        orderType==="delivery" ? customerLocation : null,
-    items:           cart,
+    customerName:nameInput.value.trim(),
+    registrationNumber:regInput.value.trim(),
+    mobile:mobileInput.value.trim(),
+    tableNumber:orderType==="dinein" ? tableNumParsed : "",
+    address:orderType==="delivery" ? addressInput.value.trim() : "",
+    location:orderType==="delivery" ? customerLocation : null,
+    items:cart,
     paymentMethod,
-    specialRequest:  specialRequestInput.value.trim(),
-    requestTags:     selectedRequestTags,
-    total:           totalAmount,
-    isDraft:         orderType==="dinein" ? true : false,   // dine-in always starts as draft/pending
-    source:          "customer-menu"
+    specialRequest:specialRequestInput.value.trim(),
+    requestTags:selectedRequestTags,
+    total:totalAmount,
+    isDraft:orderType==="dinein" ? true : false,
+    source:"customer-menu"
   };
 
-  // UPI flow for takeaway/delivery
   if(orderType!=="dinein" && paymentMethod==="UPI"){
     pendingOrderPayload={payload, total:totalAmount, paymentMethodLabel};
     setUpiQr(totalAmount);
@@ -1429,7 +1429,6 @@ placeOrderBtn.onclick=async()=>{
   placeOrderBtn.disabled=false;
 };
 
-// ── Request chips ──────────────────────────────────────────────────────
 document.querySelectorAll(".request-chip").forEach(btn=>{
   btn.onclick=()=>{
     const tag=btn.getAttribute("data-tag");
@@ -1443,12 +1442,12 @@ document.querySelectorAll(".request-chip").forEach(btn=>{
   };
 });
 
-// ── Chatbot ────────────────────────────────────────────────────────────
 function flattenMenu(){
   const list=[];
   Object.entries(menu).forEach(([category,items])=>{
     items.forEach(item=>{
-      const minPrice=Math.min(...Object.values(item.variants||{Plate:99999}));
+      const variantVals = Object.values(item.variants || {});
+      const minPrice = variantVals.length ? Math.min(...variantVals) : Number(item.price || 0);
       list.push({...item, category, minPrice, lowerName:item.name.toLowerCase()});
     });
   });
@@ -1471,7 +1470,7 @@ function suggestByIntent(msg){
     {match:["waiter","manager","call waiter","call manager","help"],reply:"Use the Help button to call waiter, call manager, or open chat."}
   ];
   for(const item of directAnswers){
-    if(item.match.some(k=>text.includes(k))) return{type:"text",text:item.reply};
+    if(item.match.some(k=>text.includes(k))) return {type:"text",text:item.reply};
   }
 
   const trainedGroups={
@@ -1504,14 +1503,14 @@ function suggestByIntent(msg){
   for(const rule of intentChecks){
     if(rule.keys.some(k=>text.includes(k))){
       const picks=pickAvailable(trainedGroups[rule.group]);
-      if(picks.length) return{type:"items",title:rule.title,items:picks.slice(0,5)};
+      if(picks.length) return {type:"items",title:rule.title,items:picks.slice(0,5)};
     }
   }
 
   const nameMatch=all.filter(i=>text.includes(i.lowerName)||i.lowerName.includes(text)).slice(0,5);
-  if(nameMatch.length) return{type:"items",title:"Here's what I found",items:nameMatch};
+  if(nameMatch.length) return {type:"items",title:"Here's what I found",items:nameMatch};
 
-  return{type:"text",text:"I can help with best food, spicy food, veg, non-veg, budget food, rice, noodles, starters, payment help, or delivery help."};
+  return {type:"text",text:"I can help with best food, spicy food, veg, non-veg, budget food, rice, noodles, starters, payment help, or delivery help."};
 }
 
 function addBotMessage(text){
@@ -1564,7 +1563,6 @@ document.querySelectorAll(".faqBtn").forEach(btn=>{
   btn.onclick=()=>runChatQuery(btn.getAttribute("data-q"));
 });
 
-// ── Service requests ───────────────────────────────────────────────────
 function validateServiceRequestContext(){
   if(!nameInput.value.trim()){
     toast("Enter your name in cart details first");
@@ -1598,15 +1596,15 @@ async function sendServiceRequest(type){
   if(!validateServiceRequestContext()) return;
   const payload={
     type,
-    customerName:       nameInput.value.trim()||"",
-    mobile:             mobileInput.value.trim()||"",
-    registrationNumber: regInput.value.trim()||"",
-    orderType:          orderTypeSel.value||"",
-    tableNumber:        orderTypeSel.value==="dinein" ? tableNumberSel.value : "",
-    address:            orderTypeSel.value==="delivery" ? addressInput.value.trim() : "",
-    location:           customerLocation||null,
-    createdAt:          new Date().toISOString(),
-    source:             "customer-menu"
+    customerName:nameInput.value.trim()||"",
+    mobile:mobileInput.value.trim()||"",
+    registrationNumber:regInput.value.trim()||"",
+    orderType:orderTypeSel.value||"",
+    tableNumber:orderTypeSel.value==="dinein" ? tableNumberSel.value : "",
+    address:orderTypeSel.value==="delivery" ? addressInput.value.trim() : "",
+    location:customerLocation||null,
+    createdAt:new Date().toISOString(),
+    source:"customer-menu"
   };
   try{
     const res=await fetch("/api/service-request",{
@@ -1625,7 +1623,6 @@ async function sendServiceRequest(type){
 callWaiterBtn.onclick=()=>sendServiceRequest("Call Waiter");
 callManagerBtn.onclick=()=>sendServiceRequest("Call Manager");
 
-// ── Init ───────────────────────────────────────────────────────────────
 build();
 updateCart();
 updateOrderTypeUI();
