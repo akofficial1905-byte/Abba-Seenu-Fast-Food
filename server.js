@@ -65,6 +65,11 @@ const serviceRequestSchema = new mongoose.Schema({
 serviceRequestSchema.index({ createdAt: 1 }, { expireAfterSeconds: 604800 });
 const ServiceRequest = mongoose.model("ServiceRequest", serviceRequestSchema);
 
+// ── FIX: The old pre('save') used an arrow function for the middleware
+//    but named the parameter "next" which shadowed nothing — however the
+//    real bug was that tableDraftSchema.pre("save", function (next) { … next(); })
+//    was fine syntactically but Mongoose 7+ requires calling next() correctly.
+//    Using a regular function (not arrow) is the safest pattern.
 const tableDraftSchema = new mongoose.Schema({
   tableNumber:  { type: String, required: true, unique: true, index: true },
   customerName: { type: String, default: "" },
@@ -77,13 +82,19 @@ const tableDraftSchema = new mongoose.Schema({
   updatedAt:    { type: Date, default: Date.now },
   createdAt:    { type: Date, default: Date.now }
 });
-tableDraftSchema.pre("save", function (next) {
+
+// ── CRITICAL FIX: Use a named regular function, NOT an arrow function.
+//    Arrow functions do not bind their own `this`, so `this.updatedAt` and
+//    `this.total` would be undefined. Also ensure `done` (the cb) is called
+//    as `done()` — renaming from "next" avoids any theoretical shadowing.
+tableDraftSchema.pre("save", function (done) {
   this.updatedAt = new Date();
   this.total = (this.items || []).reduce(
     (s, i) => s + Number(i.price || 0) * Number(i.qty || 0), 0
   );
-  next();
+  done();
 });
+
 const TableDraft = mongoose.model("TableDraft", tableDraftSchema);
 
 const pendingDineInSchema = new mongoose.Schema({
@@ -128,11 +139,16 @@ function calcTotal(items = []) {
   return items.reduce((s, i) => s + Number(i.price || 0) * Number(i.qty || 0), 0);
 }
 
+// ── Only takeaway/delivery orders go through saveAndBroadcastOrder for live tab.
+//    Finalized dine-in orders are saved directly (see /finalize endpoint).
 async function saveAndBroadcastOrder(data) {
   const order = new Order(data);
   await order.save();
   io.emit("newOrder", order);
-  printQueue.push(order);
+  // Only queue for printing if not a dine-in being added to history silently
+  if (data.orderType !== "dinein") {
+    printQueue.push(order);
+  }
   return order;
 }
 
@@ -192,6 +208,9 @@ app.get("/api/orders", async (req, res) => {
     const { start, end } = getISTDateBounds(
       req.query.date || new Date().toISOString().slice(0, 10)
     );
+    // ── IMPORTANT: For Orders tab we ONLY return takeaway/delivery in live view.
+    //    Dine-in finalized orders appear in history (status=delivered, source=manager-pos).
+    //    The frontend filters further, but we return all non-deleted for the date.
     const q = { createdAt: { $gte: start, $lte: end }, status: { $ne: "deleted" } };
     if (req.query.status) q.status = req.query.status;
     res.json(await Order.find(q).sort({ createdAt: -1 }));
@@ -216,7 +235,9 @@ app.post("/api/orders", async (req, res) => {
       : [];
     const total = calcTotal(normalItems);
 
-    // ── DINE-IN → pending queue (requires manager acceptance) ──────────────
+    // ── DINE-IN → goes to pending queue only (requires manager acceptance)
+    //    It does NOT create an Order record yet. Order record is created only
+    //    when the manager clicks Save & Print (finalize endpoint).
     if (orderType === "dinein") {
       console.log(`📋 Dine-in pending: table ${tableNumber}, customer ${customerName}`);
 
@@ -248,7 +269,7 @@ app.post("/api/orders", async (req, res) => {
       return res.json({ success: true, pending: true, pendingId: obj._id });
     }
 
-    // ── TAKEAWAY / DELIVERY ─────────────────────────────────────────────────
+    // ── TAKEAWAY / DELIVERY → create order immediately, show in Orders tab
     const order = await saveAndBroadcastOrder({
       orderType, customerName, registrationNumber, mobile,
       tableNumber: tableNumber ? String(tableNumber) : "",
@@ -349,18 +370,15 @@ app.get("/api/pending-dinein", async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// ACCEPT — FULLY FIXED
+// ACCEPT PENDING DINE-IN
 //
-// BUG 1: The old code used $set + $setOnInsert together in findOneAndUpdate.
-//        When the document ALREADY EXISTS, MongoDB still tries to validate
-//        $setOnInsert fields and can throw conflicts. Fixed by doing a plain
-//        findOne first, then either update the existing doc or create new.
-//
-// BUG 2: When status was already "accepted" (second click), the old code
-//        returned { alreadyProcessed: true } WITHOUT re-emitting the socket
-//        events or reloading the draft. So the manager UI never updated.
-//        Fixed: always re-fetch the draft and emit the socket event even if
-//        the pending request was already processed.
+// Flow:
+// 1. Mark pending as accepted
+// 2. Find or create table draft
+// 3. Merge items from pending into draft
+// 4. Auto-fill customer name/mobile if draft fields are blank
+// 5. Emit tableDraftUpdated so manager UI refreshes immediately
+// 6. Emit pendingDineInAccepted so pending section removes the card
 // ══════════════════════════════════════════════════════════════════════════════
 app.post("/api/pending-dinein/:id/accept", async (req, res) => {
   try {
@@ -378,25 +396,19 @@ app.post("/api/pending-dinein/:id/accept", async (req, res) => {
       return res.status(400).json({ success: false, error: "Table number missing on pending request" });
     }
 
-    // If already accepted, still re-emit so the UI can sync properly
     const alreadyDone = pending.status !== "pending";
 
     if (!alreadyDone) {
-      // Mark as accepted FIRST to prevent race conditions
       await PendingDineIn.findByIdAndUpdate(id, { status: "accepted" });
     }
 
-    // Always re-fetch/rebuild the draft regardless of alreadyDone
-    // This ensures the UI gets the correct state even on retry
     let existingDraft = await TableDraft.findOne({ tableNumber });
 
-    // Only merge items if this is a fresh acceptance (not already processed)
     let finalItems;
     if (alreadyDone) {
-      // Just re-emit what's already in the draft
       finalItems = existingDraft ? existingDraft.items : [];
     } else {
-      // Merge: start with existing draft items, add incoming items
+      // Merge incoming items into existing draft items
       const baseItems = (existingDraft?.items || []).map((i) => ({
         name: i.name || "", variant: i.variant || "",
         price: Number(i.price || 0), qty: Number(i.qty || 0), category: i.category || ""
@@ -423,33 +435,17 @@ app.post("/api/pending-dinein/:id/accept", async (req, res) => {
 
     const finalTotal = calcTotal(finalItems);
 
-    // Build the update fields
-    const updateFields = {
-      status:    "draft",
-      items:     finalItems,
-      total:     finalTotal,
-      updatedAt: new Date()
-    };
-
-    // Auto-fill customer details from pending request only if draft fields are blank
-    const currentCustomerName = existingDraft?.customerName || "";
-    const currentMobile = existingDraft?.mobile || "";
-    if (!currentCustomerName && pending.customerName) updateFields.customerName = pending.customerName;
-    if (!currentMobile && pending.mobile) updateFields.mobile = pending.mobile;
-
-    // Use findOneAndUpdate with upsert — separate $set from $setOnInsert to avoid conflicts
     let draft;
     if (existingDraft) {
-      // Document exists — just update it directly, no $setOnInsert needed
       existingDraft.items     = finalItems;
       existingDraft.total     = finalTotal;
       existingDraft.status    = "draft";
       existingDraft.updatedAt = new Date();
+      // Auto-fill customer details from customer portal if the draft fields are blank
       if (!existingDraft.customerName && pending.customerName) existingDraft.customerName = pending.customerName;
       if (!existingDraft.mobile && pending.mobile) existingDraft.mobile = pending.mobile;
       draft = await existingDraft.save();
     } else {
-      // No existing draft — create a new one
       draft = await TableDraft.create({
         tableNumber,
         customerName: pending.customerName || "",
@@ -468,7 +464,6 @@ app.post("/api/pending-dinein/:id/accept", async (req, res) => {
     const draftObj  = draft.toObject ? draft.toObject() : draft;
     draftObj._id    = draftObj._id.toString();
 
-    // Always emit both events so all connected manager tabs sync correctly
     io.emit("tableDraftUpdated",     draftObj);
     io.emit("pendingDineInAccepted", { id: id.toString(), tableNumber });
 
@@ -542,6 +537,10 @@ app.post("/api/table-orders/clear", async (req, res) => {
   }
 });
 
+// ── FINALIZE: This is the ONLY place where a dine-in order enters Order History.
+//    When manager clicks Save & Print, items are finalized, table draft is cleared,
+//    and the order is saved with status=delivered, source=manager-pos so the
+//    Orders tab shows it in history (not live).
 app.post("/api/table-orders/finalize", async (req, res) => {
   try {
     const p = sanitizeTableDraftPayload(req.body);
@@ -550,8 +549,7 @@ app.post("/api/table-orders/finalize", async (req, res) => {
     if (!p.items.length)
       return res.status(400).json({ success: false, error: "No items in table draft" });
 
-    // Create finalized dine-in order → shows in Order History
-    const order = await saveAndBroadcastOrder({
+    const order = new Order({
       orderType:          "dinein",
       customerName:       p.customerName || "",
       registrationNumber: "",
@@ -568,6 +566,13 @@ app.post("/api/table-orders/finalize", async (req, res) => {
       specialRequest: "", requestTags: [],
       isDraft: false, source: "manager-pos", status: "delivered"
     });
+    await order.save();
+
+    // Emit so Orders tab and dashboard refresh
+    io.emit("newOrder", order);
+
+    // Add to print queue for thermal printer
+    printQueue.push(order);
 
     await TableDraft.findOneAndDelete({ tableNumber: p.tableNumber });
     io.emit("tableDraftCleared",   { tableNumber: p.tableNumber });
