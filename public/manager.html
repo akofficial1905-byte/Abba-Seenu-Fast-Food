@@ -313,6 +313,7 @@
       <button id="tabTables" class="tab-btn">Tables / Dine-In POS <span id="pendingTabBadge" class="tab-btn-badge" style="display:none;">0</span></button>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════ ORDERS TAB -->
     <div id="ordersTab">
       <div class="bg-red-950/30 rounded-2xl border border-red-500/40 p-4 mb-4">
         <div class="flex items-center justify-between gap-3 mb-3 mobile-stack">
@@ -334,7 +335,7 @@
             <input id="datePicker" type="date" class="bg-slate-800 border border-amber-400 rounded-full px-3 py-1.5 text-xs md:text-sm" />
           </div>
           <div class="text-[11px] md:text-xs text-gray-400">
-            Live Orders shows takeaway/delivery only. Finalized dine-in bills appear in Order History after Save &amp; Print.
+            Live Orders = Takeaway &amp; Delivery only. Dine-in bills appear in Order History only after manager clicks <b>Save &amp; Print</b>.
           </div>
         </div>
       </div>
@@ -343,7 +344,7 @@
         <div class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4">
           <h2 class="text-sm md:text-base font-bold mb-3 flex items-center gap-2">
             <span class="inline-flex w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            Live Orders <span class="text-xs font-normal text-gray-400 ml-1">(Takeaway / Delivery only)</span>
+            Live Orders <span class="text-xs font-normal text-gray-400 ml-1">(Takeaway &amp; Delivery only)</span>
           </h2>
           <div id="ordersList" class="space-y-3 text-sm max-h-[70vh] overflow-y-auto pr-1"></div>
         </div>
@@ -351,13 +352,14 @@
         <div class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4">
           <h2 class="text-sm md:text-base font-bold mb-3 flex items-center gap-2">
             Order History
-            <span class="text-xs font-normal text-gray-400 ml-1">(Takeaway / Delivery delivered + Finalized Dine-In)</span>
+            <span class="text-xs font-normal text-gray-400 ml-1">(Delivered takeaway/delivery + Finalized Dine-In bills)</span>
           </h2>
           <div id="historyList" class="space-y-3 text-sm max-h-[70vh] overflow-y-auto pr-1"></div>
         </div>
       </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════ ANALYTICS TAB -->
     <div id="analyticsTab" style="display:none;">
       <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6 mb-4">
         <h2 class="text-lg md:text-xl font-extrabold text-amber-300 mb-3">Daily Snapshot</h2>
@@ -445,6 +447,7 @@
       </section>
     </div>
 
+    <!-- ═══════════════════════════════════════════════ INVENTORY TAB -->
     <div id="inventoryTab" style="display:none;">
       <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-3 mobile-stack">
@@ -479,7 +482,9 @@
       </section>
     </div>
 
+    <!-- ═══════════════════════════════════════════════ TABLES TAB -->
     <div id="tablesTab" style="display:none;">
+      <!-- Pending dine-in approvals -->
       <section id="pendingDineInSection" class="bg-red-950/30 rounded-2xl border border-red-500/40 p-4 mb-4" style="display:none;">
         <div class="flex items-center justify-between gap-3 mb-3">
           <div>
@@ -487,13 +492,14 @@
               🔔 Pending Customer Orders — Waiting for Manager Approval
             </h2>
             <p class="text-[11px] md:text-xs text-gray-400 mt-1">
-              These are dine-in orders placed by customers from the customer portal. Accept to add them to the table draft, or Reject to discard.
+              Dine-in orders placed by customers. Accept → items merge into the table draft. Reject → discard.
             </p>
           </div>
         </div>
         <div id="pendingDineInList" class="space-y-3"></div>
       </section>
 
+      <!-- Table POS -->
       <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6">
         <div class="flex items-center justify-between gap-3 mb-4 table-top-actions">
           <div>
@@ -501,7 +507,7 @@
               Tables / Dine-In POS
             </h2>
             <p class="text-[11px] md:text-xs text-gray-400 mt-1">
-              Manage table drafts. Customer orders from portal appear above as pending — accept to merge into the table draft.
+              Accept customer portal orders above → they merge into the table draft here. Add items manually too. <b>Save &amp; Print</b> finalizes the bill and adds to Order History.
             </p>
           </div>
 
@@ -513,11 +519,14 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 table-pos-grid">
+          <!-- Left: table selector -->
           <div class="space-y-3">
             <div id="tablesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3"></div>
           </div>
 
+          <!-- Right: selected table detail -->
           <div class="space-y-4">
+            <!-- Customer info -->
             <div class="bg-slate-950/60 rounded-2xl border border-slate-700 p-4">
               <div class="flex items-start justify-between gap-3 mobile-stack">
                 <div>
@@ -530,11 +539,11 @@
               <div class="grid md:grid-cols-3 gap-3 mt-4">
                 <div>
                   <label class="block text-xs font-semibold text-gray-200 mb-1">Customer Name</label>
-                  <input id="tableCustomerName" class="table-input" placeholder="Guest name" />
+                  <input id="tableCustomerName" class="table-input" placeholder="Auto-filled from customer portal or enter manually" />
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-200 mb-1">Mobile</label>
-                  <input id="tableCustomerMobile" class="table-input" placeholder="Phone" />
+                  <input id="tableCustomerMobile" class="table-input" placeholder="Auto-filled from customer portal" />
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-200 mb-1">Guests</label>
@@ -543,11 +552,12 @@
               </div>
             </div>
 
+            <!-- Menu search & add -->
             <div class="bg-slate-950/60 rounded-2xl border border-slate-700 p-4">
               <div class="flex items-center justify-between gap-3 mb-3 mobile-stack">
                 <div>
                   <h3 class="text-base md:text-lg font-extrabold text-amber-300">Add Dishes</h3>
-                  <p class="text-[11px] md:text-xs text-gray-400">Names only, no photos, all categories included.</p>
+                  <p class="text-[11px] md:text-xs text-gray-400">All categories, manager-side addition.</p>
                 </div>
                 <input id="tableMenuSearch" class="table-input max-w-xs" placeholder="Search dishes..." />
               </div>
@@ -555,11 +565,12 @@
               <div id="tableMenuList" class="grid md:grid-cols-2 gap-3 max-h-[340px] overflow-y-auto pr-1"></div>
             </div>
 
+            <!-- Current draft -->
             <div class="bg-slate-950/60 rounded-2xl border border-slate-700 p-4">
               <div class="flex items-center justify-between gap-3 mb-3 mobile-stack">
                 <div>
                   <h3 class="text-base md:text-lg font-extrabold text-amber-300">Current Draft</h3>
-                  <p class="text-[11px] md:text-xs text-gray-400">All items (manager-added + accepted customer orders). Save &amp; Print finalizes the bill.</p>
+                  <p class="text-[11px] md:text-xs text-gray-400">All items (manager-added + accepted customer orders). <b>Save &amp; Print</b> finalizes &amp; moves to Order History.</p>
                 </div>
                 <div class="text-right">
                   <div class="text-[11px] text-gray-400">Draft Total</div>
@@ -575,6 +586,7 @@
     </div>
   </div>
 
+  <!-- Change Login Modal -->
   <div id="changeLoginModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50" style="display:none;">
     <div class="bg-slate-900 rounded-2xl border border-amber-400 p-5 w-[92%] max-w-sm">
       <h2 class="text-lg font-extrabold text-amber-300 mb-2 text-center">Change Manager Login</h2>
@@ -611,7 +623,6 @@
 
   <script>
     const socket = io();
-
     socket.on("connect", () => console.log("Socket connected:", socket.id));
     socket.on("connect_error", (err) => console.error("Socket connect error:", err));
     socket.on("disconnect", (reason) => console.log("Socket disconnected:", reason));
@@ -624,6 +635,7 @@
       window.__toastT = setTimeout(() => serviceToast.style.display = "none", 2800);
     }
 
+    // ── LOGIN ─────────────────────────────────────────────────────────────────
     const loginOverlay = document.getElementById("loginOverlay");
     const managerApp   = document.getElementById("managerApp");
     const loginBtn     = document.getElementById("loginBtn");
@@ -635,22 +647,18 @@
       const username = loginUser.value.trim();
       const password = loginPass.value.trim();
       loginError.classList.add("hidden");
-
       if (!username || !password) {
         loginError.textContent = "Enter username and password.";
         loginError.classList.remove("hidden");
         return;
       }
-
       try {
         const res  = await fetch("/api/manager/login", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
+          method:"POST", headers:{ "Content-Type":"application/json" },
           body: JSON.stringify({ username, password })
         });
         let data = {};
         try { data = await res.json(); } catch(e) {}
-
         if (res.ok && data.success) {
           loginOverlay.style.display = "none";
           managerApp.style.display   = "block";
@@ -660,7 +668,6 @@
           loginError.classList.remove("hidden");
         }
       } catch(e) {
-        console.error("LOGIN FETCH ERROR:", e);
         loginError.textContent = "Server error. Check if server is running.";
         loginError.classList.remove("hidden");
       }
@@ -679,6 +686,7 @@
       renderPendingDineInSection();
     }
 
+    // ── CHANGE LOGIN MODAL ────────────────────────────────────────────────────
     const openChangeLogin   = document.getElementById("openChangeLogin");
     const changeLoginModal  = document.getElementById("changeLoginModal");
     const saveLoginChange   = document.getElementById("saveLoginChange");
@@ -695,23 +703,17 @@
       [curUser, curPass, newUser, newPass].forEach(el => el.value = "");
       changeLoginModal.style.display = "flex";
     };
-
     cancelLoginChange.onclick = () => changeLoginModal.style.display = "none";
-
     saveLoginChange.onclick = async () => {
       changeLoginMsg.classList.add("hidden");
       try {
         const res = await fetch("/api/manager/change-credentials", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
+          method:"POST", headers:{ "Content-Type":"application/json" },
           body: JSON.stringify({
-            currentUser: curUser.value.trim(),
-            currentPassword: curPass.value.trim(),
-            newUser: newUser.value.trim(),
-            newPassword: newPass.value.trim()
+            currentUser: curUser.value.trim(), currentPassword: curPass.value.trim(),
+            newUser: newUser.value.trim(), newPassword: newPass.value.trim()
           })
         });
-
         const data = await res.json().catch(() => ({}));
         if (data.success) {
           changeLoginMsg.textContent = "Login updated successfully.";
@@ -730,6 +732,7 @@
       }
     };
 
+    // ── TABS ──────────────────────────────────────────────────────────────────
     const tabOrders    = document.getElementById("tabOrders");
     const tabAnalytics = document.getElementById("tabAnalytics");
     const tabInventory = document.getElementById("tabInventory");
@@ -742,30 +745,17 @@
     function setActiveTab(which) {
       [tabOrders, tabAnalytics, tabInventory, tabTables].forEach(b => b.classList.remove("tab-btn-active"));
       [ordersTab, analyticsTab, inventoryTab, tablesTab].forEach(d => d.style.display = "none");
-
-      if (which === "orders") {
-        tabOrders.classList.add("tab-btn-active");
-        ordersTab.style.display = "block";
-      }
-      if (which === "analytics") {
-        tabAnalytics.classList.add("tab-btn-active");
-        analyticsTab.style.display = "block";
-      }
-      if (which === "inventory") {
-        tabInventory.classList.add("tab-btn-active");
-        inventoryTab.style.display = "block";
-      }
-      if (which === "tables") {
-        tabTables.classList.add("tab-btn-active");
-        tablesTab.style.display = "block";
-      }
+      if (which === "orders")    { tabOrders.classList.add("tab-btn-active");    ordersTab.style.display = "block"; }
+      if (which === "analytics") { tabAnalytics.classList.add("tab-btn-active"); analyticsTab.style.display = "block"; }
+      if (which === "inventory") { tabInventory.classList.add("tab-btn-active"); inventoryTab.style.display = "block"; }
+      if (which === "tables")    { tabTables.classList.add("tab-btn-active");    tablesTab.style.display = "block"; }
     }
-
     tabOrders.onclick    = () => setActiveTab("orders");
     tabAnalytics.onclick = () => setActiveTab("analytics");
     tabInventory.onclick = () => setActiveTab("inventory");
     tabTables.onclick    = () => setActiveTab("tables");
 
+    // ── MENU / INVENTORY ──────────────────────────────────────────────────────
     let menuData = null;
     let tableMenuFlat = [];
 
@@ -773,10 +763,8 @@
       try {
         const res = await fetch("/menu.json?_=" + Date.now());
         menuData = await res.json();
-
         const tbody = document.getElementById("inventoryTableBody");
         let rows = "";
-
         Object.entries(menuData).forEach(([cat, items]) => {
           items.forEach((item, idx) => {
             const rowSpan = idx === 0 ? `rowspan="${items.length}"` : "";
@@ -796,11 +784,8 @@
               </tr>`;
           });
         });
-
         tbody.innerHTML = rows;
-      } catch(e) {
-        console.error(e);
-      }
+      } catch(e) { console.error(e); }
     }
 
     async function loadMenuForTables() {
@@ -809,36 +794,20 @@
           const res = await fetch("/menu.json?_=" + Date.now());
           menuData = await res.json();
         }
-
         tableMenuFlat = [];
         Object.entries(menuData || {}).forEach(([category, items]) => {
           items.forEach(item => {
             if (item.variants && Object.keys(item.variants).length) {
               Object.entries(item.variants).forEach(([variant, price]) => {
-                tableMenuFlat.push({
-                  category,
-                  name: item.name,
-                  variant,
-                  price: Number(price) || 0,
-                  available: item.available !== false
-                });
+                tableMenuFlat.push({ category, name: item.name, variant, price: Number(price) || 0, available: item.available !== false });
               });
             } else {
-              tableMenuFlat.push({
-                category,
-                name: item.name,
-                variant:"",
-                price: Number(item.price || 0),
-                available: item.available !== false
-              });
+              tableMenuFlat.push({ category, name: item.name, variant:"", price: Number(item.price || 0), available: item.available !== false });
             }
           });
         });
-
         renderTableMenuList();
-      } catch(e) {
-        console.error("Error loading table menu:", e);
-      }
+      } catch(e) { console.error("Error loading table menu:", e); }
     }
 
     const saveInventoryBtn = document.getElementById("saveInventoryBtn");
@@ -846,21 +815,17 @@
 
     async function saveMenuToServer(showMessage = true) {
       if (!menuData) return;
-
       try {
         await fetch("/update-menu", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
+          method:"POST", headers:{ "Content-Type":"application/json" },
           body: JSON.stringify(menuData)
         });
-
         if (showMessage) {
           inventoryStatus.textContent = "Menu updated successfully.";
           inventoryStatus.classList.remove("hidden", "text-red-400");
           setTimeout(() => inventoryStatus.classList.add("hidden"), 1500);
         }
       } catch(e) {
-        console.error(e);
         if (showMessage) {
           inventoryStatus.textContent = "Error saving menu.";
           inventoryStatus.classList.remove("hidden");
@@ -871,14 +836,12 @@
 
     saveInventoryBtn.onclick = async () => {
       if (!menuData) return;
-
       document.querySelectorAll('#inventoryTableBody input[type="checkbox"]').forEach(sw => {
         const cat  = sw.getAttribute("data-cat");
         const name = sw.getAttribute("data-name");
         const item = (menuData[cat] || []).find(i => i.name === name);
         if (item) item.available = sw.checked;
       });
-
       await saveMenuToServer(true);
       await loadMenuForTables();
     };
@@ -889,7 +852,6 @@
     function syncRestaurantToggleWithInventory() {
       const switches = document.querySelectorAll('#inventoryTableBody input[type="checkbox"]');
       if (!switches.length) return;
-
       const allOn = Array.from(switches).every(sw => sw.checked);
       restStatusToggle.checked = allOn;
       restStatusLabel.textContent = allOn ? "Restaurant: ON" : "Restaurant: OFF";
@@ -898,23 +860,19 @@
     restStatusToggle.onchange = async () => {
       const online = restStatusToggle.checked;
       restStatusLabel.textContent = online ? "Restaurant: ON" : "Restaurant: OFF";
-
       if (!menuData) return;
-
       Object.values(menuData).forEach(items => items.forEach(item => item.available = online));
       document.querySelectorAll('#inventoryTableBody input[type="checkbox"]').forEach(sw => sw.checked = online);
-
       await saveMenuToServer(false);
-
       inventoryStatus.textContent = online
         ? "Restaurant ON – all items available."
         : "Restaurant OFF – all items unavailable.";
       inventoryStatus.classList.remove("hidden", "text-red-400");
       setTimeout(() => inventoryStatus.classList.add("hidden"), 1500);
-
       await loadMenuForTables();
     };
 
+    // ── ORDERS TAB ────────────────────────────────────────────────────────────
     function getLocalToday() {
       const d   = new Date();
       const off = d.getTimezoneOffset();
@@ -924,18 +882,33 @@
 
     function escapeHtml(value) {
       return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
 
     const datePicker  = document.getElementById("datePicker");
     const ordersList  = document.getElementById("ordersList");
     const historyList = document.getElementById("historyList");
-
     datePicker.value = getLocalToday();
+
+    // ── FILTERING RULES ───────────────────────────────────────────────────────
+    // Live Orders:  takeaway/delivery that are NOT delivered
+    // Order History: takeaway/delivery delivered  OR  dine-in from manager-pos (finalized)
+    function isLiveOrder(o) {
+      if (!o) return false;
+      if (o.orderType === "dinein") return false;          // dine-in never shows in live
+      return o.status !== "delivered" && o.status !== "deleted";
+    }
+
+    function isHistoryOrder(o) {
+      if (!o) return false;
+      if (o.orderType === "dinein") {
+        // Only finalized dine-in bills (source = manager-pos, status = delivered)
+        return o.source === "manager-pos" && o.status === "delivered";
+      }
+      // takeaway/delivery: show in history when delivered
+      return o.status === "delivered";
+    }
 
     function renderOrderDetails(o) {
       if (o.orderType === "dinein") {
@@ -943,18 +916,6 @@
       }
       if (!o.address) return "";
       return `<div class="order-card-meta text-gray-300 mt-1">📍 ${escapeHtml(o.address || "—")}</div>`;
-    }
-
-    function isLiveOrder(o) {
-      if (!o) return false;
-      if (o.orderType === "dinein") return false;
-      return o.status !== "delivered";
-    }
-
-    function isHistoryOrder(o) {
-      if (!o) return false;
-      if (o.orderType === "dinein") return o.isDraft === false || o.status === "delivered";
-      return o.status === "delivered";
     }
 
     function buildOrderCard(o) {
@@ -972,16 +933,12 @@
 
       const statusButtons = o.orderType === "dinein" ? "" : `
         <div class="flex flex-wrap gap-2 text-[11px]">
-          <button data-action="status" data-status="delivered" class="px-2 py-1 rounded-full border border-slate-600 text-gray-200">
-            Delivered
-          </button>
-          <button data-action="payment" class="px-2 py-1 rounded-full border border-emerald-500 text-emerald-300">
-            Paid
-          </button>
+          <button data-action="status" data-status="delivered" class="px-2 py-1 rounded-full border border-slate-600 text-gray-200">Delivered</button>
+          <button data-action="payment" class="px-2 py-1 rounded-full border border-emerald-500 text-emerald-300">Paid</button>
         </div>`;
 
       const dineinMeta = o.orderType === "dinein"
-        ? `<div class="text-[11px] text-amber-300 mt-2">Finalized dine-in bill</div>` : "";
+        ? `<div class="text-[11px] text-amber-300 mt-2">✅ Finalized dine-in bill</div>` : "";
 
       card.innerHTML = `
         <div class="flex justify-between items-start mb-2 gap-2">
@@ -1008,34 +965,26 @@
           btn.onclick = async () => {
             try {
               await fetch(`/api/orders/${o._id}/status`, {
-                method:"PATCH",
-                headers:{ "Content-Type":"application/json" },
+                method:"PATCH", headers:{ "Content-Type":"application/json" },
                 body: JSON.stringify({ status: btn.getAttribute("data-status") })
               });
               await fetchOrders(datePicker.value);
-            } catch(e) {
-              console.error(e);
-            }
+            } catch(e) { console.error(e); }
           };
         });
-
         const paidBtn = card.querySelector("button[data-action='payment']");
         if (paidBtn) {
           paidBtn.onclick = async () => {
             try {
               await fetch(`/api/orders/${o._id}/payment-verified`, {
-                method:"PATCH",
-                headers:{ "Content-Type":"application/json" },
+                method:"PATCH", headers:{ "Content-Type":"application/json" },
                 body: JSON.stringify({ paymentVerified: !o.paymentVerified })
               });
               await fetchOrders(datePicker.value);
-            } catch(e) {
-              console.error(e);
-            }
+            } catch(e) { console.error(e); }
           };
         }
       }
-
       return card;
     }
 
@@ -1057,15 +1006,14 @@
         }
 
         if (!historyOrders.length) {
-          historyList.innerHTML = `<div class="border border-dashed border-slate-700 rounded-xl p-3 text-sm text-gray-400">No completed/finalized orders for this date.</div>`;
+          historyList.innerHTML = `<div class="border border-dashed border-slate-700 rounded-xl p-3 text-sm text-gray-400">No completed orders yet. Finalize a dine-in table or mark takeaway as Delivered.</div>`;
         } else {
           historyOrders.forEach(o => historyList.appendChild(buildOrderCard(o)));
         }
-      } catch(e) {
-        console.error(e);
-      }
+      } catch(e) { console.error(e); }
     }
 
+    // ── DASHBOARD ─────────────────────────────────────────────────────────────
     const dashboardPeriod = document.getElementById("dashboardPeriod");
     const dashboardDate   = document.getElementById("dashboardDate");
     dashboardDate.value   = getLocalToday();
@@ -1073,21 +1021,16 @@
     async function renderDashboard() {
       const d = dashboardDate.value;
       const period = dashboardPeriod.value;
-
       try {
         let r = await fetch(`/api/dashboard/sales?period=${period}&date=${d}`);
         let stats = await r.json();
         document.getElementById("sales-today").textContent  = "₹" + (stats.total || 0);
         document.getElementById("orders-month").textContent = stats.count || 0;
-
         r = await fetch(`/api/dashboard/peakhour?date=${d}`);
         const peak = await r.json();
         document.getElementById("peak-hour").textContent = (peak && peak.hour !== "-") ? `${peak.hour}:00` : "-";
-      } catch(e) {
-        console.error(e);
-      }
+      } catch(e) { console.error(e); }
     }
-
     dashboardPeriod.onchange = dashboardDate.onchange = renderDashboard;
 
     const compareBy      = document.getElementById("compareBy");
@@ -1107,28 +1050,22 @@
       const name = insightName.value;
       const by   = compareBy.value || "day";
       let html = "";
-
       try {
         if (type === "compare_sales") {
           let salesA, salesB, labelA, labelB;
-
           if (by === "day") {
             salesA = await fetch(`/api/dashboard/sales?period=day&date=${from}`).then(r => r.json());
             salesB = await fetch(`/api/dashboard/sales?period=day&date=${to}`).then(r => r.json());
-            labelA = from || "—";
-            labelB = to || "—";
+            labelA = from || "—"; labelB = to || "—";
           } else if (by === "week") {
             salesA = await fetch(`/api/dashboard/sales?period=week&date=${from}`).then(r => r.json());
             salesB = await fetch(`/api/dashboard/sales?period=week&date=${to}`).then(r => r.json());
-            labelA = `Week of ${from || "—"}`;
-            labelB = `Week of ${to || "—"}`;
+            labelA = `Week of ${from || "—"}`; labelB = `Week of ${to || "—"}`;
           } else {
             salesA = await fetch(`/api/dashboard/sales?period=month&date=${from}`).then(r => r.json());
             salesB = await fetch(`/api/dashboard/sales?period=month&date=${to}`).then(r => r.json());
-            labelA = `Month: ${(from || "—").slice(0,7)}`;
-            labelB = `Month: ${(to || "—").slice(0,7)}`;
+            labelA = `Month: ${(from || "—").slice(0,7)}`; labelB = `Month: ${(to || "—").slice(0,7)}`;
           }
-
           html = `<div class="grid md:grid-cols-2 gap-3">
             <div class="bg-yellow-200 rounded-xl p-4 shadow text-center text-slate-900 font-bold">${escapeHtml(labelA)}<br>₹${salesA.total || 0}<br><span class="text-sm">Orders: ${salesA.count || 0}</span></div>
             <div class="bg-yellow-200 rounded-xl p-4 shadow text-center text-slate-900 font-bold">${escapeHtml(labelB)}<br>₹${salesB.total || 0}<br><span class="text-sm">Orders: ${salesB.count || 0}</span></div>
@@ -1136,7 +1073,6 @@
           document.getElementById("insightResult").innerHTML = html;
           return;
         }
-
         if (type === "repeat_customers") {
           const data = await fetch(`/api/dashboard/repeatcustomers?from=${from}&to=${to}`).then(r => r.json());
           html = `<div class="overflow-x-auto"><table class="insight-result-table"><thead><tr><th>Name</th><th>Orders</th></tr></thead><tbody>${data.map(c => `<tr><td>${escapeHtml(c._id)}</td><td>${c.orders}</td></tr>`).join("")}</tbody></table></div>`;
@@ -1154,13 +1090,10 @@
           html = `<div class="text-sm text-red-700">Choose an insight and date(s).</div>`;
         }
       } catch(e) {
-        console.error(e);
         html = `<div class="text-sm text-red-700">Error loading insight data.</div>`;
       }
-
       document.getElementById("insightResult").innerHTML = html;
     }
-
     window.runInsight = runInsight;
 
     datePicker.onchange = async () => {
@@ -1168,17 +1101,18 @@
       await renderDashboard();
     };
 
+    // ── SOCKET: new order (takeaway/delivery only relevant for orders tab)
     socket.on("newOrder", async (orderData) => {
-      if (!orderData || orderData.orderType === "dinein") return;
+      if (!orderData) return;
       await fetchOrders(datePicker.value);
       await renderDashboard();
     });
-
     socket.on("orderUpdated", async () => {
       await fetchOrders(datePicker.value);
       await renderDashboard();
     });
 
+    // ── SERVICE REQUESTS ──────────────────────────────────────────────────────
     const serviceRequestList      = document.getElementById("serviceRequestList");
     const clearServiceRequestsBtn = document.getElementById("clearServiceRequestsBtn");
     let serviceRequests = [];
@@ -1189,7 +1123,6 @@
         serviceRequestList.innerHTML = `<div class="border border-dashed border-red-500/30 rounded-xl p-3 text-xs text-gray-400">No live service requests yet.</div>`;
         return;
       }
-
       serviceRequests.forEach(req => {
         const card = document.createElement("div");
         card.className = "rounded-xl border border-red-400/40 bg-slate-900/80 p-3";
@@ -1219,9 +1152,9 @@
       renderServiceRequests();
       toast(`${req.requestType === "manager" ? "Manager" : "Waiter"} call from ${req.customerName || "Guest"}${req.tableNumber ? ` • Table ${req.tableNumber}` : ""}`);
     });
-
     renderServiceRequests();
 
+    // ── PENDING DINE-IN ───────────────────────────────────────────────────────
     let pendingDineInRequests = [];
     let pendingActionIds = new Set();
 
@@ -1229,16 +1162,12 @@
       try {
         const res = await fetch("/api/pending-dinein");
         if (!res.ok) return;
-
         const list = await res.json();
         pendingDineInRequests = Array.isArray(list) ? list.filter(Boolean) : [];
-
         updatePendingTabBadge();
         renderPendingDineInSection();
         renderTablesList();
-      } catch(e) {
-        console.warn("Could not load pending dine-in requests", e);
-      }
+      } catch(e) { console.warn("Could not load pending dine-in requests", e); }
     }
 
     function getPendingRequestId(req) {
@@ -1249,14 +1178,9 @@
       return pendingDineInRequests.filter(r => Number(r.tableNumber) === Number(tableNo));
     }
 
-    function getTotalPendingCount() {
-      return pendingDineInRequests.length;
-    }
-
     function updatePendingTabBadge() {
       const badge = document.getElementById("pendingTabBadge");
-      const count = getTotalPendingCount();
-
+      const count = pendingDineInRequests.length;
       if (count > 0) {
         badge.textContent = count;
         badge.style.display = "inline-flex";
@@ -1268,7 +1192,6 @@
     function addPendingDineInRequest(orderData) {
       const id = getPendingRequestId(orderData);
       if (id && pendingDineInRequests.find(r => getPendingRequestId(r) === id)) return;
-
       pendingDineInRequests.push(orderData);
       updatePendingTabBadge();
       renderPendingDineInSection();
@@ -1287,26 +1210,20 @@
     function renderPendingDineInSection() {
       const section = document.getElementById("pendingDineInSection");
       const list = document.getElementById("pendingDineInList");
-
       if (!pendingDineInRequests.length) {
         section.style.display = "none";
         return;
       }
-
       section.style.display = "block";
       list.innerHTML = "";
-
       pendingDineInRequests.forEach((req) => {
         const reqId = getPendingRequestId(req);
         const busy = pendingActionIds.has(reqId);
-
         const card = document.createElement("div");
         card.className = "pending-request-card";
-
         const itemsText = (req.items || [])
           .map(i => `${i.name}${i.variant ? ` (${i.variant})` : ""} x${i.qty}`)
           .join(", ");
-
         card.innerHTML = `
           <div class="flex justify-between items-start gap-3 flex-wrap">
             <div>
@@ -1320,41 +1237,24 @@
               <div class="text-xs text-gray-300 mt-2 font-medium">Items: ${escapeHtml(itemsText || "No items")}</div>
               <div class="text-xs text-amber-300 mt-1 font-bold">Total: ₹${Number(req.total || 0)}</div>
             </div>
-
             <div class="flex gap-2 mt-2">
               <button class="mini-btn mini-btn-success" data-action="accept" ${busy ? "disabled" : ""}>${busy ? "Working..." : "Accept"}</button>
               <button class="mini-btn mini-btn-danger" data-action="reject" ${busy ? "disabled" : ""}>${busy ? "Working..." : "Reject"}</button>
             </div>
           </div>
         `;
-
         card.querySelector('[data-action="accept"]').onclick = () => acceptPendingDineIn(reqId);
         card.querySelector('[data-action="reject"]').onclick = () => rejectPendingDineIn(reqId);
         list.appendChild(card);
       });
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // FIXED acceptPendingDineIn
-    //
-    // KEY FIXES:
-    // 1. On server success, the response now contains { draft } with the full
-    //    updated draft. We apply it directly to tableOrders[tableNo] instead
-    //    of doing a separate fetch — this removes a race condition where the
-    //    re-fetch could return stale data.
-    //
-    // 2. We ALWAYS call selectTable(tableNo) after updating tableOrders so the
-    //    right-side POS panel reflects the new items, even if the manager is
-    //    currently viewing a different table.
-    //
-    // 3. We do NOT rely on the tableDraftUpdated socket event to update the
-    //    draft because socket events can arrive before or after the accept
-    //    response finishes, causing double-render confusion.
-    // ═══════════════════════════════════════════════════════════════════════
+    // ── ACCEPT pending dine-in ─────────────────────────────────────────────
+    // On success: apply draft from server response, auto-fill customer details,
+    // switch to Tables tab, select the table.
     async function acceptPendingDineIn(requestId) {
       const req = pendingDineInRequests.find(r => getPendingRequestId(r) === requestId);
       if (!req || !requestId) return;
-
       if (pendingActionIds.has(requestId)) return;
 
       const tableNo = Number(req.tableNumber);
@@ -1368,8 +1268,7 @@
 
       try {
         const res = await fetch(`/api/pending-dinein/${requestId}/accept`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" }
+          method: "POST", headers: { "Content-Type": "application/json" }
         });
 
         if (!res.ok) {
@@ -1381,17 +1280,15 @@
         const data = await res.json();
 
         if (data.success && data.draft) {
-          // Apply the returned draft directly — no extra fetch needed
+          // Apply the draft returned by server — includes merged items + auto-filled customer details
           tableOrders[tableNo] = normalizeTablePayload(data.draft, tableNo);
         } else {
-          // Fallback: fetch the draft if server didn't return it
           await loadSingleTableDraft(tableNo);
         }
 
-        // Remove from pending list
         removePendingRequestById(requestId);
 
-        // Switch to tables tab and show the updated table
+        // Switch to tables tab and select the updated table
         setActiveTab("tables");
         selectTable(tableNo);
 
@@ -1407,7 +1304,6 @@
     async function rejectPendingDineIn(requestId) {
       const req = pendingDineInRequests.find(r => getPendingRequestId(r) === requestId);
       if (!req || !requestId) return;
-
       if (pendingActionIds.has(requestId)) return;
 
       pendingActionIds.add(requestId);
@@ -1415,16 +1311,12 @@
 
       try {
         const res = await fetch(`/api/pending-dinein/${requestId}/reject`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" }
+          method: "POST", headers: { "Content-Type": "application/json" }
         });
-
         if (!res.ok) throw new Error("Server reject failed");
-
         removePendingRequestById(requestId);
         toast(`Rejected order from ${req.customerName || "Guest"} for Table ${req.tableNumber || "?"}`);
       } catch(e) {
-        console.warn("Reject server call failed", e);
         pendingActionIds.delete(requestId);
         renderPendingDineInSection();
         toast("Could not reject: server error. Please try again.");
@@ -1437,6 +1329,7 @@
       toast(`🔔 New dine-in order — Table ${orderData.tableNumber || "?"} — ${orderData.customerName || "Guest"}`);
     });
 
+    // ── TABLE POS ─────────────────────────────────────────────────────────────
     const TABLECOUNT = 5;
 
     const tablesList               = document.getElementById("tablesList");
@@ -1454,14 +1347,7 @@
     const clearTableBtn            = document.getElementById("clearTableBtn");
 
     function createEmptyTable(tableNumber) {
-      return {
-        tableNumber,
-        customerName:"",
-        mobile:"",
-        guestCount:1,
-        status:"available",
-        items:[]
-      };
+      return { tableNumber, customerName:"", mobile:"", guestCount:1, status:"available", items:[] };
     }
 
     const tableOrders = {};
@@ -1477,11 +1363,8 @@
         guestCount: Number(raw?.guestCount || 1),
         status: raw?.status || ((raw?.items || []).length ? "draft" : "available"),
         items: Array.isArray(raw?.items) ? raw.items.map(item => ({
-          name: item.name || "",
-          variant: item.variant || "",
-          price: Number(item.price || 0),
-          qty: Number(item.qty || 0),
-          category: item.category || ""
+          name: item.name || "", variant: item.variant || "",
+          price: Number(item.price || 0), qty: Number(item.qty || 0), category: item.category || ""
         })) : []
       };
     }
@@ -1496,30 +1379,15 @@
       try {
         const res = await fetch("/api/table-orders");
         if (!res.ok) return;
-
         const drafts = await res.json();
         if (!Array.isArray(drafts)) return;
-
         for (let i = 1; i <= TABLECOUNT; i++) {
           const found = drafts.find(t => Number(t.tableNumber) === i);
           tableOrders[i] = found ? normalizeTablePayload(found, i) : createEmptyTable(i);
         }
-      } catch(e) {
-        console.warn("Could not load table drafts", e);
-      }
+      } catch(e) { console.warn("Could not load table drafts", e); }
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // FIXED loadSingleTableDraft
-    //
-    // BUG: Old code only called selectTable(tableNo) if selectedTable === tableNo,
-    // meaning if the manager was on a different table, the draft would load
-    // silently into tableOrders[tableNo] but the selected table's UI would
-    // never re-render with the new items.
-    //
-    // FIX: Always update tableOrders[tableNo] and always re-render the tables
-    // list. If tableNo IS the selected table, also re-render the draft panel.
-    // ═══════════════════════════════════════════════════════════════════════
     async function loadSingleTableDraft(tableNo) {
       try {
         const res = await fetch(`/api/table-orders/${tableNo}`);
@@ -1530,53 +1398,46 @@
           tableOrders[tableNo] = createEmptyTable(tableNo);
         }
       } catch(e) {
-        console.warn("Could not load table draft", e);
         tableOrders[tableNo] = createEmptyTable(tableNo);
       }
-
-      // Always re-render the tables list sidebar
       renderTablesList();
-
-      // If this is the currently selected table, re-render the full right panel
       if (selectedTable === tableNo) {
-        // Re-populate the customer detail inputs from the loaded draft
         const table = tableOrders[tableNo];
         tableCustomerName.value   = table.customerName;
         tableCustomerMobile.value = table.mobile;
         tableGuestCount.value     = table.guestCount || 1;
-
-        selectedTableBadge.textContent = table.status === "draft" ? "Draft" : table.status === "billed" ? "Billed" : "Available";
-        selectedTableBadge.className   = `table-status-badge ${table.status === "draft" ? "status-draft" : table.status === "billed" ? "status-billed" : "status-available"}`;
-
+        selectedTableBadge.textContent = getBadgeLabel(table.status);
+        selectedTableBadge.className   = `table-status-badge ${getBadgeClass(table.status)}`;
         renderSelectedTableDraft();
       }
     }
 
+    function getBadgeLabel(status) {
+      return status === "draft" ? "Draft" : status === "billed" ? "Billed" : "Available";
+    }
+    function getBadgeClass(status) {
+      return status === "draft" ? "status-draft" : status === "billed" ? "status-billed" : "status-available";
+    }
+
     function renderTablesList() {
       tablesList.innerHTML = "";
-
       for (let i = 1; i <= TABLECOUNT; i++) {
         const table = tableOrders[i];
         const total = getTableTotal(i);
         const pending = getPendingForTable(i).length;
-
         const card = document.createElement("button");
         card.className = `table-card text-left ${selectedTable === i ? "active" : ""} ${pending > 0 ? "has-pending" : ""}`;
-
         card.innerHTML = `
           <div class="flex items-center justify-between gap-2">
             <div class="text-lg font-extrabold text-amber-300">Table ${i}</div>
             <div class="flex items-center gap-1">
               ${pending > 0 ? `<span class="table-status-badge status-pending">${pending} pending</span>` : ""}
-              <div class="table-status-badge ${table.status === "draft" ? "status-draft" : table.status === "billed" ? "status-billed" : "status-available"}">
-                ${table.status === "draft" ? "Draft" : table.status === "billed" ? "Billed" : "Available"}
-              </div>
+              <div class="table-status-badge ${getBadgeClass(table.status)}">${getBadgeLabel(table.status)}</div>
             </div>
           </div>
           <div class="text-xs text-gray-300 mt-2">${escapeHtml(table.customerName || "No guest assigned")}</div>
           <div class="text-[11px] text-gray-400 mt-1">Items: ${table.items.reduce((s,x)=>s + Number(x.qty || 0),0)} • Total: ₹${total}</div>
         `;
-
         card.onclick = () => selectTable(i);
         tablesList.appendChild(card);
       }
@@ -1585,15 +1446,12 @@
     function selectTable(tableNo) {
       selectedTable = tableNo;
       const table = tableOrders[tableNo];
-
       selectedTableTitle.textContent = `Table ${tableNo}`;
-      selectedTableBadge.textContent = table.status === "draft" ? "Draft" : table.status === "billed" ? "Billed" : "Available";
-      selectedTableBadge.className = `table-status-badge ${table.status === "draft" ? "status-draft" : table.status === "billed" ? "status-billed" : "status-available"}`;
-
-      tableCustomerName.value = table.customerName;
+      selectedTableBadge.textContent = getBadgeLabel(table.status);
+      selectedTableBadge.className = `table-status-badge ${getBadgeClass(table.status)}`;
+      tableCustomerName.value   = table.customerName;
       tableCustomerMobile.value = table.mobile;
-      tableGuestCount.value = table.guestCount || 1;
-
+      tableGuestCount.value     = table.guestCount || 1;
       renderTablesList();
       renderSelectedTableDraft();
     }
@@ -1601,12 +1459,9 @@
     function syncSelectedTableMeta() {
       const table = tableOrders[selectedTable];
       table.customerName = tableCustomerName.value.trim();
-      table.mobile = tableCustomerMobile.value.trim();
-      table.guestCount = Number(tableGuestCount.value || 1);
-
-      if (table.items.length) table.status = "draft";
-      else table.status = "available";
-
+      table.mobile       = tableCustomerMobile.value.trim();
+      table.guestCount   = Number(tableGuestCount.value || 1);
+      table.status = table.items.length ? "draft" : "available";
       renderTablesList();
     }
 
@@ -1617,16 +1472,8 @@
     function addItemToSelectedTable(menuItem) {
       const table = tableOrders[selectedTable];
       const existing = table.items.find(x => x.name === menuItem.name && x.variant === menuItem.variant);
-
       if (existing) existing.qty += 1;
-      else table.items.push({
-        name: menuItem.name,
-        variant: menuItem.variant,
-        price: menuItem.price || 0,
-        qty: 1,
-        category: menuItem.category || ""
-      });
-
+      else table.items.push({ name: menuItem.name, variant: menuItem.variant, price: menuItem.price || 0, qty: 1, category: menuItem.category || "" });
       table.status = "draft";
       syncSelectedTableMeta();
       renderSelectedTableDraft();
@@ -1636,10 +1483,8 @@
     function changeTableItemQty(index, delta) {
       const table = tableOrders[selectedTable];
       if (!table.items[index]) return;
-
       table.items[index].qty += delta;
       if (table.items[index].qty <= 0) table.items.splice(index, 1);
-
       table.status = table.items.length ? "draft" : "available";
       renderSelectedTableDraft();
       renderTablesList();
@@ -1648,7 +1493,6 @@
     function renderSelectedTableDraft() {
       const table = tableOrders[selectedTable];
       tableDraftItems.innerHTML = "";
-
       if (!table.items.length) {
         tableDraftItems.innerHTML = `<div class="border border-dashed border-slate-700 rounded-xl p-3 text-sm text-gray-400">No items added for this table yet.</div>`;
       } else {
@@ -1674,24 +1518,20 @@
           tableDraftItems.appendChild(row);
         });
       }
-
       tableDraftTotal.textContent = `₹${getTableTotal(selectedTable)}`;
     }
 
     function renderTableMenuList() {
       const q = tableMenuSearch.value.trim().toLowerCase();
       tableMenuList.innerHTML = "";
-
       const filtered = tableMenuFlat.filter(item => {
         const hay = `${item.name} ${item.variant} ${item.category}`.toLowerCase();
         return hay.includes(q);
       });
-
       if (!filtered.length) {
         tableMenuList.innerHTML = `<div class="text-sm text-gray-400 border border-dashed border-slate-700 rounded-xl p-3">No dishes found.</div>`;
         return;
       }
-
       filtered.forEach(item => {
         const div = document.createElement("div");
         div.className = "pos-menu-item";
@@ -1712,17 +1552,14 @@
         tableMenuList.appendChild(div);
       });
     }
-
     tableMenuSearch.oninput = renderTableMenuList;
 
     async function saveTableDraftForTableNo(tableNo, showToast = false) {
       const table = tableOrders[tableNo];
       table.status = table.items.length ? "draft" : "available";
-
       try {
         const res = await fetch("/api/table-orders/save-draft", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
+          method:"POST", headers:{ "Content-Type":"application/json" },
           body: JSON.stringify({
             tableNumber: String(tableNo),
             customerName: table.customerName || "",
@@ -1733,13 +1570,10 @@
             total: getTableTotal(tableNo)
           })
         });
-
         if (!res.ok) throw new Error("Failed to save draft");
-
         if (showToast) toast(`Draft saved for Table ${tableNo}`);
         return true;
       } catch(e) {
-        console.error(e);
         if (showToast) toast(`Draft save failed for Table ${tableNo}`);
         return false;
       }
@@ -1749,7 +1583,6 @@
       syncSelectedTableMeta();
       renderTablesList();
       renderSelectedTableDraft();
-
       const ok = await saveTableDraftForTableNo(selectedTable, false);
       if (showToast) toast(ok ? `Draft saved for Table ${selectedTable}` : `Draft save failed for Table ${selectedTable}`);
       return ok;
@@ -1759,27 +1592,20 @@
 
     clearTableBtn.onclick = async () => {
       if (!confirm(`Clear Table ${selectedTable}?`)) return;
-
       tableOrders[selectedTable] = createEmptyTable(selectedTable);
       selectTable(selectedTable);
-
       try {
         await fetch("/api/table-orders/clear", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
+          method:"POST", headers:{ "Content-Type":"application/json" },
           body: JSON.stringify({ tableNumber: String(selectedTable) })
         });
-      } catch(e) {
-        console.error(e);
-      }
-
+      } catch(e) { console.error(e); }
       toast(`Table ${selectedTable} cleared`);
     };
 
     function buildPrintTextForSelectedTable(finalizedOrder) {
       const table = finalizedOrder || tableOrders[selectedTable];
       const lines = [];
-
       lines.push("ABBA SEENUUU... FAST FOODS");
       lines.push("DINE-IN BILL");
       lines.push("------------------------------");
@@ -1789,35 +1615,28 @@
       lines.push(`Guests: ${table.guestCount || 1}`);
       lines.push(`Time: ${new Date().toLocaleString("en-IN")}`);
       lines.push("------------------------------");
-
       (table.items || []).forEach(item => {
         lines.push(`${item.name}${item.variant ? ` (${item.variant})` : ""}`);
         lines.push(`  ${item.qty} x ${item.price} = ${item.qty * item.price}`);
       });
-
       lines.push("------------------------------");
       lines.push(`TOTAL: ₹${table.total || getTableTotal(selectedTable)}`);
       lines.push("------------------------------");
       lines.push("Thank you!");
       lines.push("");
-
       return lines.join("\n");
     }
 
     async function openPrintWindow(text) {
       try {
         const win = window.open("", "_blank");
-        if (!win) {
-          toast("Popup blocked. Please allow popups for printing.");
-          return;
-        }
+        if (!win) { toast("Popup blocked. Please allow popups for printing."); return; }
         win.document.write(`<pre style="font-family:monospace;white-space:pre-wrap;padding:16px;">${text.replace(/</g, "&lt;")}</pre><script>window.print()<\/script>`);
         win.document.close();
-      } catch(e) {
-        console.error(e);
-      }
+      } catch(e) { console.error(e); }
     }
 
+    // ── SAVE & PRINT: finalize the bill, move to Order History, clear draft ──
     saveAndPrintTableBillBtn.onclick = async () => {
       syncSelectedTableMeta();
       const table = tableOrders[selectedTable];
@@ -1850,13 +1669,10 @@
 
       try {
         const res = await fetch("/api/table-orders/finalize", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
+          method:"POST", headers:{ "Content-Type":"application/json" },
           body: JSON.stringify(finalizePayload)
         });
-
         if (!res.ok) throw new Error("Finalize failed");
-
         const data = await res.json().catch(() => null);
         if (data && data.order) finalizedOrder = data.order;
       } catch(e) {
@@ -1874,38 +1690,25 @@
       await fetchOrders(datePicker.value);
       await renderDashboard();
 
-      toast(`Table ${selectedTable} finalized, bill printed, added to Order History`);
+      toast(`Table ${selectedTable} finalized ✅ Bill printed — order added to History`);
     };
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // FIXED socket handlers for tableDraftUpdated and pendingDineInAccepted
-    //
-    // BUG: tableDraftUpdated was calling loadSingleTableDraft which would make
-    // a NEW fetch to the server. But we already have the full draft object in
-    // the payload. Applying it directly avoids a race-condition fetch.
-    //
-    // BUG: pendingDineInAccepted was only removing from pending list, but not
-    // updating the table draft in memory. The draft update is now handled by
-    // tableDraftUpdated which always fires before or alongside this event.
-    // ═══════════════════════════════════════════════════════════════════════
+    // ── SOCKET: table draft updated (from another manager tab or after accept) ──
     socket.on("tableDraftUpdated", (payload) => {
       if (!payload) return;
       const tableNo = Number(payload?.tableNumber || 0);
       if (!tableNo || tableNo < 1 || tableNo > TABLECOUNT) return;
 
-      // Apply the draft directly from the payload (no extra server round-trip)
       tableOrders[tableNo] = normalizeTablePayload(payload, tableNo);
-
-      // Re-render the tables list so the sidebar shows updated item count/total
       renderTablesList();
 
-      // If this is the selected table, update the full right panel
       if (selectedTable === tableNo) {
+        // Update inputs — this is the key auto-fill: customer name/mobile from portal
         tableCustomerName.value   = tableOrders[tableNo].customerName;
         tableCustomerMobile.value = tableOrders[tableNo].mobile;
         tableGuestCount.value     = tableOrders[tableNo].guestCount || 1;
-        selectedTableBadge.textContent = tableOrders[tableNo].status === "draft" ? "Draft" : tableOrders[tableNo].status === "billed" ? "Billed" : "Available";
-        selectedTableBadge.className   = `table-status-badge ${tableOrders[tableNo].status === "draft" ? "status-draft" : tableOrders[tableNo].status === "billed" ? "status-billed" : "status-available"}`;
+        selectedTableBadge.textContent = getBadgeLabel(tableOrders[tableNo].status);
+        selectedTableBadge.className   = `table-status-badge ${getBadgeClass(tableOrders[tableNo].status)}`;
         renderSelectedTableDraft();
       }
     });
@@ -1913,7 +1716,6 @@
     socket.on("tableDraftCleared", (payload) => {
       const tableNo = Number(payload?.tableNumber || 0);
       if (!tableNo || tableNo < 1 || tableNo > TABLECOUNT) return;
-
       tableOrders[tableNo] = createEmptyTable(tableNo);
       if (selectedTable === tableNo) selectTable(tableNo);
       else renderTablesList();
@@ -1927,8 +1729,8 @@
       await renderDashboard();
     });
 
+    // pendingDineInAccepted: draft update is handled by tableDraftUpdated above
     socket.on("pendingDineInAccepted", (payload) => {
-      // Just remove from pending list; the draft update is handled by tableDraftUpdated
       const id = payload?.id || payload;
       removePendingRequestById(id);
     });
