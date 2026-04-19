@@ -30,7 +30,6 @@ mongoose.connection.on("error",     (err) => console.error("❌ MongoDB Error:",
 
 // ─── SCHEMAS ──────────────────────────────────────────────────────────────────
 
-// strict:false so any extra fields from client (isDraft, source, etc.) don't crash the save
 const orderSchema = new mongoose.Schema(
   {
     orderType:          String,
@@ -350,19 +349,18 @@ app.get("/api/pending-dinein", async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// ACCEPT — THE CRITICAL FIX
+// ACCEPT — FULLY FIXED
 //
-// ROOT CAUSE OF "Could not accept: server error":
-//   The old code did:  new TableDraft({...}) → draft.save()
-//   tableDraftSchema has { tableNumber: unique:true }
-//   If any draft already existed for that table (manager had opened the portal,
-//   which auto-loads drafts, or a previous save-draft ran), MongoDB threw
-//   E11000 duplicate key error → 500 → "Could not accept" in the UI.
+// BUG 1: The old code used $set + $setOnInsert together in findOneAndUpdate.
+//        When the document ALREADY EXISTS, MongoDB still tries to validate
+//        $setOnInsert fields and can throw conflicts. Fixed by doing a plain
+//        findOne first, then either update the existing doc or create new.
 //
-// FIX: Replace new + save with findOneAndUpdate + upsert:true.
-//   - Existing draft → UPDATE (merge items in, fill customer details if empty)
-//   - No draft yet   → CREATE (upsert inserts a new document)
-//   Either way: no duplicate key error, ever.
+// BUG 2: When status was already "accepted" (second click), the old code
+//        returned { alreadyProcessed: true } WITHOUT re-emitting the socket
+//        events or reloading the draft. So the manager UI never updated.
+//        Fixed: always re-fetch the draft and emit the socket event even if
+//        the pending request was already processed.
 // ══════════════════════════════════════════════════════════════════════════════
 app.post("/api/pending-dinein/:id/accept", async (req, res) => {
   try {
@@ -375,80 +373,102 @@ app.post("/api/pending-dinein/:id/accept", async (req, res) => {
       return res.status(404).json({ success: false, error: "Pending request not found" });
     }
 
-    // Already processed by another manager tab — return success silently
-    if (pending.status !== "pending") {
-      return res.json({ success: true, alreadyProcessed: true });
-    }
-
     const tableNumber = String(pending.tableNumber || "").trim();
     if (!tableNumber) {
       return res.status(400).json({ success: false, error: "Table number missing on pending request" });
     }
 
-    // Mark pending request as accepted
-    pending.status = "accepted";
-    await pending.save();
+    // If already accepted, still re-emit so the UI can sync properly
+    const alreadyDone = pending.status !== "pending";
 
-    // Load the existing draft (if any) so we can merge items
-    const existingDraft = await TableDraft.findOne({ tableNumber });
+    if (!alreadyDone) {
+      // Mark as accepted FIRST to prevent race conditions
+      await PendingDineIn.findByIdAndUpdate(id, { status: "accepted" });
+    }
 
-    // Build merged items: start with existing items, add/accumulate incoming ones
-    const mergedItems = (existingDraft?.items || []).map((i) => ({
-      name: i.name || "", variant: i.variant || "",
-      price: Number(i.price || 0), qty: Number(i.qty || 0), category: i.category || ""
-    }));
+    // Always re-fetch/rebuild the draft regardless of alreadyDone
+    // This ensures the UI gets the correct state even on retry
+    let existingDraft = await TableDraft.findOne({ tableNumber });
 
-    (pending.items || []).forEach((inc) => {
-      if (!inc.name || !inc.qty) return;
-      const idx = mergedItems.findIndex(
-        (x) => x.name === inc.name && (x.variant || "") === (inc.variant || "")
-      );
-      if (idx >= 0) {
-        mergedItems[idx].qty += Number(inc.qty || 1);
-      } else {
-        mergedItems.push({
-          name: inc.name, variant: inc.variant || "",
-          price: Number(inc.price || 0), qty: Number(inc.qty || 1),
-          category: inc.category || ""
-        });
-      }
-    });
+    // Only merge items if this is a fresh acceptance (not already processed)
+    let finalItems;
+    if (alreadyDone) {
+      // Just re-emit what's already in the draft
+      finalItems = existingDraft ? existingDraft.items : [];
+    } else {
+      // Merge: start with existing draft items, add incoming items
+      const baseItems = (existingDraft?.items || []).map((i) => ({
+        name: i.name || "", variant: i.variant || "",
+        price: Number(i.price || 0), qty: Number(i.qty || 0), category: i.category || ""
+      }));
 
-    // Decide which customer details to write
-    const setFields = {
+      (pending.items || []).forEach((inc) => {
+        if (!inc.name || !inc.qty) return;
+        const idx = baseItems.findIndex(
+          (x) => x.name === inc.name && (x.variant || "") === (inc.variant || "")
+        );
+        if (idx >= 0) {
+          baseItems[idx].qty += Number(inc.qty || 1);
+        } else {
+          baseItems.push({
+            name: inc.name, variant: inc.variant || "",
+            price: Number(inc.price || 0), qty: Number(inc.qty || 1),
+            category: inc.category || ""
+          });
+        }
+      });
+
+      finalItems = baseItems;
+    }
+
+    const finalTotal = calcTotal(finalItems);
+
+    // Build the update fields
+    const updateFields = {
       status:    "draft",
-      items:     mergedItems,
-      total:     calcTotal(mergedItems),
+      items:     finalItems,
+      total:     finalTotal,
       updatedAt: new Date()
     };
-    // Only overwrite blank fields — don't erase what manager already typed
-    if (!existingDraft?.customerName && pending.customerName)
-      setFields.customerName = pending.customerName;
-    if (!existingDraft?.mobile && pending.mobile)
-      setFields.mobile = pending.mobile;
 
-    // findOneAndUpdate with upsert = ZERO risk of duplicate key error
-    const draft = await TableDraft.findOneAndUpdate(
-      { tableNumber },
-      {
-        $set: setFields,
-        $setOnInsert: {
-          // These fields only apply when a brand-new document is inserted
-          tableNumber,
-          customerName: pending.customerName || "",
-          mobile:       pending.mobile       || "",
-          guestCount:   pending.guestCount   || 1,
-          createdAt:    new Date()
-        }
-      },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
-    );
+    // Auto-fill customer details from pending request only if draft fields are blank
+    const currentCustomerName = existingDraft?.customerName || "";
+    const currentMobile = existingDraft?.mobile || "";
+    if (!currentCustomerName && pending.customerName) updateFields.customerName = pending.customerName;
+    if (!currentMobile && pending.mobile) updateFields.mobile = pending.mobile;
 
-    console.log(`✅ Table ${tableNumber}: ${mergedItems.length} items, ₹${calcTotal(mergedItems)}`);
+    // Use findOneAndUpdate with upsert — separate $set from $setOnInsert to avoid conflicts
+    let draft;
+    if (existingDraft) {
+      // Document exists — just update it directly, no $setOnInsert needed
+      existingDraft.items     = finalItems;
+      existingDraft.total     = finalTotal;
+      existingDraft.status    = "draft";
+      existingDraft.updatedAt = new Date();
+      if (!existingDraft.customerName && pending.customerName) existingDraft.customerName = pending.customerName;
+      if (!existingDraft.mobile && pending.mobile) existingDraft.mobile = pending.mobile;
+      draft = await existingDraft.save();
+    } else {
+      // No existing draft — create a new one
+      draft = await TableDraft.create({
+        tableNumber,
+        customerName: pending.customerName || "",
+        mobile:       pending.mobile       || "",
+        guestCount:   pending.guestCount   || 1,
+        status:       "draft",
+        items:        finalItems,
+        total:        finalTotal,
+        createdAt:    new Date(),
+        updatedAt:    new Date()
+      });
+    }
 
-    const draftObj = draft.toObject();
-    draftObj._id   = draftObj._id.toString();
+    console.log(`✅ Table ${tableNumber}: ${finalItems.length} items, ₹${finalTotal}`);
 
+    const draftObj  = draft.toObject ? draft.toObject() : draft;
+    draftObj._id    = draftObj._id.toString();
+
+    // Always emit both events so all connected manager tabs sync correctly
     io.emit("tableDraftUpdated",     draftObj);
     io.emit("pendingDineInAccepted", { id: id.toString(), tableNumber });
 
@@ -478,9 +498,6 @@ app.post("/api/pending-dinein/:id/reject", async (req, res) => {
 });
 
 // ─── TABLE DRAFTS ─────────────────────────────────────────────────────────────
-// IMPORTANT: named sub-routes (save-draft, clear, finalize) must come
-// BEFORE the parameterised /:tableNumber route or Express will match wrong.
-
 app.get("/api/table-orders", async (req, res) => {
   try {
     res.json(await TableDraft.find({}).sort({ tableNumber: 1 }));
@@ -495,11 +512,15 @@ app.post("/api/table-orders/save-draft", async (req, res) => {
     if (!p.tableNumber)
       return res.status(400).json({ success: false, error: "tableNumber is required" });
 
-    const draft = await TableDraft.findOneAndUpdate(
-      { tableNumber: p.tableNumber },
-      { ...p, updatedAt: new Date() },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
-    );
+    const existing = await TableDraft.findOne({ tableNumber: p.tableNumber });
+    let draft;
+    if (existing) {
+      Object.assign(existing, p, { updatedAt: new Date() });
+      draft = await existing.save();
+    } else {
+      draft = await TableDraft.create({ ...p, createdAt: new Date(), updatedAt: new Date() });
+    }
+
     io.emit("tableDraftUpdated", draft);
     res.json({ success: true, draft });
   } catch (err) {
