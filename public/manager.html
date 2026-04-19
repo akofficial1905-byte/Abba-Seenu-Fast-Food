@@ -308,7 +308,6 @@
       <button id="tabTables" class="tab-btn">Tables / Dine-In POS <span id="pendingTabBadge" class="tab-btn-badge" style="display:none;">0</span></button>
     </div>
 
-    <!-- ===== ORDERS TAB ===== -->
     <div id="ordersTab">
       <div class="bg-red-950/30 rounded-2xl border border-red-500/40 p-4 mb-4">
         <div class="flex items-center justify-between gap-3 mb-3 mobile-stack">
@@ -354,7 +353,6 @@
       </div>
     </div>
 
-    <!-- ===== ANALYTICS TAB ===== -->
     <div id="analyticsTab" style="display:none;">
       <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6 mb-4">
         <h2 class="text-lg md:text-xl font-extrabold text-amber-300 mb-3">Daily Snapshot</h2>
@@ -442,7 +440,6 @@
       </section>
     </div>
 
-    <!-- ===== INVENTORY TAB ===== -->
     <div id="inventoryTab" style="display:none;">
       <section class="bg-slate-900/70 rounded-2xl border border-slate-700 p-4 md:p-6">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-3 mobile-stack">
@@ -477,10 +474,8 @@
       </section>
     </div>
 
-    <!-- ===== TABLES TAB ===== -->
     <div id="tablesTab" style="display:none;">
 
-      <!-- PENDING DINE-IN REQUESTS SECTION -->
       <section id="pendingDineInSection" class="bg-red-950/30 rounded-2xl border border-red-500/40 p-4 mb-4" style="display:none;">
         <div class="flex items-center justify-between gap-3 mb-3">
           <div>
@@ -514,14 +509,11 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4 table-pos-grid">
-          <!-- Left: table list -->
           <div class="space-y-3">
             <div id="tablesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3"></div>
           </div>
 
-          <!-- Right: POS panel -->
           <div class="space-y-4">
-            <!-- Table header -->
             <div class="bg-slate-950/60 rounded-2xl border border-slate-700 p-4">
               <div class="flex items-start justify-between gap-3 mobile-stack">
                 <div>
@@ -547,7 +539,6 @@
               </div>
             </div>
 
-            <!-- Add dishes -->
             <div class="bg-slate-950/60 rounded-2xl border border-slate-700 p-4">
               <div class="flex items-center justify-between gap-3 mb-3 mobile-stack">
                 <div>
@@ -560,7 +551,6 @@
               <div id="tableMenuList" class="grid md:grid-cols-2 gap-3 max-h-[340px] overflow-y-auto pr-1"></div>
             </div>
 
-            <!-- Current draft -->
             <div class="bg-slate-950/60 rounded-2xl border border-slate-700 p-4">
               <div class="flex items-center justify-between gap-3 mb-3 mobile-stack">
                 <div>
@@ -581,7 +571,6 @@
     </div>
   </div>
 
-  <!-- Change Login Modal -->
   <div id="changeLoginModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50" style="display:none;">
     <div class="bg-slate-900 rounded-2xl border border-amber-400 p-5 w-[92%] max-w-sm">
       <h2 class="text-lg font-extrabold text-amber-300 mb-2 text-center">Change Manager Login</h2>
@@ -623,7 +612,6 @@
     socket.on("connect_error", (err) => console.error("Socket connect error:", err));
     socket.on("disconnect", (reason) => console.log("Socket disconnected:", reason));
 
-    // ── Toast ──────────────────────────────────────────────────────────
     const serviceToast = document.getElementById("serviceToast");
     function toast(msg) {
       serviceToast.textContent = msg;
@@ -632,7 +620,6 @@
       window.__toastT = setTimeout(() => serviceToast.style.display = "none", 2800);
     }
 
-    // ── Login ──────────────────────────────────────────────────────────
     const loginOverlay = document.getElementById("loginOverlay");
     const managerApp   = document.getElementById("managerApp");
     const loginBtn     = document.getElementById("loginBtn");
@@ -671,10 +658,7 @@
           await renderDashboard();
           renderTablesList();
           selectTable(1);
-
-          // ── FIX 1: Load existing pending dine-in requests from DB on login ──
           await loadPendingDineInRequests();
-
           renderPendingDineInSection();
         } else {
           loginError.textContent = data.message || `Login failed (status ${res.status})`;
@@ -687,7 +671,6 @@
       }
     };
 
-    // ── Change Login Modal ─────────────────────────────────────────────
     const openChangeLogin  = document.getElementById("openChangeLogin");
     const changeLoginModal = document.getElementById("changeLoginModal");
     const saveLoginChange  = document.getElementById("saveLoginChange");
@@ -733,7 +716,6 @@
       }
     };
 
-    // ── Tabs ───────────────────────────────────────────────────────────
     const tabOrders    = document.getElementById("tabOrders");
     const tabAnalytics = document.getElementById("tabAnalytics");
     const tabInventory = document.getElementById("tabInventory");
@@ -757,7 +739,6 @@
     tabInventory.onclick = () => setActiveTab("inventory");
     tabTables.onclick    = () => setActiveTab("tables");
 
-    // ── Menu / Inventory ──────────────────────────────────────────────
     let menuData = null;
     let tableMenuFlat = [];
 
@@ -876,7 +857,6 @@
       await loadMenuForTables();
     };
 
-    // ── Date helpers ───────────────────────────────────────────────────
     function getLocalToday() {
       const d   = new Date();
       const off = d.getTimezoneOffset();
@@ -884,7 +864,6 @@
       return ist.toISOString().slice(0, 10);
     }
 
-    // ── Orders (Live Orders & History) ─────────────────────────────────
     const datePicker  = document.getElementById("datePicker");
     const ordersList  = document.getElementById("ordersList");
     const historyList = document.getElementById("historyList");
@@ -1010,7 +989,6 @@
       } catch(e) { console.error(e); }
     }
 
-    // ── Dashboard ──────────────────────────────────────────────────────
     const dashboardPeriod = document.getElementById("dashboardPeriod");
     const dashboardDate   = document.getElementById("dashboardDate");
     dashboardDate.value   = getLocalToday();
@@ -1031,7 +1009,6 @@
 
     dashboardPeriod.onchange = dashboardDate.onchange = renderDashboard;
 
-    // ── Insights ───────────────────────────────────────────────────────
     const compareBy      = document.getElementById("compareBy");
     const compareByLabel = document.getElementById("compareByLabel");
     const insightType    = document.getElementById("insightType");
@@ -1105,16 +1082,12 @@
       await renderDashboard();
     };
 
-    // ── Socket: live order events ──────────────────────────────────────
-    // FIX 2: "newOrder" only handles takeaway/delivery now.
-    // Dine-in pending requests come via "pendingDineIn" event below.
     socket.on("newOrder", async (orderData) => {
-      if (!orderData || orderData.orderType === "dinein") return; // dine-in never lands here
+      if (!orderData || orderData.orderType === "dinein") return;
       await fetchOrders(datePicker.value);
       await renderDashboard();
     });
 
-    // FIX 3: Dedicated listener for pending dine-in requests from customer portal
     socket.on("pendingDineIn", (orderData) => {
       if (!orderData) return;
       addPendingDineInRequest(orderData);
@@ -1126,7 +1099,6 @@
       await renderDashboard();
     });
 
-    // ── Service Requests ───────────────────────────────────────────────
     const serviceRequestList      = document.getElementById("serviceRequestList");
     const clearServiceRequestsBtn = document.getElementById("clearServiceRequestsBtn");
     let serviceRequests = [];
@@ -1166,12 +1138,8 @@
 
     renderServiceRequests();
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  PENDING DINE-IN REQUESTS
-    // ═══════════════════════════════════════════════════════════════════
     let pendingDineInRequests = [];
 
-    // FIX 4: Load pending requests that already exist in DB when manager logs in
     async function loadPendingDineInRequests() {
       try {
         const res = await fetch("/api/pending-dinein");
@@ -1205,7 +1173,6 @@
     }
 
     function addPendingDineInRequest(orderData) {
-      // Deduplicate by _id
       const id = orderData._id || orderData.id;
       if (id && pendingDineInRequests.find(r => (r._id || r.id) === id)) return;
       pendingDineInRequests.push(orderData);
@@ -1273,7 +1240,6 @@
       });
     }
 
-    // FIX 5: acceptPendingDineIn now calls the server endpoint properly
     async function acceptPendingDineIn(idx) {
       const req       = pendingDineInRequests[idx];
       const tableNo   = Number(req.tableNumber);
@@ -1289,7 +1255,6 @@
         return;
       }
 
-      // Call server to persist the accept (marks pending as accepted, merges into TableDraft in DB)
       try {
         const res = await fetch(`/api/pending-dinein/${pendingId}/accept`, {
           method: "POST",
@@ -1302,14 +1267,11 @@
         return;
       }
 
-      // Merge locally into tableOrders for instant UI update
       const table = tableOrders[tableNo];
 
-      // Auto-fill customer details if not already set
       if (!table.customerName && req.customerName) table.customerName = req.customerName;
       if (!table.mobile && req.mobile)             table.mobile = req.mobile;
 
-      // Merge items
       (req.items || []).forEach(incomingItem => {
         const existing = table.items.find(
           x => x.name === incomingItem.name && x.variant === (incomingItem.variant || "")
@@ -1329,7 +1291,6 @@
 
       table.status = "draft";
 
-      // If this table is currently selected, refresh the UI fields
       if (selectedTable === tableNo) {
         tableCustomerName.value   = table.customerName || "";
         tableCustomerMobile.value = table.mobile || "";
@@ -1338,15 +1299,12 @@
 
       removePendingRequest(idx);
       renderTablesList();
-
-      // Switch to tables tab and select the relevant table
       setActiveTab("tables");
       selectTable(tableNo);
 
       toast(`✓ Accepted — items added to Table ${tableNo}`);
     }
 
-    // FIX 6: rejectPendingDineIn now calls the server endpoint properly
     async function rejectPendingDineIn(idx) {
       const req       = pendingDineInRequests[idx];
       const pendingId = req._id || req.id;
@@ -1359,7 +1317,6 @@
           });
         } catch(e) {
           console.warn("Reject server call failed:", e);
-          // Still remove from local list even if server call fails
         }
       }
 
@@ -1367,9 +1324,6 @@
       toast(`✗ Rejected order from ${req.customerName || "Guest"} for Table ${req.tableNumber || "?"}`);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  TABLE POS LOGIC
-    // ═══════════════════════════════════════════════════════════════════
     const TABLE_COUNT              = 5;
     const tablesList               = document.getElementById("tablesList");
     const selectedTableTitle       = document.getElementById("selectedTableTitle");
@@ -1591,7 +1545,6 @@
 
     tableMenuSearch.oninput = renderTableMenuList;
 
-    // ── Save draft for a specific table number ─────────────────────────
     async function saveTableDraftForTableNo(tableNo, showToast = false) {
       const table = tableOrders[tableNo];
       table.status = table.items.length ? "draft" : "available";
@@ -1600,7 +1553,7 @@
         const res = await fetch("/api/table-orders/save-draft", {
           method:"POST", headers:{"Content-Type":"application/json"},
           body: JSON.stringify({
-            tableNumber:  String(tableNo),   // send as string to match schema
+            tableNumber:  String(tableNo),
             customerName: table.customerName || "",
             mobile:       table.mobile || "",
             guestCount:   table.guestCount || 1,
@@ -1619,7 +1572,6 @@
       }
     }
 
-    // ── Save draft for selected table ──────────────────────────────────
     async function saveSelectedTableDraft(showToast = true) {
       syncSelectedTableMeta();
       renderTablesList();
@@ -1676,7 +1628,6 @@
       } catch(e) { console.error(e); }
     }
 
-    // ── SAVE & PRINT — finalises bill, adds to Order History ──────────
     saveAndPrintTableBillBtn.onclick = async () => {
       syncSelectedTableMeta();
       const table = tableOrders[selectedTable];
@@ -1722,14 +1673,12 @@
       renderTablesList();
       selectTable(selectedTable);
 
-      // Refresh orders tab so history shows the new finalized bill
       await fetchOrders(datePicker.value);
       await renderDashboard();
 
       toast(`Table ${selectedTable} finalized — bill printed & added to Order History`);
     };
 
-    // ── Socket: table events ───────────────────────────────────────────
     socket.on("tableDraftUpdated", async (payload) => {
       const tableNo = Number(payload?.tableNumber || 0);
       if (!tableNo || tableNo < 1 || tableNo > TABLE_COUNT) return;
@@ -1752,7 +1701,6 @@
       await renderDashboard();
     });
 
-    // ── Socket: pending dine-in accepted/rejected by another manager session ──
     socket.on("pendingDineInAccepted", ({ id }) => {
       const idx = pendingDineInRequests.findIndex(r => (r._id || r.id) === id);
       if (idx !== -1) removePendingRequest(idx);
@@ -1763,7 +1711,6 @@
       if (idx !== -1) removePendingRequest(idx);
     });
 
-    // ── Initial render ─────────────────────────────────────────────────
     renderTablesList();
     renderSelectedTableDraft();
     renderPendingDineInSection();
