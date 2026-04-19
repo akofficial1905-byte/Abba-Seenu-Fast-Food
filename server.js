@@ -1,22 +1,27 @@
 // server.js – Abba SEENUUU... FAST FOODS (NO Razorpay)
 
-const express = require('express');
-const http = require('http');
-const socketio = require('socket.io');
-const cors = require('cors');
-const path = require('path');
-const mongoose = require('mongoose');
-const fs = require('fs');
+const express = require("express");
+const http = require("http");
+const socketio = require("socket.io");
+const cors = require("cors");
+const path = require("path");
+const mongoose = require("mongoose");
+const fs = require("fs");
 
-require('dotenv').config();
+require("dotenv").config();
 
 const app = express();
 const server = http.createServer(app);
-const io = socketio(server);
+const io = socketio(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PATCH", "DELETE"]
+  }
+});
+
 const PORT = process.env.PORT || 4000;
 
 // --- Manager Portal Login ---
-// Use environment variables if available, otherwise fallback defaults
 const managerUser = process.env.MANAGER_USER || "admin";
 const managerPass = process.env.MANAGER_PASS || "abbaseenu2025";
 
@@ -37,13 +42,13 @@ mongoose.connection.on("error", (err) => {
   console.error("❌ MongoDB Error:", err);
 });
 
-// --- Schema ---
+// --- Schemas ---
 const orderSchema = new mongoose.Schema({
   orderType: String,
   customerName: String,
   registrationNumber: String,
   mobile: String,
-  tableNumber: String, // dine-in table from new index.html
+  tableNumber: String,
   address: String,
   location: {
     lat: Number,
@@ -54,10 +59,8 @@ const orderSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  // NEW: customer notes from checkout
   specialRequest: String,
   requestTags: [String],
-
   items: [
     {
       name: String,
@@ -83,17 +86,14 @@ orderSchema.index({ createdAt: 1 }, { expireAfterSeconds: 7776000 });
 
 const Order = mongoose.model("Order", orderSchema);
 
-// --- Service Request Schema (Call Waiter / Call Manager) ---
 const serviceRequestSchema = new mongoose.Schema({
-  type: String, // "Call Waiter" | "Call Manager" | etc.
+  type: String,
+  requestType: String,
   customerName: String,
   mobile: String,
   registrationNumber: String,
   orderType: String,
-
-  // IMPORTANT: add tableNumber so manager sees which table called
-  tableNumber: String, // <-- ADDED
-
+  tableNumber: String,
   address: String,
   location: {
     lat: Number,
@@ -115,8 +115,93 @@ serviceRequestSchema.index({ createdAt: 1 }, { expireAfterSeconds: 604800 });
 
 const ServiceRequest = mongoose.model("ServiceRequest", serviceRequestSchema);
 
+const tableDraftSchema = new mongoose.Schema({
+  tableNumber: {
+    type: String,
+    required: true,
+    unique: true,
+    index: true
+  },
+  customerName: {
+    type: String,
+    default: ""
+  },
+  mobile: {
+    type: String,
+    default: ""
+  },
+  guestCount: {
+    type: Number,
+    default: 1
+  },
+  status: {
+    type: String,
+    default: "available"
+  },
+  items: [
+    {
+      name: String,
+      variant: String,
+      price: Number,
+      qty: Number,
+      category: String
+    }
+  ],
+  total: {
+    type: Number,
+    default: 0
+  },
+  lastPrintedAt: Date,
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+tableDraftSchema.pre("save", function (next) {
+  this.updatedAt = new Date();
+  this.total = (this.items || []).reduce(
+    (sum, item) => sum + (Number(item.price || 0) * Number(item.qty || 0)),
+    0
+  );
+  next();
+});
+
+const TableDraft = mongoose.model("TableDraft", tableDraftSchema);
+
 // --- AUTO PRINT QUEUE ---
 let printQueue = [];
+
+// --- Express middleware ---
+app.use(cors());
+app.use(express.json({ limit: "2mb" }));
+app.use(express.static(path.join(__dirname, "public")));
+
+// --- Helpers ---
+function normalizeRequestType(value) {
+  const v = String(value || "").trim().toLowerCase();
+  if (v === "manager" || v === "call manager") return "manager";
+  if (v === "waiter" || v === "call waiter") return "waiter";
+  return v || "waiter";
+}
+
+function getISTDateBounds(dateStr) {
+  const date = dateStr || new Date().toISOString().slice(0, 10);
+  const start = new Date(Date.parse(date + "T00:00:00+05:30"));
+  const end = new Date(Date.parse(date + "T23:59:59+05:30"));
+  return { start, end };
+}
+
+function calcTotal(items = []) {
+  return items.reduce(
+    (sum, item) => sum + (Number(item.price || 0) * Number(item.qty || 0)),
+    0
+  );
+}
 
 async function saveAndBroadcastOrder(orderData) {
   const order = new Order(orderData);
@@ -126,9 +211,35 @@ async function saveAndBroadcastOrder(orderData) {
   return order;
 }
 
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+function sanitizeTableDraftPayload(body = {}) {
+  const items = Array.isArray(body.items)
+    ? body.items.map((item) => ({
+        name: item?.name || "",
+        variant: item?.variant || "",
+        price: Number(item?.price || 0),
+        qty: Number(item?.qty || 0),
+        category: item?.category || ""
+      }))
+      .filter((x) => x.name && x.qty > 0)
+    : [];
+
+  const status =
+    body.status === "billed"
+      ? "billed"
+      : items.length
+      ? "draft"
+      : "available";
+
+  return {
+    tableNumber: String(body.tableNumber || "").trim(),
+    customerName: String(body.customerName || "").trim(),
+    mobile: String(body.mobile || "").trim(),
+    guestCount: Math.max(1, Number(body.guestCount || 1)),
+    status,
+    items,
+    total: calcTotal(items)
+  };
+}
 
 // --- Manager Login API ---
 app.post("/api/manager/login", (req, res) => {
@@ -159,11 +270,11 @@ app.post("/api/manager/login", (req, res) => {
 });
 
 // --- Change Manager ID / Password ---
-// Disabled because in-memory changes do not survive server restart
 app.post("/api/manager/change-credentials", (req, res) => {
   return res.status(400).json({
     success: false,
-    message: "Change login is disabled. Update MANAGER_USER and MANAGER_PASS in server config or .env file."
+    message:
+      "Change login is disabled. Update MANAGER_USER and MANAGER_PASS in server config or .env file."
   });
 });
 
@@ -191,14 +302,6 @@ app.post("/update-menu", (req, res) => {
   }
 });
 
-// --- Utility: IST date boundaries ---
-function getISTDateBounds(dateStr) {
-  const date = dateStr || new Date().toISOString().slice(0, 10);
-  const start = new Date(Date.parse(date + "T00:00:00+05:30"));
-  const end = new Date(Date.parse(date + "T23:59:59+05:30"));
-  return { start, end };
-}
-
 // ---------------- ORDERS APIs ----------------
 
 // Get orders for a given date (IST) and optional status
@@ -223,7 +326,7 @@ app.get("/api/orders", async (req, res) => {
   }
 });
 
-// Place new order – already compatible with new index.html
+// Place new order
 app.post("/api/orders", async (req, res) => {
   try {
     const {
@@ -231,29 +334,35 @@ app.post("/api/orders", async (req, res) => {
       customerName,
       registrationNumber,
       mobile,
-      tableNumber,      // from new index.html
+      tableNumber,
       address,
       location,
       items,
       paymentMethod,
       specialRequest,
       requestTags
-    } = req.body;
+    } = req.body || {};
 
-    const total = (items || []).reduce(
-      (sum, item) => sum + (item.price || 0) * (item.qty || 0),
-      0
-    );
+    const normalizedItems = Array.isArray(items)
+      ? items.map((item) => ({
+          name: item?.name || "",
+          variant: item?.variant || "",
+          price: Number(item?.price || 0),
+          qty: Number(item?.qty || 0)
+        }))
+      : [];
+
+    const total = calcTotal(normalizedItems);
 
     const order = await saveAndBroadcastOrder({
-      orderType,
-      customerName,
-      registrationNumber,
-      mobile,
-      tableNumber,      // stored in DB
-      address,
-      location,
-      items,
+      orderType: orderType || "",
+      customerName: customerName || "",
+      registrationNumber: registrationNumber || "",
+      mobile: mobile || "",
+      tableNumber: tableNumber || "",
+      address: address || "",
+      location: location || null,
+      items: normalizedItems,
       total,
       paymentMethod: paymentMethod || "COD",
       paymentVerified: false,
@@ -276,7 +385,7 @@ app.post("/api/orders", async (req, res) => {
 app.patch("/api/orders/:id/status", async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status } = req.body || {};
 
     const order = await Order.findByIdAndUpdate(
       id,
@@ -306,7 +415,7 @@ app.patch("/api/orders/:id/status", async (req, res) => {
 app.patch("/api/orders/:id/payment-verified", async (req, res) => {
   try {
     const { id } = req.params;
-    const { paymentVerified } = req.body;
+    const { paymentVerified } = req.body || {};
 
     const order = await Order.findByIdAndUpdate(
       id,
@@ -332,7 +441,7 @@ app.patch("/api/orders/:id/payment-verified", async (req, res) => {
   }
 });
 
-// Hard delete (optional)
+// Hard delete
 app.delete("/api/orders/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -347,36 +456,33 @@ app.delete("/api/orders/:id", async (req, res) => {
   }
 });
 
-// ---------------- SERVICE REQUEST APIs (Call Waiter / Call Manager) ----------------
+// ---------------- SERVICE REQUEST APIs ----------------
 
-// Create a service request – UPDATED to accept tableNumber
+// Create a service request
 app.post("/api/service-request", async (req, res) => {
   try {
     const {
       type,
+      requestType,
       customerName,
       mobile,
       registrationNumber,
       orderType,
-      tableNumber,   // <-- ACCEPTED from new index.html
+      tableNumber,
       address,
       location
     } = req.body || {};
 
-    if (!type) {
-      return res.status(400).json({
-        success: false,
-        error: "Missing type (e.g. 'Call Waiter' or 'Call Manager')"
-      });
-    }
+    const normalizedRequestType = normalizeRequestType(requestType || type);
 
     const sr = new ServiceRequest({
-      type,
+      type: normalizedRequestType,
+      requestType: normalizedRequestType,
       customerName: customerName || "",
       mobile: mobile || "",
       registrationNumber: registrationNumber || "",
       orderType: orderType || "",
-      tableNumber: tableNumber || "",  // <-- STORED
+      tableNumber: tableNumber || "",
       address: address || "",
       location: location || null,
       status: "pending"
@@ -384,10 +490,13 @@ app.post("/api/service-request", async (req, res) => {
 
     await sr.save();
 
-    // Broadcast to manager dashboard (same event name as before)
-    io.emit("serviceRequest", sr);
+    const payload = sr.toObject();
+    payload.requestType = normalizedRequestType;
+    payload.type = normalizedRequestType;
 
-    res.json({ success: true, serviceRequest: sr });
+    io.emit("serviceRequest", payload);
+
+    res.json({ success: true, serviceRequest: payload });
   } catch (err) {
     console.error("Create service request error:", err);
     res.status(500).json({
@@ -403,14 +512,166 @@ app.get("/api/service-request", async (req, res) => {
     const { start, end } = getISTDateBounds(
       req.query.date || new Date().toISOString().slice(0, 10)
     );
+
     const list = await ServiceRequest.find({
       createdAt: { $gte: start, $lte: end }
     }).sort({ createdAt: -1 });
 
-    res.json(list);
+    const normalized = list.map((item) => {
+      const obj = item.toObject();
+      const rt = normalizeRequestType(obj.requestType || obj.type);
+      return {
+        ...obj,
+        requestType: rt,
+        type: rt
+      };
+    });
+
+    res.json(normalized);
   } catch (err) {
     console.error("Get service requests error:", err);
     res.status(500).json({ error: "Could not get service requests" });
+  }
+});
+
+// ---------------- TABLE DRAFT APIs ----------------
+
+// Get all table drafts for manager POS
+app.get("/api/table-orders", async (req, res) => {
+  try {
+    const drafts = await TableDraft.find({}).sort({ tableNumber: 1 });
+    res.json(drafts);
+  } catch (err) {
+    console.error("Get table drafts error:", err);
+    res.status(500).json({ success: false, error: "Could not get table drafts" });
+  }
+});
+
+// Save / update one table draft
+app.post("/api/table-orders/save-draft", async (req, res) => {
+  try {
+    const payload = sanitizeTableDraftPayload(req.body);
+
+    if (!payload.tableNumber) {
+      return res.status(400).json({
+        success: false,
+        error: "tableNumber is required"
+      });
+    }
+
+    const draft = await TableDraft.findOneAndUpdate(
+      { tableNumber: payload.tableNumber },
+      {
+        ...payload,
+        updatedAt: new Date()
+      },
+      {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true
+      }
+    );
+
+    io.emit("tableDraftUpdated", draft);
+    res.json({ success: true, draft });
+  } catch (err) {
+    console.error("Save table draft error:", err);
+    res.status(500).json({ success: false, error: "Could not save table draft" });
+  }
+});
+
+// Clear one table draft
+app.post("/api/table-orders/clear", async (req, res) => {
+  try {
+    const tableNumber = String(req.body?.tableNumber || "").trim();
+
+    if (!tableNumber) {
+      return res.status(400).json({
+        success: false,
+        error: "tableNumber is required"
+      });
+    }
+
+    await TableDraft.findOneAndDelete({ tableNumber });
+
+    io.emit("tableDraftCleared", { tableNumber });
+    res.json({ success: true, tableNumber });
+  } catch (err) {
+    console.error("Clear table draft error:", err);
+    res.status(500).json({ success: false, error: "Could not clear table draft" });
+  }
+});
+
+// Print/finalize one table draft as a real order
+app.post("/api/table-orders/print", async (req, res) => {
+  try {
+    const payload = sanitizeTableDraftPayload(req.body);
+
+    if (!payload.tableNumber) {
+      return res.status(400).json({
+        success: false,
+        error: "tableNumber is required"
+      });
+    }
+
+    if (!payload.items.length) {
+      return res.status(400).json({
+        success: false,
+        error: "No items in table draft"
+      });
+    }
+
+    const order = await saveAndBroadcastOrder({
+      orderType: "dinein",
+      customerName: payload.customerName || "",
+      registrationNumber: "",
+      mobile: payload.mobile || "",
+      tableNumber: payload.tableNumber,
+      address: "",
+      location: null,
+      items: payload.items.map((i) => ({
+        name: i.name,
+        variant: i.variant || "",
+        price: Number(i.price || 0),
+        qty: Number(i.qty || 0)
+      })),
+      total: payload.total || calcTotal(payload.items),
+      paymentMethod: "COD",
+      paymentVerified: false,
+      specialRequest: "",
+      requestTags: [],
+      status: "incoming"
+    });
+
+    const draft = await TableDraft.findOneAndUpdate(
+      { tableNumber: payload.tableNumber },
+      {
+        ...payload,
+        status: "billed",
+        total: payload.total || calcTotal(payload.items),
+        lastPrintedAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true
+      }
+    );
+
+    io.emit("tableDraftUpdated", draft);
+
+    res.json({
+      success: true,
+      order,
+      draft
+    });
+  } catch (err) {
+    console.error("Print/finalize table draft error:", err);
+    res.status(500).json({
+      success: false,
+      error: "Could not print/finalize table draft"
+    });
   }
 });
 
@@ -437,6 +698,8 @@ app.get("/api/dashboard/sales", async (req, res) => {
       const d = new Date(dayStart);
       start = new Date(d.getFullYear(), d.getMonth(), 1);
       end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
+    } else {
+      ({ start, end } = getISTDateBounds(date));
     }
 
     const orders = await Order.find({
@@ -578,7 +841,7 @@ app.get("/api/next-print-ticket", (req, res) => {
   if (order.customerName) lines.push(`Name   : ${order.customerName}`);
   if (order.registrationNumber) lines.push(`Reg No : ${order.registrationNumber}`);
   if (order.mobile) lines.push(`Mobile : ${order.mobile}`);
-  if (order.tableNumber) lines.push(`Table  : ${order.tableNumber}`); // optional, but nice for dine-in
+  if (order.tableNumber) lines.push(`Table  : ${order.tableNumber}`);
   if (order.address) lines.push(`Addr   : ${order.address}`);
   if (order.specialRequest) lines.push(`Note   : ${order.specialRequest}`);
   if (order.requestTags && order.requestTags.length) {
@@ -592,14 +855,14 @@ app.get("/api/next-print-ticket", (req, res) => {
   lines.push("--------------------------");
 
   (order.items || []).forEach((it) => {
-    lines.push(`${it.name} x${it.qty}  ₹${it.price}`);
+    lines.push(`${it.name}${it.variant ? ` (${it.variant})` : ""} x${it.qty}  ₹${it.price}`);
   });
 
   lines.push("--------------------------");
   lines.push(`Total: ₹${order.total}`);
-  lines.push("\\\\\\\\\\\\\\\\n\\\\\\\\\\\\\\\\n\\\\\\\\\\\\\\\\n");
+  lines.push("\n\n\n");
 
-  res.type("text/plain").send(lines.join("\\\\\\\\\\\\\\\\n"));
+  res.type("text/plain").send(lines.join("\n"));
 });
 
 // ---------------- SOCKET.IO ----------------
