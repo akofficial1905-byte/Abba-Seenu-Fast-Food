@@ -631,7 +631,6 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
 }
 </style>
 </head>
-
 <body>
 
 <div id="viewport"><div id="book"></div></div>
@@ -793,8 +792,99 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
 
 <div id="toast"></div>
 <div id="hint">Swipe or use arrows to browse menu</div>
+  <div id="recommendationBox" style="
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+ background: #08152e;
+color: #fff;
+border: 1px solid rgba(245,197,24,.3);
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: none;
+  z-index: 999;
+  max-width: 250px;
+">
+  <div style="font-weight: bold; margin-bottom: 6px;">
+    💡 You may also like
+  </div>
+  <div id="recommendationList"></div>
+</div>
+
 
 <script>
+  async function fetchRecommendations(cart) {
+  const res = await fetch("/api/recommendations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ items: cart })
+  });
+
+  const data = await res.json();
+  renderRecommendations(data.suggestions || []);
+}
+
+function renderRecommendations(suggestions) {
+  const box = document.getElementById("recommendationBox");
+  const list = document.getElementById("recommendationList");
+
+  if (!suggestions.length) {
+    box.style.display = "none";
+    return;
+  }
+
+  list.innerHTML = "";
+
+  suggestions.forEach(item => {
+    const div = document.createElement("div");
+
+    div.innerHTML = `
+      <b>${item.name}</b><br/>
+      <small>${item.reason}</small><br/>
+     <button 
+  onclick="addSuggestedItem('${item.name}')"
+  style="
+    margin-top:4px;
+    background:var(--accent);
+    color:#020718;
+    border:none;
+    padding:4px 8px;
+    border-radius:6px;
+    font-weight:600;
+    cursor:pointer;
+  "
+>
+  + Add
+</button>
+    `;
+
+    list.appendChild(div);
+  });
+
+  box.style.display = "block";
+}
+function addSuggestedItem(name) {
+  let foundItem = null;
+
+  Object.values(menu).forEach(category => {
+    category.forEach(item => {
+      if (item.name === name) {
+        foundItem = item;
+      }
+    });
+  });
+
+  if (foundItem) {
+    addToCart(
+      foundItem.name,
+      foundItem.price || 0,
+      "",
+      ""
+    );
+  }
+}
+
 setTimeout(()=>document.getElementById("hint").style.display="none",5000);
 
 const book           = document.getElementById("book");
@@ -1050,6 +1140,7 @@ function addToCart(name, price, variant="", category=""){
   else cart.push({name, price:Number(price)||0, qty:1, variant, category});
   updateCart();
   toast("Added to cart");
+  fetchRecommendations(cart);
 }
 window.addToCart = addToCart;
 
