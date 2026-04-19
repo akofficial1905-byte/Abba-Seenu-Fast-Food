@@ -1,1485 +1,1407 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Abba SEENUUU... FAST FOODS — Digital Menu</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<meta charset="UTF-8">
+<title>Abba SEENUUU... FAST FOODS — Digital Menu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <style>
-    :root{
-      --bg:#020718;
-      --paper:#081225;
-      --paper-soft:#0d1b33;
-      --accent:#f5c518;
-      --accent-soft:#ffe9a6;
-      --accent-soft2:#f9d869;
-      --text:#f5f5f5;
-      --muted:#a9b3cf;
-    }
+<style>
+:root{
+  --bg:#020718;
+  --paper:#081225;
+  --paper-soft:#0d1b33;
+  --accent:#f5c518;
+  --accent-soft:#ffe9a6;
+  --accent-soft2:#f9d869;
+  --text:#f5f5f5;
+  --muted:#a9b3cf;
+}
 
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      background:radial-gradient(circle at top,#101b3b 0,#020718 55%);
-      color:var(--text);
-      font-family:Poppins,sans-serif;
-      overflow:hidden;
-    }
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#101b3b 0,#020718 55%);
+  color:var(--text);
+  font-family:Poppins,sans-serif;
+  overflow:hidden;
+}
+#viewport{width:100vw;height:100vh;overflow:hidden}
+#book{display:flex;height:100%;transition:transform .55s cubic-bezier(.4,0,.2,1)}
+.page{
+  min-width:100vw;
+  height:100vh;
+  padding:18px 14px 130px;
+  background:
+    radial-gradient(circle at center, rgba(245,197,24,.06), transparent 60%),
+    linear-gradient(160deg,#050b1c,#08152e);
+  position:relative;
+}
+.page::before{
+  content:"ABBA SEENUUU... FAST FOODS";
+  position:absolute;inset:0;
+  display:flex;justify-content:center;align-items:center;
+  font-family:"Playfair Display",serif;
+  font-size:2.7rem;
+  text-align:center;
+  color:rgba(255,255,255,.03);
+  pointer-events:none;
+}
+h1,h2{
+  font-family:"Playfair Display",serif;
+  color:var(--accent-soft2);
+  margin-bottom:10px;
+}
+h1{font-size:2.4rem}
+h2{font-size:1.4rem}
+.center{
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+}
+.nav{
+  position:fixed;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:26px;
+  color:var(--accent);
+  cursor:pointer;
+  z-index:20;
+  opacity:.75;
+}
+.nav:hover{opacity:1}
+#prev{left:6px}
+#next{right:6px}
+.pageNo{
+  position:absolute;
+  bottom:14px;
+  right:16px;
+  font-size:.7rem;
+  color:#ddd;
+}
 
-    #viewport{width:100vw;height:100vh;overflow:hidden}
-    #book{display:flex;height:100%;transition:transform .55s cubic-bezier(.4,0,.2,1)}
+#contentsBtn{
+  position:fixed;
+  top:12px;
+  right:12px;
+  background:var(--paper-soft);
+  color:var(--accent-soft2);
+  padding:8px 16px;
+  border-radius:20px;
+  font-size:.9rem;
+  z-index:30;
+  border:1px solid var(--accent);
+}
 
-    .page{
-      min-width:100vw;
-      height:100vh;
-      padding:18px 14px 130px;
-      background:
-        radial-gradient(circle at center, rgba(245,197,24,.06), transparent 60%),
-        linear-gradient(160deg,#050b1c,#08152e);
-      position:relative;
-      overflow-y:auto;
-    }
+.contents-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+  max-width:440px;
+}
+.contents-card{
+  background:var(--paper-soft);
+  padding:16px;
+  border-radius:16px;
+  font-weight:600;
+  text-align:center;
+  cursor:pointer;
+  border:1px solid rgba(245,197,24,.7);
+  color:var(--text);
+}
 
-    .page::before{
-      content:"ABBA SEENUUU... FAST FOODS";
-      position:absolute;
-      inset:0;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      font-family:"Playfair Display",serif;
-      font-size:2.7rem;
+.items-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+@media(min-width:600px){
+  .items-grid{grid-template-columns:repeat(3,1fr)}
+}
+.item{
+  background:var(--paper);
+  border-radius:14px;
+  padding:10px;
+  font-size:.8rem;
+  border:1px solid rgba(245,197,24,.4);
+}
+.item b{display:block;font-size:.9rem;margin-bottom:4px;color:#ffffff}
+.price{font-size:.75rem;color:var(--accent-soft);margin-bottom:6px}
+
+select,
+input,
+textarea{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.25);
+  font-size:.9rem;
+  margin-bottom:8px;
+  background:#030817;
+  color:#fff;
+}
+.item select{
+  padding:7px;
+  font-size:.75rem;
+  margin-bottom:6px;
+  border:1px solid rgba(245,197,24,.6);
+}
+.add{
+  width:100%;
+  padding:7px;
+  border-radius:18px;
+  border:none;
+  background:var(--accent);
+  font-weight:600;
+  font-size:.78rem;
+  color:#020718;
+}
+
+#cartBar{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  background:#020718;
+  border-top:2px solid var(--accent);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 14px;
+  z-index:40;
+}
+#cartSummary{font-weight:600}
+#checkoutBtn{
+  background:var(--accent);
+  color:#020718;
+  padding:10px 18px;
+  border-radius:22px;
+  font-weight:700;
+  border:none;
+}
+
+#cartModal{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.78);
+  display:none;
+  z-index:50;
+}
+#cartBox{
+  background:#050c1d;
+  width:92%;
+  max-width:480px;
+  max-height:88vh;
+  margin:30px auto;
+  padding:16px;
+  border-radius:18px;
+  display:flex;
+  flex-direction:column;
+  border:1px solid rgba(255,255,255,.18);
+  overflow-y:auto;
+}
+#cartBox h3{margin-top:0;color:var(--accent-soft2)}
+#cartItems{margin-bottom:10px;max-height:none;overflow:visible}
+.cart-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+  font-size:.85rem;
+}
+.cart-row small{color:#ccc}
+.qty button{
+  background:#182342;
+  color:#fff;
+  border:none;
+  padding:4px 8px;
+  border-radius:6px;
+  margin:0 4px;
+}
+textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
+
+.primary{
+  background:var(--accent);
+  border:none;
+  padding:12px;
+  border-radius:26px;
+  font-weight:700;
+  width:100%;
+  color:#020718;
+}
+.helper{
+  font-size:.72rem;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+.loc-btn{
+  background:var(--paper-soft);
+  color:var(--accent-soft2);
+  border:1px solid rgba(255,255,255,.25);
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:.75rem;
+  margin-bottom:6px;
+}
+
+#toast{
+  position:fixed;
+  bottom:90px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#0b1325;
+  color:var(--accent-soft);
+  padding:10px 18px;
+  border-radius:20px;
+  font-size:.8rem;
+  display:none;
+  z-index:60;
+}
+#hint{
+  position:fixed;
+  bottom:120px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,.7);
+  color:#fff;
+  padding:8px 14px;
+  border-radius:18px;
+  font-size:.75rem;
+  z-index:70;
+}
+
+#upiOverlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:80;
+}
+#upiBox{
+  background:#050c1d;
+  padding:18px;
+  border-radius:18px;
+  width:90%;
+  max-width:360px;
+  text-align:center;
+  border:1px solid rgba(255,255,255,0.3);
+  color:#fff;
+}
+#upiBox h3{margin-top:0;color:var(--accent-soft2)}
+
+#chatFab{
+  position:fixed;
+  right:14px;
+  bottom:88px;
+  width:54px;
+  height:54px;
+  border-radius:50%;
+  border:none;
+  background:var(--accent);
+  color:#020718;
+  font-size:1.4rem;
+  font-weight:700;
+  z-index:85;
+  box-shadow:0 8px 25px rgba(0,0,0,.35);
+}
+#servicePanel{
+  position:fixed;
+  left:12px;
+  bottom:96px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  z-index:85;
+}
+.serviceBtn{
+  background:var(--paper-soft);
+  color:var(--accent-soft2);
+  border:1px solid rgba(245,197,24,.55);
+  border-radius:999px;
+  padding:8px 12px;
+  font-size:.78rem;
+  font-weight:600;
+}
+
+#chatPanel{
+  position:fixed;
+  right:12px;
+  bottom:148px;
+  width:min(92vw,360px);
+  height:470px;
+  background:#050c1d;
+  border:1px solid rgba(245,197,24,.45);
+  border-radius:20px;
+  display:none;
+  flex-direction:column;
+  overflow:hidden;
+  z-index:90;
+  box-shadow:0 14px 40px rgba(0,0,0,.45);
+}
+#chatHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 14px;
+  background:#08152e;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+#chatHeader b{color:var(--accent-soft2)}
+#chatClose{
+  background:transparent;
+  border:none;
+  color:#fff;
+  font-size:1.1rem;
+}
+#chatMessages{
+  flex:1;
+  overflow-y:auto;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.msg{
+  max-width:86%;
+  padding:9px 11px;
+  border-radius:14px;
+  font-size:.82rem;
+  line-height:1.45;
+  white-space:pre-wrap;
+}
+.botMsg{
+  align-self:flex-start;
+  background:#08152e;
+  color:#fff7d1;
+  border:1px solid rgba(245,197,24,.22);
+}
+.userMsg{
+  align-self:flex-end;
+  background:var(--accent);
+  color:#020718;
+}
+#faqRow{
+  padding:8px 10px 0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.faqBtn{
+  border:none;
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:.72rem;
+  background:#0f1b33;
+  color:#ffe9a6;
+}
+#chatInputWrap{
+  display:flex;
+  gap:8px;
+  padding:10px;
+  border-top:1px solid rgba(255,255,255,.1);
+  background:#020718;
+}
+#chatInput{
+  flex:1;
+  margin:0;
+}
+#chatSend{
+  border:none;
+  border-radius:12px;
+  padding:0 14px;
+  background:var(--accent);
+  color:#020718;
+  font-weight:700;
+}
+
+.request-chip-wrap{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:4px 0 8px;
+}
+.request-chip{
+  border:1px solid rgba(245,197,24,.45);
+  background:#08152e;
+  color:#ffe9a6;
+  padding:7px 10px;
+  border-radius:999px;
+  font-size:.74rem;
+  cursor:pointer;
+}
+.request-chip.active{
+  background:var(--accent);
+  color:#020718;
+}
+
+.hidden{display:none}
+
+#detailsToggle{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:.82rem;
+  cursor:pointer;
+  padding:6px 0;
+  margin-bottom:6px;
+}
+#detailsToggle span{
+  font-weight:600;
+}
+#detailsIcon{
+  font-size:1rem;
+}
+#detailsSection{
+  border-radius:12px;
+  padding:8px 8px 2px;
+  background:#050c1d;
+  border:1px solid rgba(255,255,255,.16);
+  margin-bottom:10px;
+}
+
+@media(max-width:480px){
+  #servicePanel{left:8px;bottom:96px}
+  .serviceBtn{font-size:.72rem;padding:7px 10px}
+  #chatPanel{right:8px;left:8px;width:auto;height:62vh;bottom:148px}
+  #chatFab{right:12px;bottom:92px}
+  #cartBox{margin:24px auto;max-height:84vh}
+}
+</style>
+</head>
+
+<body>
+
+<div id="viewport"><div id="book"></div></div>
+
+<div id="prev" class="nav">❮</div>
+<div id="next" class="nav">❯</div>
+<button id="contentsBtn" onclick="go(3)">📑 Menu</button>
+
+<div id="servicePanel">
+  <button class="serviceBtn" id="callWaiterBtn">🔔 Call Waiter</button>
+  <button class="serviceBtn" id="callManagerBtn">👨‍💼 Call Manager</button>
+</div>
+
+<button id="chatFab">💬</button>
+
+<div id="chatPanel">
+  <div id="chatHeader">
+    <b>Abba Assistant</b>
+    <button id="chatClose">✕</button>
+  </div>
+
+  <div id="faqRow">
+    <button class="faqBtn" data-q="best food">Best food</button>
+    <button class="faqBtn" data-q="spicy food">Spicy food</button>
+    <button class="faqBtn" data-q="veg food">Veg</button>
+    <button class="faqBtn" data-q="budget food">Budget</button>
+    <button class="faqBtn" data-q="payment help">Payment</button>
+    <button class="faqBtn" data-q="delivery help">Delivery</button>
+  </div>
+
+  <div id="chatMessages"></div>
+
+  <div id="chatInputWrap">
+    <input id="chatInput" placeholder="Ask for food suggestions..." />
+    <button id="chatSend">Send</button>
+  </div>
+</div>
+
+<div id="cartBar">
+  <div id="cartSummary">🛒 0 items | ₹0</div>
+  <button id="checkoutBtn">View Cart</button>
+</div>
+
+<div id="cartModal">
+  <div id="cartBox">
+    <h3>Your Order</h3>
+
+    <div id="detailsToggle" onclick="toggleDetailsInCart()">
+      <span>Customer details</span>
+      <span id="detailsIcon">▾</span>
+    </div>
+
+    <div id="detailsSection" class="hidden">
+      <input id="name" placeholder="Customer Name">
+      <input id="mobile" placeholder="Mobile Number">
+      <input id="regno" placeholder="Registration / Room No. (optional)">
+
+      <select id="orderType">
+        <option value="">Select Order Type</option>
+        <option value="dinein">Dine-in</option>
+        <option value="takeaway">Takeaway</option>
+        <option value="delivery">Delivery</option>
+      </select>
+
+      <div id="tableWrap" class="hidden">
+        <select id="tableNumber">
+          <option value="">Select Table Number</option>
+          <option value="T1">Table 1</option>
+          <option value="T2">Table 2</option>
+          <option value="T3">Table 3</option>
+          <option value="T4">Table 4</option>
+          <option value="T5">Table 5</option>
+        </select>
+      </div>
+
+      <div id="deliveryFields" class="hidden">
+        <textarea id="address" placeholder="Delivery address / landmark"></textarea>
+        <button id="locBtn" class="loc-btn">📍 Use current location (mandatory for delivery)</button>
+        <div id="locStatus" class="helper"></div>
+      </div>
+    </div>
+
+    <div id="cartItems"></div>
+    <b>Total: ₹<span id="total">0</span></b>
+
+    <hr style="margin:8px 0;border-color:#3b4762;">
+
+    <select id="paymentMethod">
+      <option value="">Select Payment Method</option>
+      <option value="UPI">UPI (Scan QR)</option>
+      <option value="COD">Cash on Delivery</option>
+    </select>
+
+    <div class="helper">
+      If you choose UPI, please scan the QR and pay before placing the order.
+    </div>
+
+    <div style="margin-top:6px;font-size:.83rem;font-weight:600;color:var(--accent-soft2);">Quick Requests</div>
+    <div class="request-chip-wrap" id="requestChips">
+      <button type="button" class="request-chip" data-tag="Less spicy">Less spicy</button>
+      <button type="button" class="request-chip" data-tag="Extra spicy">Extra spicy</button>
+      <button type="button" class="request-chip" data-tag="No onion">No onion</button>
+      <button type="button" class="request-chip" data-tag="Extra sauce">Extra sauce</button>
+      <button type="button" class="request-chip" data-tag="Send cutlery">Send cutlery</button>
+      <button type="button" class="request-chip" data-tag="Call on arrival">Call on arrival</button>
+      <button type="button" class="request-chip" data-tag="Talk to manager">Talk to manager</button>
+    </div>
+
+    <textarea id="specialRequest" placeholder="Special request for chef / manager (optional)"></textarea>
+
+    <button class="primary" id="placeOrderBtn">Place Order</button>
+    <button class="primary" style="margin-top:6px;background:var(--paper-soft);color:#fff;border:1px solid rgba(255,255,255,.25);" onclick="closeCart()">Close</button>
+  </div>
+</div>
+
+<div id="upiOverlay">
+  <div id="upiBox">
+    <h3>Pay using UPI</h3>
+    <p style="font-size:0.85rem;margin:4px 0 10px;">
+      Scan this QR and pay the bill amount to<br>
+      <b>7054699905@ptaxis</b>
+    </p>
+    <div style="width:200px;height:200px;margin:0 auto 10px;">
+      <img
+        id="upiQrImg"
+        src=""
+        alt="UPI QR"
+        style="width:100%;height:100%;object-fit:contain;border-radius:12px;border:1px solid #444;background:#000;"
+      >
+    </div>
+    <button id="upiPaidBtn" class="primary" style="margin-top:6px;">I have paid</button>
+    <button id="upiCancelBtn" class="primary" style="margin-top:6px;background:var(--paper-soft);border:1px solid rgba(255,255,255,.3);color:#fff;">
+      Cancel
+    </button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="hint">Swipe or use arrows to browse menu</div>
+
+<script>
+setTimeout(()=>document.getElementById("hint").style.display="none",5000);
+
+const book=document.getElementById("book");
+const cartSummary=document.getElementById("cartSummary");
+const cartModal=document.getElementById("cartModal");
+const cartItemsDiv=document.getElementById("cartItems");
+const totalSpan=document.getElementById("total");
+const checkoutBtn=document.getElementById("checkoutBtn");
+const placeOrderBtn=document.getElementById("placeOrderBtn");
+
+const regInput=document.getElementById("regno");
+const nameInput=document.getElementById("name");
+const mobileInput=document.getElementById("mobile");
+const addressInput=document.getElementById("address");
+const orderTypeSel=document.getElementById("orderType");
+const paymentSel=document.getElementById("paymentMethod");
+const locBtn=document.getElementById("locBtn");
+const locStatus=document.getElementById("locStatus");
+const specialRequestInput=document.getElementById("specialRequest");
+const tableWrap=document.getElementById("tableWrap");
+const deliveryFields=document.getElementById("deliveryFields");
+const tableNumberSel=document.getElementById("tableNumber");
+
+const upiOverlay=document.getElementById("upiOverlay");
+const upiPaidBtn=document.getElementById("upiPaidBtn");
+const upiCancelBtn=document.getElementById("upiCancelBtn");
+const upiQrImg=document.getElementById("upiQrImg");
+
+const chatFab=document.getElementById("chatFab");
+const chatPanel=document.getElementById("chatPanel");
+const chatClose=document.getElementById("chatClose");
+const chatMessages=document.getElementById("chatMessages");
+const chatInput=document.getElementById("chatInput");
+const chatSend=document.getElementById("chatSend");
+
+const callWaiterBtn=document.getElementById("callWaiterBtn");
+const callManagerBtn=document.getElementById("callManagerBtn");
+
+let cart=[],page=0,locked=false,menu={};
+let customerLocation=null;
+let pendingOrderPayload=null;
+let selectedRequestTags=[];
+
+function updateOrderTypeUI(){
+  const orderType = orderTypeSel.value;
+  tableWrap.classList.toggle("hidden", orderType !== "dinein");
+  deliveryFields.classList.toggle("hidden", orderType !== "delivery");
+
+  if(orderType !== "dinein") tableNumberSel.value = "";
+  if(orderType !== "delivery"){
+    addressInput.value = "";
+    customerLocation = null;
+    locStatus.textContent = "";
+  }
+}
+orderTypeSel.addEventListener("change", updateOrderTypeUI);
+
+function toggleDetailsInCart(){
+  const sec = document.getElementById("detailsSection");
+  const icon = document.getElementById("detailsIcon");
+  const isHidden = sec.classList.contains("hidden");
+  sec.classList.toggle("hidden", !isHidden);
+  icon.textContent = isHidden ? "▴" : "▾";
+}
+
+function setUpiQr(totalAmount){
+  const upiId   = "7054699905@ptaxis";
+  const upiName = "Abba SEENUUU... FAST FOODS";
+  const note    = "Abba Seenu order";
+  const amountStr = totalAmount.toFixed(2);
+
+  const upiLink =
+    `upi://pay?pa=${encodeURIComponent(upiId)}` +
+    `&pn=${encodeURIComponent(upiName)}` +
+    `&am=${encodeURIComponent(amountStr)}` +
+    `&cu=INR` +
+    `&tn=${encodeURIComponent(note)}`;
+
+  const qrApi =
+    "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" +
+    encodeURIComponent(upiLink);
+
+  upiQrImg.src = qrApi;
+}
+
+function go(i){
+  locked=true;page=i;
+  book.style.transform=`translateX(-${i*100}vw)`;
+  setTimeout(()=>locked=false,600);
+}
+document.getElementById("prev").onclick=()=>page>0&&go(page-1);
+document.getElementById("next").onclick=()=>page<book.children.length-1&&go(page+1);
+
+let sx=0;
+document.addEventListener("touchstart",e=>sx=e.touches[0].clientX);
+document.addEventListener("touchend",e=>{
+  if(locked)return;
+  let dx=e.changedTouches[0].clientX-sx;
+  if(dx>80)document.getElementById("prev").onclick();
+  if(dx<-80)document.getElementById("next").onclick();
+});
+
+checkoutBtn.onclick=()=>{
+  if(cart.length===0){
+    toast("Cart is empty");
+    return;
+  }
+  cartModal.style.display="block";
+};
+function closeCart(){cartModal.style.display="none"}
+
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.innerText=msg;
+  t.style.display="block";
+  setTimeout(()=>t.style.display="none",1400);
+}
+
+fetch("/menu.json?_=" + Date.now(), { cache: "no-store" })
+  .then(r=>r.json())
+  .then(m=>{menu=m;build();initChatbot();})
+  .catch(()=>toast("Could not load menu"));
+
+function build(){
+  book.innerHTML="";
+
+  book.innerHTML+=`
+  <section class="page">
+    <div style="
+      position:absolute;inset:0;
+      display:flex;flex-direction:column;
+      justify-content:center;align-items:center;
       text-align:center;
-      color:rgba(255,255,255,.03);
-      pointer-events:none;
+    ">
+      <div style="
+        position:absolute;
+        top:12px;
+        left:12px;
+        text-align:left;
+        font-size:0.7rem;
+        line-height:1.3;
+        color:var(--muted);
+        font-family:'Poppins',sans-serif;
+      ">
+        <div>Powered by <span style="font-weight:700;color:var(--accent-soft2);">Aryvo</span></div>
+        <div>📞 7054699905</div>
+      </div>
+
+      <div style="
+        font-family:'Poppins',sans-serif;
+        color:var(--accent-soft2);
+        letter-spacing:0.35em;
+        font-size:0.8rem;
+        margin-bottom:10px;
+      ">
+        WELCOME TO
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:10px;">
+        <span style="
+          font-family:'Playfair Display',serif;
+          font-weight:900;
+          font-size:2.3rem;
+          letter-spacing:0.16em;
+          color:var(--accent);
+          text-shadow:0 0 18px rgba(245,197,24,.35);
+        ">ABBA SEENUUU...</span>
+        <span style="
+          font-family:'Playfair Display',serif;
+          font-weight:800;
+          font-size:1.6rem;
+          letter-spacing:0.24em;
+          color:#ffffff;
+        ">FAST FOODS</span>
+      </div>
+
+      <div style="
+        font-family:'Poppins',sans-serif;
+        font-size:0.9rem;
+        margin-bottom:16px;
+        background:rgba(2,7,24,0.75);
+        padding:6px 14px;
+        border-radius:999px;
+        border:1px solid rgba(245,197,24,.5);
+      ">
+        <span style="color:var(--accent-soft2);">Taste like </span>
+        <span style="color:#ffffff;">"ahh devudaa..."</span>
+      </div>
+
+      <div style="font-size:0.9rem;margin-bottom:10px;color:var(--muted);">
+        📞 +91-6302618096
+      </div>
+      <button class="primary" style="background:var(--accent);color:#020718;max-width:230px;" onclick="go(1)">Start Order</button>
+    </div>
+  </section>`;
+
+  book.innerHTML+=`
+  <section class="page center">
+    <div style="width:100%;max-width:360px;text-align:left;">
+      <h2 style="margin-bottom:4px;">Your details</h2>
+      <p style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;">
+        Please share your basic details so we can serve you better.
+      </p>
+      <input placeholder="Customer Name" oninput="nameInput.value=this.value" value="">
+      <input placeholder="Mobile Number" oninput="mobileInput.value=this.value" value="">
+      <input placeholder="Registration / Room No. (optional)" oninput="regInput.value=this.value" value="">
+      <select onchange="orderTypeSel.value=this.value;updateOrderTypeUI();">
+        <option value="">Select Order Type</option>
+        <option value="dinein">Dine-in</option>
+        <option value="takeaway">Takeaway</option>
+        <option value="delivery">Delivery</option>
+      </select>
+      <p style="font-size:0.8rem;color:var(--muted);margin:4px 0 12px;">
+        You can always edit these details later from the cart.
+      </p>
+      <button class="primary" onclick="go(2)">Next</button>
+    </div>
+    <div class="pageNo">2</div>
+  </section>`;
+
+  book.innerHTML+=`
+  <section class="page center">
+    <div style="max-width:360px;text-align:left;">
+      <h2>How it works</h2>
+      <ul style="font-size:0.85rem;color:var(--muted);padding-left:18px;margin-bottom:18px;">
+        <li>Browse the menu and add your favourite dishes to cart.</li>
+        <li>For delivery, please share your address and tap on current location.</li>
+        <li>You can call waiter/manager anytime using the buttons on screen.</li>
+        <li>Choose to pay by UPI or Cash at checkout.</li>
+      </ul>
+      <button class="primary" onclick="go(3)">Go to Menu</button>
+    </div>
+    <div class="pageNo">3</div>
+  </section>`;
+
+  let contents="",start=4;
+  Object.keys(menu).forEach(c=>{
+    const items = menu[c];
+    const hasImages = items.some(it => it.image);
+    const perPage   = hasImages
+      ? (window.innerWidth < 500 ? 4 : 6)
+      : (window.innerWidth < 500 ? 6 : 8);
+    const pagesForCat = Math.ceil(items.length / perPage);
+    contents+=`<div class="contents-card" onclick="go(${start})">${c}</div>`;
+    start+=pagesForCat;
+  });
+
+  book.innerHTML+=`
+  <section class="page center">
+    <h2>Menu</h2>
+    <div class="contents-grid">${contents}</div>
+    <p style="font-size:0.8rem;color:var(--muted);margin-top:12px;">Swipe or use arrows to browse categories.</p>
+    <div class="pageNo">4</div>
+  </section>`;
+
+  let pg=5;
+  for (let [cat, items] of Object.entries(menu)) {
+    const hasImages = items.some(it => it.image);
+    const perPage   = hasImages
+      ? (window.innerWidth < 500 ? 4 : 6)
+      : (window.innerWidth < 500 ? 6 : 8);
+
+    for (let i = 0; i < items.length; i += perPage) {
+      let slice = items.slice(i, i + perPage);
+      let html = `<h2>${i === 0 ? cat : cat + " (Continued)"}</h2><div class="items-grid">`;
+      slice.forEach(it => {
+        const min = Math.min(...Object.values(it.variants));
+        const img = it.image || "";
+        const inStock = it.available !== false;
+
+        let opts = `<option value="">Choose option</option>` +
+          Object.entries(it.variants)
+            .map(v => `<option value="${v[1]}">${v[0]} — ₹${v[1]}</option>`)
+            .join("");
+
+        html += `
+        <div class="item">
+          ${img ? `<div style="width:100%;height:90px;margin-bottom:6px;overflow:hidden;border-radius:10px;">
+                     <img src="${img}" alt="${it.name}" style="width:100%;height:100%;object-fit:cover;">
+                   </div>` : ``}
+          <b>${it.name}</b>
+          <div class="price">From ₹${min}</div>
+          ${
+            inStock
+              ? `
+                <select>${opts}</select>
+                <button class="add" onclick="add('${it.name.replace(/'/g,"\\\\'")}',this)">Add</button>
+              `
+              : `
+                <div style="margin-top:6px;font-size:0.85rem;color:#ffb3b3;font-weight:600;">
+                  Sold out
+                </div>
+                <select disabled style="opacity:0.5;">
+                  <option>Choose option</option>
+                </select>
+                <button class="add" disabled style="background:#262a3e;color:#888;">Sold out</button>
+              `
+          }
+        </div>`;
+      });
+      html += `</div>`;
+      book.innerHTML += `<section class="page">${html}<div class="pageNo">${pg++}</div></section>`;
     }
+  }
+}
 
-    h1,h2{
-      font-family:"Playfair Display",serif;
-      color:var(--accent-soft2);
-      margin-bottom:10px;
-      position:relative;
-      z-index:1;
-    }
+function add(name,btn){
+  const sel=btn.previousElementSibling;
+  if(!sel.value){alert("Please choose an option");return;}
+  const price=+sel.value;
+  const variant=sel.options[sel.selectedIndex].text.split(" — ")[0];
 
-    h1{font-size:2.4rem}
-    h2{font-size:1.4rem}
+  let f=cart.find(i=>i.name===name&&i.price===price&&i.variant===variant);
+  if(f)f.qty++;
+  else cart.push({name,variant,price,qty:1});
 
-    .center{
-      height:100%;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      align-items:center;
-      text-align:center;
-      position:relative;
-      z-index:1;
-    }
+  toast(`${name} (${variant}) added`);
+  updateCart();
+}
 
-    .nav{
-      position:fixed;
-      top:50%;
-      transform:translateY(-50%);
-      font-size:26px;
-      color:var(--accent);
-      cursor:pointer;
-      z-index:20;
-      opacity:.75;
-      user-select:none;
-    }
+function updateCart(){
+  cartItemsDiv.innerHTML="";
+  let total=0;
+  cart.forEach((i,idx)=>{
+    total+=i.qty*i.price;
+    cartItemsDiv.innerHTML+=`
+    <div class="cart-row">
+      <div>
+        ${i.name} <small>(${i.variant})</small><br>
+        ₹${i.price}
+      </div>
+      <div class="qty">
+        <button onclick="chg(${idx},-1)">−</button>
+        ${i.qty}
+        <button onclick="chg(${idx},1)">+</button>
+      </div>
+    </div>`;
+  });
+  totalSpan.innerText=total;
+  cartSummary.innerText=`🛒 ${cart.reduce((s,i)=>s+i.qty,0)} items | ₹${total}`;
+}
+function chg(i,d){
+  cart[i].qty+=d;
+  if(cart[i].qty<=0)cart.splice(i,1);
+  updateCart();
+}
 
-    .nav:hover{opacity:1}
-    #prev{left:6px}
-    #next{right:6px}
+locBtn.onclick = () => {
+  const orderType = orderTypeSel.value;
+  if(orderType !== "delivery"){
+    locStatus.textContent = "Location is only required for delivery orders.";
+    return;
+  }
+  if(!navigator.geolocation){
+    locStatus.textContent = "Geolocation not supported on this device.";
+    return;
+  }
+  locStatus.textContent = "Getting your location…";
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      customerLocation = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+      };
+      locStatus.textContent = "Location captured ✔";
+    },
+    err => {
+      console.error(err);
+      locStatus.textContent = "Could not get location. Please allow permission.";
+    },
+    { enableHighAccuracy:true, timeout:10000 }
+  );
+};
 
-    .pageNo{
-      position:absolute;
-      bottom:14px;
-      right:16px;
-      font-size:.7rem;
-      color:#ddd;
-      z-index:1;
-    }
+function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethod){
+  const overlay=document.createElement("div");
+  overlay.style.position="fixed";
+  overlay.style.inset="0";
+  overlay.style.background="rgba(0,0,0,0.88)";
+  overlay.style.display="flex";
+  overlay.style.alignItems="center";
+  overlay.style.justifyContent="center";
+  overlay.style.zIndex="100";
 
-    #contentsBtn{
-      position:fixed;
-      top:12px;
-      right:12px;
-      background:var(--paper-soft);
-      color:var(--accent-soft2);
-      padding:8px 16px;
-      border-radius:20px;
-      font-size:.9rem;
-      z-index:30;
-      border:1px solid var(--accent);
-      cursor:pointer;
-    }
-
-    .contents-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:14px;
-      max-width:440px;
-      position:relative;
-      z-index:1;
-    }
-
-    .contents-card{
-      background:var(--paper-soft);
-      padding:16px;
-      border-radius:16px;
-      font-weight:600;
-      text-align:center;
-      cursor:pointer;
-      border:1px solid rgba(245,197,24,.7);
-      color:var(--text);
-    }
-
-    .items-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:10px;
-      position:relative;
-      z-index:1;
-    }
-
-    @media(min-width:600px){
-      .items-grid{grid-template-columns:repeat(3,1fr)}
-    }
-
-    .item{
-      background:var(--paper);
-      border-radius:14px;
-      padding:10px;
-      font-size:.8rem;
-      border:1px solid rgba(245,197,24,.4);
-      position:relative;
-      z-index:1;
-    }
-
-    .item b{
-      display:block;
-      font-size:.9rem;
-      margin-bottom:4px;
-      color:#ffffff;
-    }
-
-    .price{
-      font-size:.75rem;
-      color:var(--accent-soft);
-      margin-bottom:6px;
-    }
-
-    select,input,textarea{
-      width:100%;
-      padding:10px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.25);
-      font-size:.9rem;
-      margin-bottom:8px;
-      background:#030817;
-      color:#fff;
-    }
-
-    .item select{
-      padding:7px;
-      font-size:.75rem;
-      margin-bottom:6px;
-      border:1px solid rgba(245,197,24,.6);
-    }
-
-    .add{
-      width:100%;
-      padding:7px;
-      border-radius:18px;
-      border:none;
-      background:var(--accent);
-      font-weight:600;
-      font-size:.78rem;
-      color:#020718;
-      cursor:pointer;
-    }
-
-    #cartBar{
-      position:fixed;
-      bottom:0;
-      left:0;
-      right:0;
-      background:#020718;
-      border-top:2px solid var(--accent);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:10px 14px;
-      z-index:40;
-      gap:10px;
-    }
-
-    #cartSummary{font-weight:600}
-
-    #checkoutBtn{
-      background:var(--accent);
-      color:#020718;
-      padding:10px 18px;
-      border-radius:22px;
-      font-weight:700;
-      border:none;
-      cursor:pointer;
-    }
-
-    #cartModal{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.78);
-      display:none;
-      z-index:50;
-    }
-
-    #cartBox{
-      background:#050c1d;
-      width:92%;
-      max-width:480px;
-      max-height:88vh;
-      margin:30px auto;
-      padding:16px;
-      border-radius:18px;
-      display:flex;
-      flex-direction:column;
-      border:1px solid rgba(255,255,255,.18);
-      overflow-y:auto;
-    }
-
-    #cartBox h3{margin-top:0;color:var(--accent-soft2)}
-    #cartItems{margin-bottom:10px;max-height:none;overflow:visible}
-
-    .cart-row{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:8px;
-      font-size:.85rem;
-      gap:8px;
-    }
-
-    .cart-row small{color:#ccc}
-
-    .qty button{
-      background:#182342;
-      color:#fff;
-      border:none;
-      padding:4px 8px;
-      border-radius:6px;
-      margin:0 4px;
-      cursor:pointer;
-    }
-
-    textarea#address,
-    textarea#specialRequest{
-      resize:vertical;
-      min-height:60px;
-    }
-
-    .primary{
-      background:var(--accent);
-      border:none;
-      padding:12px;
-      border-radius:26px;
-      font-weight:700;
-      width:100%;
-      color:#020718;
-      cursor:pointer;
-    }
-
-    .helper{
-      font-size:.72rem;
-      color:var(--muted);
-      margin-bottom:6px;
-    }
-
-    .loc-btn{
-      background:var(--paper-soft);
-      color:var(--accent-soft2);
-      border:1px solid rgba(255,255,255,.25);
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:.75rem;
-      margin-bottom:6px;
-      cursor:pointer;
-    }
-
-    #toast{
-      position:fixed;
-      bottom:90px;
-      left:50%;
-      transform:translateX(-50%);
-      background:#0b1325;
-      color:var(--accent-soft);
-      padding:10px 18px;
-      border-radius:20px;
-      font-size:.8rem;
-      display:none;
-      z-index:60;
-    }
-
-    #hint{
-      position:fixed;
-      bottom:120px;
-      left:50%;
-      transform:translateX(-50%);
-      background:rgba(0,0,0,.7);
-      color:#fff;
-      padding:8px 14px;
-      border-radius:18px;
-      font-size:.75rem;
-      z-index:70;
-    }
-
-    #upiOverlay{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,0.85);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:80;
-    }
-
-    #upiBox{
+  overlay.innerHTML=`
+    <div style="
       background:#050c1d;
       padding:18px;
       border-radius:18px;
-      width:90%;
+      width:88%;
       max-width:360px;
       text-align:center;
-      border:1px solid rgba(255,255,255,0.3);
-      color:#fff;
-    }
-
-    #upiBox h3{margin-top:0;color:var(--accent-soft2)}
-
-    #chatFab{
-      position:fixed;
-      right:14px;
-      bottom:88px;
-      width:54px;
-      height:54px;
-      border-radius:50%;
-      border:none;
-      background:var(--accent);
-      color:#020718;
-      font-size:1.4rem;
-      font-weight:700;
-      z-index:85;
-      box-shadow:0 8px 25px rgba(0,0,0,.35);
-      cursor:pointer;
-    }
-
-    #servicePanel{
-      position:fixed;
-      left:12px;
-      bottom:96px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      z-index:85;
-    }
-
-    .serviceBtn{
-      background:var(--paper-soft);
-      color:var(--accent-soft2);
-      border:1px solid rgba(245,197,24,.55);
-      border-radius:999px;
-      padding:8px 12px;
-      font-size:.78rem;
-      font-weight:600;
-      cursor:pointer;
-    }
-
-    #chatPanel{
-      position:fixed;
-      right:12px;
-      bottom:148px;
-      width:min(92vw,360px);
-      height:470px;
-      background:#050c1d;
-      border:1px solid rgba(245,197,24,.45);
-      border-radius:20px;
-      display:none;
-      flex-direction:column;
-      overflow:hidden;
-      z-index:90;
-      box-shadow:0 14px 40px rgba(0,0,0,.45);
-    }
-
-    #chatHeader{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:12px 14px;
-      background:#08152e;
-      border-bottom:1px solid rgba(255,255,255,.12);
-    }
-
-    #chatHeader b{color:var(--accent-soft2)}
-
-    #chatClose{
-      background:transparent;
-      border:none;
-      color:#fff;
-      font-size:1.1rem;
-      cursor:pointer;
-    }
-
-    #chatMessages{
-      flex:1;
-      overflow-y:auto;
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .msg{
-      max-width:86%;
-      padding:9px 11px;
-      border-radius:14px;
-      font-size:.82rem;
-      line-height:1.45;
-      white-space:pre-wrap;
-    }
-
-    .botMsg{
-      align-self:flex-start;
-      background:#08152e;
-      color:#fff7d1;
-      border:1px solid rgba(245,197,24,.22);
-    }
-
-    .userMsg{
-      align-self:flex-end;
-      background:var(--accent);
-      color:#020718;
-    }
-
-    #faqRow{
-      padding:8px 10px 0;
-      display:flex;
-      flex-wrap:wrap;
-      gap:6px;
-    }
-
-    .faqBtn{
-      border:none;
-      border-radius:999px;
-      padding:7px 10px;
-      font-size:.72rem;
-      background:#0f1b33;
-      color:#ffe9a6;
-      cursor:pointer;
-    }
-
-    #chatInputWrap{
-      display:flex;
-      gap:8px;
-      padding:10px;
-      border-top:1px solid rgba(255,255,255,.1);
-      background:#020718;
-    }
-
-    #chatInput{
-      flex:1;
-      margin:0;
-    }
-
-    #chatSend{
-      border:none;
-      border-radius:12px;
-      padding:0 14px;
-      background:var(--accent);
-      color:#020718;
-      font-weight:700;
-      cursor:pointer;
-    }
-
-    .request-chip-wrap{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin:4px 0 8px;
-    }
-
-    .request-chip{
-      border:1px solid rgba(245,197,24,.45);
-      background:#08152e;
-      color:#ffe9a6;
-      padding:7px 10px;
-      border-radius:999px;
-      font-size:.74rem;
-      cursor:pointer;
-    }
-
-    .request-chip.active{
-      background:var(--accent);
-      color:#020718;
-    }
-
-    .hidden{display:none}
-
-    #detailsToggle{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      font-size:.82rem;
-      cursor:pointer;
-      padding:6px 0;
-      margin-bottom:6px;
-    }
-
-    #detailsToggle span{font-weight:600}
-    #detailsIcon{font-size:1rem}
-
-    #detailsSection{
-      border-radius:12px;
-      padding:8px 8px 2px;
-      background:#050c1d;
-      border:1px solid rgba(255,255,255,.16);
-      margin-bottom:10px;
-    }
-
-    @media(max-width:480px){
-      #servicePanel{left:8px;bottom:96px}
-      .serviceBtn{font-size:.72rem;padding:7px 10px}
-      #chatPanel{right:8px;left:8px;width:auto;height:62vh;bottom:148px}
-      #chatFab{right:12px;bottom:92px}
-      #cartBox{margin:24px auto;max-height:84vh}
-      #cartBar{padding:10px}
-      #checkoutBtn{padding:10px 14px}
-    }
-  </style>
-</head>
-<body>
-
-  <div id="viewport"><div id="book"></div></div>
-
-  <div id="prev" class="nav">❮</div>
-  <div id="next" class="nav">❯</div>
-  <button id="contentsBtn" onclick="go(3)">📑 Menu</button>
-
-  <div id="servicePanel">
-    <button class="serviceBtn" id="callWaiterBtn">🔔 Call Waiter</button>
-    <button class="serviceBtn" id="callManagerBtn">👨‍💼 Call Manager</button>
-  </div>
-
-  <button id="chatFab">💬</button>
-
-  <div id="chatPanel">
-    <div id="chatHeader">
-      <b>Abba Assistant</b>
-      <button id="chatClose">✕</button>
-    </div>
-
-    <div id="faqRow">
-      <button class="faqBtn" data-q="best food">Best food</button>
-      <button class="faqBtn" data-q="spicy food">Spicy food</button>
-      <button class="faqBtn" data-q="veg food">Veg</button>
-      <button class="faqBtn" data-q="budget food">Budget</button>
-      <button class="faqBtn" data-q="payment help">Payment</button>
-      <button class="faqBtn" data-q="delivery help">Delivery</button>
-    </div>
-
-    <div id="chatMessages"></div>
-
-    <div id="chatInputWrap">
-      <input id="chatInput" placeholder="Ask for food suggestions..." />
-      <button id="chatSend">Send</button>
-    </div>
-  </div>
-
-  <div id="cartBar">
-    <div id="cartSummary">🛒 0 items | ₹0</div>
-    <button id="checkoutBtn">View Cart</button>
-  </div>
-
-  <div id="cartModal">
-    <div id="cartBox">
-      <h3>Your Order</h3>
-
-      <div id="detailsToggle" onclick="toggleDetailsInCart()">
-        <span>Customer details</span>
-        <span id="detailsIcon">▾</span>
+      border:1px solid rgba(255,255,255,.35);
+      font-family:Poppins,sans-serif;
+      color:#f5f5f5;
+    ">
+      <h3 style="margin-top:0;color:var(--accent-soft2);">Order placed</h3>
+      <p style="font-size:.9rem;margin:8px 0 10px;">${mainMsg}</p>
+      <div style="font-weight:600;margin-bottom:6px;">
+        Bill Amount: ₹${total}
       </div>
-
-      <div id="detailsSection" class="hidden">
-        <input id="name" placeholder="Customer Name" />
-        <input id="mobile" placeholder="Mobile Number" />
-        <input id="regno" placeholder="Registration / Room No. (optional)" />
-
-        <select id="orderType">
-          <option value="">Select Order Type</option>
-          <option value="dinein">Dine-in</option>
-          <option value="takeaway">Takeaway</option>
-          <option value="delivery">Delivery</option>
-        </select>
-
-        <div id="tableWrap" class="hidden">
-          <select id="tableNumber">
-            <option value="">Select Table Number</option>
-            <option value="T1">Table 1</option>
-            <option value="T2">Table 2</option>
-            <option value="T3">Table 3</option>
-            <option value="T4">Table 4</option>
-            <option value="T5">Table 5</option>
-          </select>
-        </div>
-
-        <div id="deliveryFields" class="hidden">
-          <textarea id="address" placeholder="Delivery address / landmark"></textarea>
-          <button id="locBtn" class="loc-btn">📍 Use current location (mandatory for delivery)</button>
-          <div id="locStatus" class="helper"></div>
-        </div>
+      <div style="font-size:.83rem;margin-bottom:10px;">
+        Payment method: <b>${paymentMethod}</b>
       </div>
-
-      <div id="cartItems"></div>
-      <b>Total: ₹<span id="total">0</span></b>
-
-      <hr style="margin:8px 0;border-color:#3b4762;" />
-
-      <select id="paymentMethod">
-        <option value="">Select Payment Method</option>
-        <option value="UPI">UPI (Scan QR)</option>
-        <option value="COD">Cash on Delivery</option>
-      </select>
-
-      <div class="helper">
-        If you choose UPI, please scan the QR and pay before placing the order.
-      </div>
-
-      <div style="margin-top:6px;font-size:.83rem;font-weight:600;color:var(--accent-soft2);">Quick Requests</div>
-      <div class="request-chip-wrap" id="requestChips">
-        <button type="button" class="request-chip" data-tag="Less spicy">Less spicy</button>
-        <button type="button" class="request-chip" data-tag="Extra spicy">Extra spicy</button>
-        <button type="button" class="request-chip" data-tag="No onion">No onion</button>
-        <button type="button" class="request-chip" data-tag="Extra sauce">Extra sauce</button>
-        <button type="button" class="request-chip" data-tag="Send cutlery">Send cutlery</button>
-        <button type="button" class="request-chip" data-tag="Call on arrival">Call on arrival</button>
-        <button type="button" class="request-chip" data-tag="Talk to manager">Talk to manager</button>
-      </div>
-
-      <textarea id="specialRequest" placeholder="Special request for chef / manager (optional)"></textarea>
-
-      <button class="primary" id="placeOrderBtn">Place Order</button>
-      <button class="primary" style="margin-top:6px;background:var(--paper-soft);color:#fff;border:1px solid rgba(255,255,255,.25);" onclick="closeCart()">Close</button>
-    </div>
-  </div>
-
-  <div id="upiOverlay">
-    <div id="upiBox">
-      <h3>Pay using UPI</h3>
-      <p style="font-size:0.85rem;margin:4px 0 10px;">
-        Scan this QR and pay the bill amount to<br />
-        <b>7054699905@ptaxis</b>
-      </p>
-
-      <div style="width:200px;height:200px;margin:0 auto 10px;">
-        <img
-          id="upiQrImg"
-          src=""
-          alt="UPI QR"
-          style="width:100%;height:100%;object-fit:contain;border-radius:12px;border:1px solid #444;background:#000;"
-        />
-      </div>
-
-      <button id="upiPaidBtn" class="primary" style="margin-top:6px;">I have paid</button>
-      <button id="upiCancelBtn" class="primary" style="margin-top:6px;background:var(--paper-soft);border:1px solid rgba(255,255,255,.3);color:#fff;">
-        Cancel
+      ${extraMsg ? `<div style="font-size:0.78rem;margin-bottom:12px;color:var(--accent-soft);">${extraMsg}</div>` : ``}
+      <button id="successDoneBtn" style="
+        background:var(--accent);
+        border:none;
+        padding:9px 16px;
+        border-radius:22px;
+        font-weight:700;
+        color:#020718;
+        width:100%;
+        font-size:.9rem;
+      ">
+        Done
       </button>
     </div>
-  </div>
-
-  <div id="toast"></div>
-  <div id="hint">Swipe or use arrows to browse menu</div>
-
-  <script>
-    setTimeout(() => {
-      document.getElementById("hint").style.display = "none";
-    }, 5000);
-
-    const book = document.getElementById("book");
-    const cartSummary = document.getElementById("cartSummary");
-    const cartModal = document.getElementById("cartModal");
-    const cartItemsDiv = document.getElementById("cartItems");
-    const totalSpan = document.getElementById("total");
-    const checkoutBtn = document.getElementById("checkoutBtn");
-    const placeOrderBtn = document.getElementById("placeOrderBtn");
-
-    const regInput = document.getElementById("regno");
-    const nameInput = document.getElementById("name");
-    const mobileInput = document.getElementById("mobile");
-    const addressInput = document.getElementById("address");
-    const orderTypeSel = document.getElementById("orderType");
-    const paymentSel = document.getElementById("paymentMethod");
-    const locBtn = document.getElementById("locBtn");
-    const locStatus = document.getElementById("locStatus");
-    const specialRequestInput = document.getElementById("specialRequest");
-    const tableWrap = document.getElementById("tableWrap");
-    const deliveryFields = document.getElementById("deliveryFields");
-    const tableNumberSel = document.getElementById("tableNumber");
-
-    const upiOverlay = document.getElementById("upiOverlay");
-    const upiPaidBtn = document.getElementById("upiPaidBtn");
-    const upiCancelBtn = document.getElementById("upiCancelBtn");
-    const upiQrImg = document.getElementById("upiQrImg");
-
-    const chatFab = document.getElementById("chatFab");
-    const chatPanel = document.getElementById("chatPanel");
-    const chatClose = document.getElementById("chatClose");
-    const chatMessages = document.getElementById("chatMessages");
-    const chatInput = document.getElementById("chatInput");
-    const chatSend = document.getElementById("chatSend");
-
-    const callWaiterBtn = document.getElementById("callWaiterBtn");
-    const callManagerBtn = document.getElementById("callManagerBtn");
-
-    let cart = [];
-    let page = 0;
-    let locked = false;
-    let menu = {};
-    let customerLocation = null;
-    let pendingOrderPayload = null;
-    let selectedRequestTags = [];
-    let submitting = false;
-
-    function updateOrderTypeUI(){
-      const orderType = orderTypeSel.value;
-      tableWrap.classList.toggle("hidden", orderType !== "dinein");
-      deliveryFields.classList.toggle("hidden", orderType !== "delivery");
-
-      if(orderType !== "dinein") tableNumberSel.value = "";
-
-      if(orderType !== "delivery"){
-        addressInput.value = "";
-        customerLocation = null;
-        locStatus.textContent = "";
-      }
-    }
-
-    orderTypeSel.addEventListener("change", updateOrderTypeUI);
-
-    function toggleDetailsInCart(){
-      const sec = document.getElementById("detailsSection");
-      const icon = document.getElementById("detailsIcon");
-      const isHidden = sec.classList.contains("hidden");
-      sec.classList.toggle("hidden", !isHidden);
-      icon.textContent = isHidden ? "▴" : "▾";
-    }
-
-    function setUpiQr(totalAmount){
-      const upiId = "7054699905@ptaxis";
-      const upiName = "Abba SEENUUU... FAST FOODS";
-      const note = "Abba Seenu order";
-      const amountStr = totalAmount.toFixed(2);
-
-      const upiLink =
-        `upi://pay?pa=${encodeURIComponent(upiId)}` +
-        `&pn=${encodeURIComponent(upiName)}` +
-        `&am=${encodeURIComponent(amountStr)}` +
-        `&cu=INR` +
-        `&tn=${encodeURIComponent(note)}`;
-
-      const qrApi =
-        "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" +
-        encodeURIComponent(upiLink);
-
-      upiQrImg.src = qrApi;
-    }
-
-    function go(i){
-      locked = true;
-      page = i;
-      book.style.transform = `translateX(-${i * 100}vw)`;
-      setTimeout(() => locked = false, 600);
-    }
-
-    document.getElementById("prev").onclick = () => page > 0 && go(page - 1);
-    document.getElementById("next").onclick = () => page < book.children.length - 1 && go(page + 1);
-
-    let sx = 0;
-    document.addEventListener("touchstart", e => sx = e.touches[0].clientX);
-    document.addEventListener("touchend", e => {
-      if(locked) return;
-      let dx = e.changedTouches[0].clientX - sx;
-      if(dx > 80) document.getElementById("prev").onclick();
-      if(dx < -80) document.getElementById("next").onclick();
-    });
-
-    checkoutBtn.onclick = () => {
-      if(cart.length === 0){
-        toast("Cart is empty");
-        return;
-      }
-      cartModal.style.display = "block";
-    };
-
-    function closeCart(){
-      cartModal.style.display = "none";
-    }
-
-    function toast(msg){
-      const t = document.getElementById("toast");
-      t.innerText = msg;
-      t.style.display = "block";
-      setTimeout(() => t.style.display = "none", 1400);
-    }
-
-    fetch("/menu.json?_=" + Date.now(), { cache: "no-store" })
-      .then(r => r.json())
-      .then(m => {
-        menu = m;
-        build();
-        initChatbot();
-      })
-      .catch(() => toast("Could not load menu"));
-
-    function build(){
-      book.innerHTML = "";
-
-      book.innerHTML += `
-        <section class="page">
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;z-index:1;">
-            <div style="position:absolute;top:12px;left:12px;text-align:left;font-size:0.7rem;line-height:1.3;color:var(--muted);font-family:'Poppins',sans-serif;">
-              <div>Powered by <span style="font-weight:700;color:var(--accent-soft2);">Aryvo</span></div>
-              <div>📞 7054699905</div>
-            </div>
-
-            <div style="font-family:'Poppins',sans-serif;color:var(--accent-soft2);letter-spacing:0.35em;font-size:0.8rem;margin-bottom:10px;">
-              WELCOME TO
-            </div>
-
-            <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:10px;">
-              <span style="font-family:'Playfair Display',serif;font-weight:900;font-size:2.3rem;letter-spacing:0.16em;color:var(--accent);text-shadow:0 0 18px rgba(245,197,24,.35);">ABBA SEENUUU...</span>
-              <span style="font-family:'Playfair Display',serif;font-weight:800;font-size:1.6rem;letter-spacing:0.24em;color:#ffffff;">FAST FOODS</span>
-            </div>
-
-            <div style="font-family:'Poppins',sans-serif;font-size:0.9rem;margin-bottom:16px;background:rgba(2,7,24,0.75);padding:6px 14px;border-radius:999px;border:1px solid rgba(245,197,24,.5);">
-              <span style="color:var(--accent-soft2);">Taste like </span>
-              <span style="color:#ffffff;">"ahh devudaa..."</span>
-            </div>
-
-            <div style="font-size:0.9rem;margin-bottom:10px;color:var(--muted);">📞 +91-6302618096</div>
-            <button class="primary" style="background:var(--accent);color:#020718;max-width:230px;" onclick="go(1)">Start Order</button>
-          </div>
-        </section>
-      `;
-
-      book.innerHTML += `
-        <section class="page center">
-          <div style="width:100%;max-width:360px;text-align:left;">
-            <h2 style="margin-bottom:4px;">Your details</h2>
-            <p style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;">
-              Please share your basic details so we can serve you better.
-            </p>
-            <input placeholder="Customer Name" oninput="nameInput.value=this.value" value="" />
-            <input placeholder="Mobile Number" oninput="mobileInput.value=this.value" value="" />
-            <input placeholder="Registration / Room No. (optional)" oninput="regInput.value=this.value" value="" />
-            <select onchange="orderTypeSel.value=this.value;updateOrderTypeUI();">
-              <option value="">Select Order Type</option>
-              <option value="dinein">Dine-in</option>
-              <option value="takeaway">Takeaway</option>
-              <option value="delivery">Delivery</option>
-            </select>
-            <p style="font-size:0.8rem;color:var(--muted);margin:4px 0 12px;">
-              You can always edit these details later from the cart.
-            </p>
-            <button class="primary" onclick="go(2)">Next</button>
-          </div>
-          <div class="pageNo">2</div>
-        </section>
-      `;
-
-      book.innerHTML += `
-        <section class="page center">
-          <div style="max-width:360px;text-align:left;">
-            <h2>How it works</h2>
-            <ul style="font-size:0.85rem;color:var(--muted);padding-left:18px;margin-bottom:18px;">
-              <li>Browse the menu and add your favourite dishes to cart.</li>
-              <li>For delivery, please share your address and tap on current location.</li>
-              <li>You can call waiter/manager anytime using the buttons on screen.</li>
-              <li>Choose to pay by UPI or Cash at checkout.</li>
-            </ul>
-            <button class="primary" onclick="go(3)">Go to Menu</button>
-          </div>
-          <div class="pageNo">3</div>
-        </section>
-      `;
-
-      let contents = "";
-      let start = 4;
-
-      Object.keys(menu).forEach(c => {
-        const items = menu[c];
-        const hasImages = items.some(it => it.image);
-        const perPage = hasImages
-          ? (window.innerWidth < 500 ? 4 : 6)
-          : (window.innerWidth < 500 ? 6 : 8);
-        const pagesForCat = Math.ceil(items.length / perPage);
-        contents += `<div class="contents-card" onclick="go(${start})">${c}</div>`;
-        start += pagesForCat;
-      });
-
-      book.innerHTML += `
-        <section class="page center">
-          <h2>Menu</h2>
-          <div class="contents-grid">${contents}</div>
-          <p style="font-size:0.8rem;color:var(--muted);margin-top:12px;">Swipe or use arrows to browse categories.</p>
-          <div class="pageNo">4</div>
-        </section>
-      `;
-
-      let pg = 5;
-
-      for (let [cat, items] of Object.entries(menu)) {
-        const hasImages = items.some(it => it.image);
-        const perPage = hasImages
-          ? (window.innerWidth < 500 ? 4 : 6)
-          : (window.innerWidth < 500 ? 6 : 8);
-
-        for (let i = 0; i < items.length; i += perPage) {
-          let slice = items.slice(i, i + perPage);
-          let html = `<h2>${i === 0 ? cat : cat + " (Continued)"}</h2><div class="items-grid">`;
-
-          slice.forEach(it => {
-            const min = Math.min(...Object.values(it.variants));
-            const img = it.image || "";
-            const inStock = it.available !== false;
-
-            let opts = `<option value="">Choose option</option>` +
-              Object.entries(it.variants)
-                .map(v => `<option value="${v[1]}">${v[0]} — ₹${v[1]}</option>`)
-                .join("");
-
-            const safeName = (it.name || "").replace(/'/g, "\\'");
-
-            html += `
-              <div class="item">
-                ${img ? `
-                  <div style="width:100%;height:90px;margin-bottom:6px;overflow:hidden;border-radius:10px;">
-                    <img src="${img}" alt="${it.name}" style="width:100%;height:100%;object-fit:cover;">
-                  </div>
-                ` : ``}
-                <b>${it.name}</b>
-                <div class="price">From ₹${min}</div>
-                ${
-                  inStock
-                    ? `
-                      <select>${opts}</select>
-                      <button class="add" onclick="add('${safeName}',this)">Add</button>
-                    `
-                    : `
-                      <div style="margin-top:6px;font-size:0.85rem;color:#ffb3b3;font-weight:600;">Sold out</div>
-                      <select disabled style="opacity:0.5;">
-                        <option>Choose option</option>
-                      </select>
-                      <button class="add" disabled style="background:#262a3e;color:#888;">Sold out</button>
-                    `
-                }
-              </div>
-            `;
-          });
-
-          html += `</div>`;
-          book.innerHTML += `<section class="page">${html}<div class="pageNo">${pg++}</div></section>`;
-        }
-      }
-    }
-
-    function add(name, btn){
-      const sel = btn.previousElementSibling;
-      if(!sel.value){
-        alert("Please choose an option");
-        return;
-      }
-
-      const price = +sel.value;
-      const variant = sel.options[sel.selectedIndex].text.split(" — ")[0];
-
-      let f = cart.find(i => i.name === name && i.price === price && i.variant === variant);
-      if(f) f.qty++;
-      else cart.push({ name, variant, price, qty:1 });
-
-      toast(`${name} (${variant}) added`);
-      updateCart();
-    }
-
-    function updateCart(){
-      cartItemsDiv.innerHTML = "";
-      let total = 0;
-
-      cart.forEach((i, idx) => {
-        total += i.qty * i.price;
-        cartItemsDiv.innerHTML += `
-          <div class="cart-row">
-            <div>
-              ${i.name} <small>(${i.variant})</small><br>
-              ₹${i.price}
-            </div>
-            <div class="qty">
-              <button onclick="chg(${idx},-1)">−</button>
-              ${i.qty}
-              <button onclick="chg(${idx},1)">+</button>
-            </div>
-          </div>
-        `;
-      });
-
-      totalSpan.innerText = total;
-      cartSummary.innerText = `🛒 ${cart.reduce((s,i) => s + i.qty, 0)} items | ₹${total}`;
-    }
-
-    function chg(i, d){
-      cart[i].qty += d;
-      if(cart[i].qty <= 0) cart.splice(i, 1);
-      updateCart();
-    }
-
-    locBtn.onclick = () => {
-      const orderType = orderTypeSel.value;
-
-      if(orderType !== "delivery"){
-        locStatus.textContent = "Location is only required for delivery orders.";
-        return;
-      }
-
-      if(!navigator.geolocation){
-        locStatus.textContent = "Geolocation not supported on this device.";
-        return;
-      }
-
-      locStatus.textContent = "Getting your location…";
-
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          customerLocation = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude
-          };
-          locStatus.textContent = "Location captured ✔";
-        },
-        err => {
-          console.error(err);
-          locStatus.textContent = "Could not get location. Please allow permission.";
-        },
-        { enableHighAccuracy:true, timeout:10000 }
-      );
-    };
-
-    function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethod){
-      const overlay = document.createElement("div");
-      overlay.style.position = "fixed";
-      overlay.style.inset = "0";
-      overlay.style.background = "rgba(0,0,0,0.88)";
-      overlay.style.display = "flex";
-      overlay.style.alignItems = "center";
-      overlay.style.justifyContent = "center";
-      overlay.style.zIndex = "100";
-
-      overlay.innerHTML = `
-        <div style="background:#050c1d;padding:18px;border-radius:18px;width:88%;max-width:360px;text-align:center;border:1px solid rgba(255,255,255,.35);font-family:Poppins,sans-serif;color:#f5f5f5;">
-          <h3 style="margin-top:0;color:var(--accent-soft2);">Order placed</h3>
-          <p style="font-size:.9rem;margin:8px 0 10px;">${mainMsg}</p>
-          <div style="font-weight:600;margin-bottom:6px;">Bill Amount: ₹${total}</div>
-          <div style="font-size:.83rem;margin-bottom:10px;">Payment method: <b>${paymentMethod}</b></div>
-          ${extraMsg ? `<div style="font-size:0.78rem;margin-bottom:12px;color:var(--accent-soft);">${extraMsg}</div>` : ``}
-          <button id="successDoneBtn" style="background:var(--accent);border:none;padding:9px 16px;border-radius:22px;font-weight:700;color:#020718;width:100%;font-size:.9rem;">Done</button>
-        </div>
-      `;
-
-      document.body.appendChild(overlay);
-
-      document.getElementById("successDoneBtn").onclick = () => {
-        document.body.removeChild(overlay);
-        cart = [];
-        updateCart();
-        closeCart();
-
-        orderTypeSel.value = "";
-        regInput.value = "";
-        nameInput.value = "";
-        mobileInput.value = "";
-        addressInput.value = "";
-        paymentSel.value = "";
-        specialRequestInput.value = "";
-        tableNumberSel.value = "";
-        customerLocation = null;
-        locStatus.textContent = "";
-        selectedRequestTags = [];
-        document.querySelectorAll(".request-chip").forEach(ch => ch.classList.remove("active"));
-        updateOrderTypeUI();
-        go(0);
-      };
-    }
-
-    async function actuallyPlaceOrder(payload, totalAmount, paymentMethod){
-      try{
-        const res = await fetch("/api/orders", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body:JSON.stringify(payload)
-        });
-
-        if(!res.ok){
-          alert("Could not place order. Please try again.");
-          return;
-        }
-
-        const data = await res.json();
-        if(!data.success){
-          alert("Order failed. Please try again.");
-          return;
-        }
-
-        showSuccessAndReset(
-          "Your order has been sent to Abba SEENUUU... FAST FOODS.",
-          paymentMethod === "UPI"
-            ? ""
-            : "Don’t have change? Pay using UPI: 7054699905@ptaxis, else pay to the delivery boy at the time of delivery.",
-          totalAmount,
-          paymentMethod
-        );
-      }catch(e){
-        console.error(e);
-        alert("Server error. Please try again.");
-      }
-    }
-
-    upiPaidBtn.onclick = async () => {
-      if(!pendingOrderPayload){
-        upiOverlay.style.display = "none";
-        return;
-      }
-
-      const payload = pendingOrderPayload.payload;
-      const totalAmount = pendingOrderPayload.total;
-      const paymentMethod = pendingOrderPayload.paymentMethod;
-
-      pendingOrderPayload = null;
-      upiOverlay.style.display = "none";
-
-      placeOrderBtn.innerText = "Placing order…";
-      placeOrderBtn.disabled = true;
-
-      await actuallyPlaceOrder(payload, totalAmount, paymentMethod);
-
-      placeOrderBtn.innerText = "Place Order";
-      placeOrderBtn.disabled = false;
-    };
-
-    upiCancelBtn.onclick = () => {
-      pendingOrderPayload = null;
-      upiOverlay.style.display = "none";
-    };
-
-    placeOrderBtn.onclick = async () => {
-      if(submitting) return;
-      if(cart.length === 0) return alert("Cart empty");
-
-      const orderType = orderTypeSel.value;
-      if(!orderType) return alert("Select order type");
-      if(!nameInput.value.trim()) return alert("Enter name");
-      if(!mobileInput.value.trim()) return alert("Enter mobile");
-
-      if(orderType === "dinein" && !tableNumberSel.value){
-        return alert("Please select table number");
-      }
-
-      if(orderType === "delivery" && !addressInput.value.trim()){
-        return alert("Enter delivery address / hostel / block");
-      }
-
-      if(orderType === "delivery" && !customerLocation){
-        alert("Please tap 'Use current location' and allow location access for delivery orders.");
-        return;
-      }
-
-      const paymentMethod = paymentSel.value;
-      if(!paymentMethod) return alert("Select payment method (UPI or COD)");
-
-      const totalAmount = cart.reduce((s,i) => s + i.qty * i.price, 0);
-
-      const payload = {
-        orderType,
-        customerName:nameInput.value.trim(),
-        registrationNumber:regInput.value.trim(),
-        mobile:mobileInput.value.trim(),
-        tableNumber: orderType === "dinein" ? tableNumberSel.value : "",
-        address: orderType === "delivery" ? addressInput.value.trim() : "",
-        location: orderType === "delivery" ? customerLocation : null,
-        items:cart,
-        paymentMethod,
-        specialRequest:specialRequestInput.value.trim(),
-        requestTags:selectedRequestTags,
-        source:"customer-menu"
-      };
-
-      if(paymentMethod === "UPI"){
-        pendingOrderPayload = {
-          payload,
-          total: totalAmount,
-          paymentMethod
-        };
-        setUpiQr(totalAmount);
-        upiOverlay.style.display = "flex";
-        return;
-      }
-
-      submitting = true;
-      placeOrderBtn.innerText = "Placing order…";
-      placeOrderBtn.disabled = true;
-
-      await actuallyPlaceOrder(payload, totalAmount, paymentMethod);
-
-      submitting = false;
-      placeOrderBtn.innerText = "Place Order";
-      placeOrderBtn.disabled = false;
-    };
-
-    document.querySelectorAll(".request-chip").forEach(btn => {
-      btn.onclick = () => {
-        const tag = btn.getAttribute("data-tag");
-        if(selectedRequestTags.includes(tag)){
-          selectedRequestTags = selectedRequestTags.filter(t => t !== tag);
-          btn.classList.remove("active");
-        }else{
-          selectedRequestTags.push(tag);
-          btn.classList.add("active");
-        }
-      };
-    });
-
-    function flattenMenu(){
-      const list = [];
-      Object.entries(menu).forEach(([category, items]) => {
-        items.forEach(item => {
-          const minPrice = Math.min(...Object.values(item.variants || { Plate:99999 }));
-          list.push({
-            ...item,
-            category,
-            minPrice,
-            lowerName: (item.name || "").toLowerCase()
-          });
-        });
-      });
-      return list;
-    }
-
-    function pickAvailable(names){
-      const all = flattenMenu();
-      return names
-        .map(n => all.find(x => x.lowerName === n.toLowerCase() && x.available !== false))
-        .filter(Boolean);
-    }
-
-    function suggestByIntent(msg){
-      const text = (msg || "").toLowerCase().trim();
-      const all = flattenMenu().filter(x => x.available !== false);
-
-      const directAnswers = [
-        {
-          match:["hi","hello","hey","hlo"],
-          reply:"Hi 👋 Welcome to Abba SEENUUU... FAST FOODS.\nYou can ask me things like:\n• best food\n• spicy food\n• veg food\n• budget food\n• noodles\n• rice\n• starters"
-        },
-        {
-          match:["payment","upi","cod","cash"],
-          reply:"We support UPI and Cash on Delivery. If you choose UPI, you can scan the QR before placing the order."
-        },
-        {
-          match:["delivery","location","address"],
-          reply:"For delivery orders, please enter your address and tap 'Use current location' before placing the order."
-        },
-        {
-          match:["waiter","manager","call waiter","call manager"],
-          reply:"You can tap the Call Waiter or Call Manager buttons, and the manager panel can receive your name and table number for dine-in service."
-        }
-      ];
-
-      for(const item of directAnswers){
-        if(item.match.some(k => text.includes(k))){
-          return { type:"text", text:item.reply };
-        }
-      }
-
-      const trainedGroups = {
-        best:["Abba special chicken","Chicken 65","Chicken fried rice","Abba special chicken noodles","Paneer fried rice"],
-        spicy:["Chilli chicken","Dragon chicken","Chicken 65","Chicken lollipop","Chicken Manchurian"],
-        veg:["Veg Manchurian","Paneer fried rice","Veg fried rice","Gobi fried rice","Veg noodles","Paneer noodles","Gobi noodles"],
-        nonveg:["Chilli chicken","Abba special chicken","Chicken lollipop","Chicken 65","Dragon chicken","Chicken Manchurian","Chicken fried rice","Chicken noodles","Abba special chicken rice","Abba special chicken noodles"],
-        budget:all.filter(i => i.minPrice <= 100).sort((a,b) => a.minPrice - b.minPrice).slice(0,6).map(i => i.name),
-        rice:all.filter(i => i.category.toLowerCase() === "rice").slice(0,6).map(i => i.name),
-        noodles:all.filter(i => i.category.toLowerCase() === "noodles").slice(0,6).map(i => i.name),
-        starters:all.filter(i => i.category.toLowerCase() === "starters").slice(0,6).map(i => i.name),
-        egg:all.filter(i => i.lowerName.includes("egg")).map(i => i.name),
-        paneer:all.filter(i => i.lowerName.includes("paneer")).map(i => i.name),
-        chicken:all.filter(i => i.lowerName.includes("chicken")).map(i => i.name)
-      };
-
-      const intentChecks = [
-        { keys:["best","popular","famous","recommend","suggest"], group:"best", title:"Popular picks" },
-        { keys:["spicy","hot"], group:"spicy", title:"Spicy picks" },
-        { keys:["veg","vegetarian"], group:"veg", title:"Veg suggestions" },
-        { keys:["non veg","nonveg","chicken"], group:"nonveg", title:"Non-veg suggestions" },
-        { keys:["budget","cheap","under 100","under ₹100","low price"], group:"budget", title:"Budget-friendly options" },
-        { keys:["rice","fried rice"], group:"rice", title:"Rice options" },
-        { keys:["noodles","noodle"], group:"noodles", title:"Noodles options" },
-        { keys:["starter","starters","snacks"], group:"starters", title:"Starter options" },
-        { keys:["egg"], group:"egg", title:"Egg options" },
-        { keys:["paneer"], group:"paneer", title:"Paneer options" }
-      ];
-
-      for(const rule of intentChecks){
-        if(rule.keys.some(k => text.includes(k))){
-          const picks = pickAvailable(trainedGroups[rule.group] || []);
-          if(picks.length){
-            return { type:"items", title:rule.title, items:picks.slice(0,5) };
-          }
-        }
-      }
-
-      const nameMatch = all.filter(i => text.includes(i.lowerName) || i.lowerName.includes(text)).slice(0,5);
-      if(nameMatch.length){
-        return { type:"items", title:"Here’s what I found", items:nameMatch };
-      }
-
-      return {
-        type:"text",
-        text:"I can help with:\n• best food\n• spicy food\n• veg / non-veg\n• budget food\n• rice / noodles / starters\n• payment / delivery help"
-      };
-    }
-
-    function addBotMessage(text){
-      const div = document.createElement("div");
-      div.className = "msg botMsg";
-      div.textContent = text;
-      chatMessages.appendChild(div);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function addUserMessage(text){
-      const div = document.createElement("div");
-      div.className = "msg userMsg";
-      div.textContent = text;
-      chatMessages.appendChild(div);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function addBotItemReply(title, items){
-      const lines = items.map(i => `${i.name} — from ₹${i.minPrice}`);
-      addBotMessage(`${title}\n${lines.join("\n")}`);
-    }
-
-    function runChatQuery(q){
-      if(!q.trim()) return;
-      addUserMessage(q);
-      const result = suggestByIntent(q);
-
-      setTimeout(() => {
-        if(result.type === "items") addBotItemReply(result.title, result.items);
-        else addBotMessage(result.text);
-      }, 250);
-    }
-
-    function initChatbot(){
-      chatMessages.innerHTML = "";
-      addBotMessage("Hi 👋 Welcome to Abba SEENUUU... FAST FOODS.\nAsk me for best food, spicy food, veg food, noodles, rice, or budget suggestions.");
-    }
-
-    chatFab.onclick = () => {
-      chatPanel.style.display = chatPanel.style.display === "flex" ? "none" : "flex";
-    };
-
-    chatClose.onclick = () => {
-      chatPanel.style.display = "none";
-    };
-
-    chatSend.onclick = () => {
-      const q = chatInput.value.trim();
-      if(!q) return;
-      runChatQuery(q);
-      chatInput.value = "";
-    };
-
-    chatInput.addEventListener("keydown", e => {
-      if(e.key === "Enter"){
-        e.preventDefault();
-        chatSend.click();
-      }
-    });
-
-    document.querySelectorAll(".faqBtn").forEach(btn => {
-      btn.onclick = () => {
-        const q = btn.getAttribute("data-q");
-        runChatQuery(q);
-      };
-    });
-
-    function validateServiceRequestContext(type){
-      if(!nameInput.value.trim()){
-        toast("Enter your name in cart details first");
-        cartModal.style.display = "block";
-        return false;
-      }
-
-      if(!mobileInput.value.trim()){
-        toast("Enter mobile number first");
-        cartModal.style.display = "block";
-        return false;
-      }
-
-      if(orderTypeSel.value === "dinein" && !tableNumberSel.value){
-        toast("Select your table number first");
-        cartModal.style.display = "block";
-        return false;
-      }
-
-      return true;
-    }
-
-    async function sendServiceRequest(type){
-      if(!validateServiceRequestContext(type)) return;
-
-      const payload = {
-        type,
-        customerName:nameInput.value.trim(),
-        mobile:mobileInput.value.trim(),
-        registrationNumber:regInput.value.trim(),
-        orderType:orderTypeSel.value,
-        tableNumber:orderTypeSel.value === "dinein" ? tableNumberSel.value : "",
-        address:orderTypeSel.value === "delivery" ? addressInput.value.trim() : "",
-        location:customerLocation || null,
-        createdAt:new Date().toISOString(),
-        source:"customer-menu"
-      };
-
-      try{
-        const res = await fetch("/api/service-request", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body:JSON.stringify(payload)
-        });
-
-        if(res.ok) toast(`${type} request sent`);
-        else toast(`Could not send ${type.toLowerCase()} request`);
-      }catch(e){
-        console.error(e);
-        toast(`Could not send ${type.toLowerCase()} request`);
-      }
-    }
-
-    callWaiterBtn.onclick = () => sendServiceRequest("Call Waiter");
-    callManagerBtn.onclick = () => sendServiceRequest("Call Manager");
-
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById("successDoneBtn").onclick=()=>{
+    document.body.removeChild(overlay);
+    cart=[];
     updateCart();
+    closeCart();
+    orderTypeSel.value="";
+    regInput.value="";
+    nameInput.value="";
+    mobileInput.value="";
+    addressInput.value="";
+    paymentSel.value="";
+    specialRequestInput.value="";
+    tableNumberSel.value="";
+    customerLocation=null;
+    locStatus.textContent="";
+    selectedRequestTags=[];
+    document.querySelectorAll(".request-chip").forEach(ch=>ch.classList.remove("active"));
     updateOrderTypeUI();
-  </script>
+    go(0);
+  };
+}
+
+async function actuallyPlaceOrder(payload, totalAmount, paymentMethod){
+  try{
+    const res = await fetch("/api/orders",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+    if(!res.ok){
+      alert("Could not place order. Please try again.");
+      return;
+    }
+    const data = await res.json();
+    if(!data.success){
+      alert("Order failed. Please try again.");
+      return;
+    }
+
+    showSuccessAndReset(
+      "Your order has been sent to Abba SEENUUU... FAST FOODS.",
+      paymentMethod === "UPI"
+        ? ""
+        : "Don’t have change? Pay using UPI: 7054699905@ptaxis, else pay to the delivery boy at the time of delivery.",
+      totalAmount,
+      paymentMethod
+    );
+  }catch(e){
+    console.error(e);
+    alert("Server error. Please try again.");
+  }
+}
+
+upiPaidBtn.onclick = async () => {
+  if(!pendingOrderPayload) {
+    upiOverlay.style.display="none";
+    return;
+  }
+  const payload = pendingOrderPayload.payload;
+  const totalAmount = pendingOrderPayload.total;
+  const paymentMethod = pendingOrderPayload.paymentMethod;
+  pendingOrderPayload = null;
+  upiOverlay.style.display="none";
+
+  placeOrderBtn.innerText="Placing order…";
+  placeOrderBtn.disabled=true;
+  await actuallyPlaceOrder(payload, totalAmount, paymentMethod);
+  placeOrderBtn.innerText="Place Order";
+  placeOrderBtn.disabled=false;
+};
+
+upiCancelBtn.onclick = () => {
+  pendingOrderPayload = null;
+  upiOverlay.style.display="none";
+};
+
+let submitting=false;
+placeOrderBtn.onclick = async () => {
+  if(submitting)return;
+  if(cart.length===0)return alert("Cart empty");
+
+  const orderType = orderTypeSel.value;
+  if(!orderType) return alert("Select order type");
+  if(!nameInput.value.trim()) return alert("Enter name");
+  if(!mobileInput.value.trim()) return alert("Enter mobile");
+
+  if(orderType === "dinein" && !tableNumberSel.value){
+    return alert("Please select table number");
+  }
+
+  if(orderType === "delivery" && !addressInput.value.trim()){
+    return alert("Enter delivery address / hostel / block");
+  }
+
+  if(orderType === "delivery" && !customerLocation){
+    alert("Please tap 'Use current location' and allow location access for delivery orders.");
+    return;
+  }
+
+  let paymentMethod = paymentSel.value;
+
+  if(orderType === "dinein" && !paymentMethod){
+    const proceed = confirm("Dine-in selected without payment method. Press OK to continue with Cash on Delivery.");
+    if(!proceed) return;
+    paymentMethod = "COD";
+    paymentSel.value = "COD";
+  }
+
+  if(!paymentMethod) return alert("Select payment method (UPI or COD)");
+
+  const totalAmount = cart.reduce((s,i)=>s + i.qty*i.price,0);
+
+  const payload = {
+    orderType,
+    customerName:nameInput.value.trim(),
+    registrationNumber:regInput.value.trim(),
+    mobile:mobileInput.value.trim(),
+    tableNumber: orderType==="dinein" ? tableNumberSel.value : "",
+    address:orderType==="delivery" ? addressInput.value.trim() : "",
+    location: orderType==="delivery" ? customerLocation : null,
+    items:cart,
+    paymentMethod,
+    specialRequest: specialRequestInput.value.trim(),
+    requestTags: selectedRequestTags,
+    source:"customer-menu"
+  };
+
+  if(paymentMethod === "UPI"){
+    pendingOrderPayload = {
+      payload,
+      total: totalAmount,
+      paymentMethod
+    };
+    setUpiQr(totalAmount);
+    upiOverlay.style.display="flex";
+    return;
+  }
+
+  submitting=true;
+  placeOrderBtn.innerText="Placing order…";
+  placeOrderBtn.disabled=true;
+
+  await actuallyPlaceOrder(payload, totalAmount, paymentMethod);
+
+  submitting=false;
+  placeOrderBtn.innerText="Place Order";
+  placeOrderBtn.disabled=false;
+};
+
+document.querySelectorAll(".request-chip").forEach(btn=>{
+  btn.onclick=()=>{
+    const tag = btn.getAttribute("data-tag");
+    if(selectedRequestTags.includes(tag)){
+      selectedRequestTags = selectedRequestTags.filter(t=>t!==tag);
+      btn.classList.remove("active");
+    }else{
+      selectedRequestTags.push(tag);
+      btn.classList.add("active");
+    }
+  };
+});
+
+function flattenMenu(){
+  const list = [];
+  Object.entries(menu).forEach(([category, items])=>{
+    items.forEach(item=>{
+      const minPrice = Math.min(...Object.values(item.variants || {Plate:99999}));
+      list.push({
+        ...item,
+        category,
+        minPrice,
+        lowerName: (item.name || "").toLowerCase()
+      });
+    });
+  });
+  return list;
+}
+
+function pickAvailable(names){
+  const all = flattenMenu();
+  return names.map(n => all.find(x => x.lowerName === n.toLowerCase() && x.available !== false)).filter(Boolean);
+}
+
+function suggestByIntent(msg){
+  const text = (msg || "").toLowerCase().trim();
+  const all = flattenMenu().filter(x => x.available !== false);
+
+  const directAnswers = [
+    {
+      match: ["hi", "hello", "hey", "hlo"],
+      reply: "Hi 👋 Welcome to Abba SEENUUU... FAST FOODS.\nYou can ask me things like:\n• best food\n• spicy food\n• veg food\n• budget food\n• noodles\n• rice\n• starters"
+    },
+    {
+      match: ["payment", "upi", "cod", "cash"],
+      reply: "We support UPI and Cash on Delivery. If you choose UPI, you can scan the QR before placing the order."
+    },
+    {
+      match: ["delivery", "location", "address"],
+      reply: "For delivery orders, please enter your address and tap 'Use current location' before placing the order."
+    },
+    {
+      match: ["waiter", "manager", "call waiter", "call manager"],
+      reply: "You can tap the Call Waiter or Call Manager buttons, and the manager panel can receive your name and table number for dine-in service."
+    }
+  ];
+
+  for(const item of directAnswers){
+    if(item.match.some(k => text.includes(k))) return {type:"text", text:item.reply};
+  }
+
+  const trainedGroups = {
+    best: ["Abba special chicken","Chicken 65","Chicken fried rice","Abba special chicken noodles","Paneer fried rice"],
+    spicy: ["Chilli chicken","Dragon chicken","Chicken 65","Chicken lollipop","Chicken Manchurian"],
+    veg: ["Veg Manchurian","Paneer fried rice","Veg fried rice","Gobi fried rice","Veg noodles","Paneer noodles","Gobi noodles"],
+    nonveg: ["Chilli chicken","Abba special chicken","Chicken lollipop","Chicken 65","Dragon chicken","Chicken Manchurian","Chicken fried rice","Chicken noodles","Abba special chicken rice","Abba special chicken noodles"],
+    budget: all.filter(i => i.minPrice <= 100).sort((a,b)=>a.minPrice-b.minPrice).slice(0,6).map(i=>i.name),
+    rice: all.filter(i => i.category.toLowerCase() === "rice").slice(0,6).map(i=>i.name),
+    noodles: all.filter(i => i.category.toLowerCase() === "noodles").slice(0,6).map(i=>i.name),
+    starters: all.filter(i => i.category.toLowerCase() === "starters").slice(0,6).map(i=>i.name),
+    egg: all.filter(i => i.lowerName.includes("egg")).map(i=>i.name),
+    paneer: all.filter(i => i.lowerName.includes("paneer")).map(i=>i.name),
+    chicken: all.filter(i => i.lowerName.includes("chicken")).map(i=>i.name)
+  };
+
+  const intentChecks = [
+    { keys:["best", "popular", "famous", "recommend", "suggest"], group:"best", title:"Popular picks" },
+    { keys:["spicy", "hot"], group:"spicy", title:"Spicy picks" },
+    { keys:["veg", "vegetarian"], group:"veg", title:"Veg suggestions" },
+    { keys:["non veg", "nonveg", "chicken"], group:"nonveg", title:"Non-veg suggestions" },
+    { keys:["budget", "cheap", "under 100", "under ₹100", "low price"], group:"budget", title:"Budget-friendly options" },
+    { keys:["rice", "fried rice"], group:"rice", title:"Rice options" },
+    { keys:["noodles", "noodle"], group:"noodles", title:"Noodles options" },
+    { keys:["starter", "starters", "snacks"], group:"starters", title:"Starter options" },
+    { keys:["egg"], group:"egg", title:"Egg options" },
+    { keys:["paneer"], group:"paneer", title:"Paneer options" }
+  ];
+
+  for(const rule of intentChecks){
+    if(rule.keys.some(k => text.includes(k))){
+      const picks = pickAvailable(trainedGroups[rule.group] || []);
+      if(picks.length){
+        return { type:"items", title:rule.title, items:picks.slice(0,5) };
+      }
+    }
+  }
+
+  const nameMatch = all.filter(i => text.includes(i.lowerName) || i.lowerName.includes(text)).slice(0,5);
+  if(nameMatch.length){
+    return { type:"items", title:"Here’s what I found", items:nameMatch };
+  }
+
+  return {
+    type:"text",
+    text:"I can help with:\n• best food\n• spicy food\n• veg / non-veg\n• budget food\n• rice\n• noodles\n• starters\n• payment\n• delivery help"
+  };
+}
+
+function addBotMessage(text){
+  const div = document.createElement("div");
+  div.className = "msg botMsg";
+  div.textContent = text;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function addUserMessage(text){
+  const div = document.createElement("div");
+  div.className = "msg userMsg";
+  div.textContent = text;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function addBotItemReply(title, items){
+  const lines = items.map(i => `${i.name} — from ₹${i.minPrice}`);
+  addBotMessage(`${title}\n${lines.join("\n")}`);
+}
+
+function runChatQuery(q){
+  if(!q.trim()) return;
+  addUserMessage(q);
+  const result = suggestByIntent(q);
+  setTimeout(()=>{
+    if(result.type === "items") addBotItemReply(result.title, result.items);
+    else addBotMessage(result.text);
+  }, 250);
+}
+
+function initChatbot(){
+  chatMessages.innerHTML = "";
+  addBotMessage("Hi 👋 Welcome to Abba SEENUUU... FAST FOODS. Ask me for best food, spicy food, veg food, noodles, rice, or budget suggestions.");
+}
+
+chatFab.onclick = ()=> chatPanel.style.display = chatPanel.style.display === "flex" ? "none" : "flex";
+chatClose.onclick = ()=> chatPanel.style.display = "none";
+chatSend.onclick = ()=>{
+  const q = chatInput.value.trim();
+  if(!q) return;
+  runChatQuery(q);
+  chatInput.value = "";
+};
+chatInput.addEventListener("keydown", e=>{
+  if(e.key === "Enter"){
+    e.preventDefault();
+    chatSend.click();
+  }
+});
+document.querySelectorAll(".faqBtn").forEach(btn=>{
+  btn.onclick = ()=>{
+    const q = btn.getAttribute("data-q");
+    runChatQuery(q);
+  };
+});
+
+function validateServiceRequestContext(type){
+  if(!nameInput.value.trim()){
+    toast("Enter your name in cart details first");
+    cartModal.style.display="block";
+    return false;
+  }
+  if(!mobileInput.value.trim()){
+    toast("Enter mobile number first");
+    cartModal.style.display="block";
+    return false;
+  }
+  if(orderTypeSel.value === "dinein" && !tableNumberSel.value){
+    toast("Select your table number first");
+    cartModal.style.display="block";
+    return false;
+  }
+  return true;
+}
+
+async function sendServiceRequest(type){
+  if(!validateServiceRequestContext(type)) return;
+
+  const payload = {
+    type,
+    customerName: nameInput.value.trim(),
+    mobile: mobileInput.value.trim(),
+    registrationNumber: regInput.value.trim(),
+    orderType: orderTypeSel.value,
+    tableNumber: orderTypeSel.value === "dinein" ? tableNumberSel.value : "",
+    address: orderTypeSel.value === "delivery" ? addressInput.value.trim() : "",
+    location: customerLocation || null,
+    createdAt: new Date().toISOString(),
+    source: "customer-menu"
+  };
+
+  try{
+    const res = await fetch("/api/service-request",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+
+    if(res.ok) toast(`${type} request sent`);
+    else toast(`Could not send ${type.toLowerCase()} request`);
+  }catch(e){
+    console.error(e);
+    toast(`Could not send ${type.toLowerCase()} request`);
+  }
+}
+
+callWaiterBtn.onclick = ()=> sendServiceRequest("Call Waiter");
+callManagerBtn.onclick = ()=> sendServiceRequest("Call Manager");
+
+updateCart();
+updateOrderTypeUI();
+</script>
 </body>
 </html>
