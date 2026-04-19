@@ -22,8 +22,8 @@ const io = socketio(server, {
 const PORT = process.env.PORT || 4000;
 
 // --- Manager Portal Login ---
-const managerUser = process.env.MANAGER_USER || "admin";
-const managerPass = process.env.MANAGER_PASS || "abbaseenu2025";
+let managerUser = process.env.MANAGER_USER || "admin";
+let managerPass = process.env.MANAGER_PASS || "abbaseenu2025";
 
 // --- MongoDB connection ---
 const MONGO_URI =
@@ -172,6 +172,64 @@ tableDraftSchema.pre("save", function (next) {
 });
 
 const TableDraft = mongoose.model("TableDraft", tableDraftSchema);
+
+// --- Pending Dine-In Request Schema ---
+// Stores customer-submitted dine-in orders waiting for manager acceptance
+const pendingDineInSchema = new mongoose.Schema({
+  tableNumber: {
+    type: String,
+    required: true,
+    index: true
+  },
+  customerName: {
+    type: String,
+    default: ""
+  },
+  mobile: {
+    type: String,
+    default: ""
+  },
+  registrationNumber: {
+    type: String,
+    default: ""
+  },
+  guestCount: {
+    type: Number,
+    default: 1
+  },
+  items: [
+    {
+      name: String,
+      variant: String,
+      price: Number,
+      qty: Number,
+      category: String
+    }
+  ],
+  total: {
+    type: Number,
+    default: 0
+  },
+  specialRequest: {
+    type: String,
+    default: ""
+  },
+  requestTags: [String],
+  status: {
+    type: String,
+    default: "pending" // pending | accepted | rejected
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    index: true
+  }
+});
+
+// Auto-delete pending requests after 1 day
+pendingDineInSchema.index({ createdAt: 1 }, { expireAfterSeconds: 86400 });
+
+const PendingDineIn = mongoose.model("PendingDineIn", pendingDineInSchema);
 
 // --- AUTO PRINT QUEUE ---
 let printQueue = [];
@@ -326,7 +384,7 @@ app.get("/api/orders", async (req, res) => {
   }
 });
 
-// Place new order
+// Place new order — dine-in goes to pending queue, others save normally
 app.post("/api/orders", async (req, res) => {
   try {
     const {
@@ -348,12 +406,37 @@ app.post("/api/orders", async (req, res) => {
           name: item?.name || "",
           variant: item?.variant || "",
           price: Number(item?.price || 0),
-          qty: Number(item?.qty || 0)
+          qty: Number(item?.qty || 0),
+          category: item?.category || ""
         }))
       : [];
 
     const total = calcTotal(normalizedItems);
 
+    // --- DINE-IN: route to pending queue instead of order history ---
+    if (orderType === "dinein") {
+      const pending = new PendingDineIn({
+        tableNumber: String(tableNumber || "").trim(),
+        customerName: customerName || "",
+        mobile: mobile || "",
+        registrationNumber: registrationNumber || "",
+        guestCount: 1,
+        items: normalizedItems,
+        total,
+        specialRequest: specialRequest || "",
+        requestTags: Array.isArray(requestTags) ? requestTags : [],
+        status: "pending"
+      });
+
+      await pending.save();
+
+      // Notify manager about the new pending dine-in request
+      io.emit("pendingDineIn", pending.toObject());
+
+      return res.json({ success: true, pending: true, pendingId: pending._id });
+    }
+
+    // --- TAKEAWAY / DELIVERY: save normally ---
     const order = await saveAndBroadcastOrder({
       orderType: orderType || "",
       customerName: customerName || "",
@@ -534,6 +617,134 @@ app.get("/api/service-request", async (req, res) => {
   }
 });
 
+// ---------------- PENDING DINE-IN APIs ----------------
+
+// Get all pending dine-in requests (for manager to review)
+app.get("/api/pending-dinein", async (req, res) => {
+  try {
+    const requests = await PendingDineIn.find({ status: "pending" }).sort({ createdAt: -1 });
+    res.json(requests);
+  } catch (err) {
+    console.error("Get pending dine-in error:", err);
+    res.status(500).json({ error: "Could not fetch pending requests" });
+  }
+});
+
+// Get pending dine-in requests for a specific table
+app.get("/api/pending-dinein/:tableNumber", async (req, res) => {
+  try {
+    const { tableNumber } = req.params;
+    const requests = await PendingDineIn.find({
+      tableNumber: String(tableNumber).trim(),
+      status: "pending"
+    }).sort({ createdAt: 1 });
+    res.json(requests);
+  } catch (err) {
+    console.error("Get pending dine-in for table error:", err);
+    res.status(500).json({ error: "Could not fetch pending requests" });
+  }
+});
+
+// Accept a pending dine-in request — merges items into table draft
+app.post("/api/pending-dinein/:id/accept", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const pending = await PendingDineIn.findById(id);
+    if (!pending) {
+      return res.status(404).json({ success: false, error: "Pending request not found" });
+    }
+
+    const tableNumber = pending.tableNumber;
+
+    // Mark pending request as accepted
+    pending.status = "accepted";
+    await pending.save();
+
+    // Find or create table draft
+    let draft = await TableDraft.findOne({ tableNumber });
+
+    if (!draft) {
+      draft = new TableDraft({
+        tableNumber,
+        customerName: pending.customerName || "",
+        mobile: pending.mobile || "",
+        guestCount: pending.guestCount || 1,
+        status: "draft",
+        items: [],
+        total: 0
+      });
+    } else {
+      // Auto-fill customer name/mobile if table draft has none
+      if (!draft.customerName && pending.customerName) {
+        draft.customerName = pending.customerName;
+      }
+      if (!draft.mobile && pending.mobile) {
+        draft.mobile = pending.mobile;
+      }
+    }
+
+    // Merge incoming items into existing draft items
+    const incomingItems = pending.items || [];
+    incomingItems.forEach(incoming => {
+      const existing = draft.items.find(
+        x => x.name === incoming.name && x.variant === incoming.variant
+      );
+      if (existing) {
+        existing.qty += incoming.qty;
+      } else {
+        draft.items.push({
+          name: incoming.name,
+          variant: incoming.variant || "",
+          price: incoming.price,
+          qty: incoming.qty,
+          category: incoming.category || ""
+        });
+      }
+    });
+
+    draft.status = draft.items.length ? "draft" : "available";
+    draft.updatedAt = new Date();
+    draft.total = calcTotal(draft.items);
+
+    await draft.save();
+
+    // Notify all manager clients about the updated draft
+    io.emit("tableDraftUpdated", draft.toObject());
+    // Also notify that a pending request was accepted (to remove it from pending list)
+    io.emit("pendingDineInAccepted", { id, tableNumber });
+
+    res.json({ success: true, draft: draft.toObject() });
+  } catch (err) {
+    console.error("Accept pending dine-in error:", err);
+    res.status(500).json({ success: false, error: "Could not accept request" });
+  }
+});
+
+// Reject a pending dine-in request
+app.post("/api/pending-dinein/:id/reject", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const pending = await PendingDineIn.findByIdAndUpdate(
+      id,
+      { status: "rejected" },
+      { new: true }
+    );
+
+    if (!pending) {
+      return res.status(404).json({ success: false, error: "Pending request not found" });
+    }
+
+    io.emit("pendingDineInRejected", { id, tableNumber: pending.tableNumber });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Reject pending dine-in error:", err);
+    res.status(500).json({ success: false, error: "Could not reject request" });
+  }
+});
+
 // ---------------- TABLE DRAFT APIs ----------------
 
 // Get all table drafts for manager POS
@@ -544,6 +755,19 @@ app.get("/api/table-orders", async (req, res) => {
   } catch (err) {
     console.error("Get table drafts error:", err);
     res.status(500).json({ success: false, error: "Could not get table drafts" });
+  }
+});
+
+// Get single table draft
+app.get("/api/table-orders/:tableNumber", async (req, res) => {
+  try {
+    const { tableNumber } = req.params;
+    const draft = await TableDraft.findOne({ tableNumber: String(tableNumber).trim() });
+    if (!draft) return res.status(404).json({ success: false, error: "Not found" });
+    res.json(draft);
+  } catch (err) {
+    console.error("Get single table draft error:", err);
+    res.status(500).json({ success: false, error: "Could not get table draft" });
   }
 });
 
@@ -602,8 +826,9 @@ app.post("/api/table-orders/clear", async (req, res) => {
   }
 });
 
-// Print/finalize one table draft as a real order
-app.post("/api/table-orders/print", async (req, res) => {
+// Finalize table draft — creates real Order and moves to history
+// This is called by manager's "Save & Print" button
+app.post("/api/table-orders/finalize", async (req, res) => {
   try {
     const payload = sanitizeTableDraftPayload(req.body);
 
@@ -621,6 +846,7 @@ app.post("/api/table-orders/print", async (req, res) => {
       });
     }
 
+    // Save as a finalized order in Order collection (shows in history)
     const order = await saveAndBroadcastOrder({
       orderType: "dinein",
       customerName: payload.customerName || "",
@@ -636,43 +862,38 @@ app.post("/api/table-orders/print", async (req, res) => {
         qty: Number(i.qty || 0)
       })),
       total: payload.total || calcTotal(payload.items),
-      paymentMethod: "COD",
+      paymentMethod: "PAYLATERDINEIN",
       paymentVerified: false,
       specialRequest: "",
       requestTags: [],
-      status: "incoming"
+      status: "delivered" // Mark as delivered immediately since it's a finalized dine-in bill
     });
 
-    const draft = await TableDraft.findOneAndUpdate(
-      { tableNumber: payload.tableNumber },
-      {
-        ...payload,
-        status: "billed",
-        total: payload.total || calcTotal(payload.items),
-        lastPrintedAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        new: true,
-        upsert: true,
-        setDefaultsOnInsert: true
-      }
-    );
+    // Remove the table draft from DB
+    await TableDraft.findOneAndDelete({ tableNumber: payload.tableNumber });
 
-    io.emit("tableDraftUpdated", draft);
+    // Notify all clients
+    io.emit("tableDraftCleared", { tableNumber: payload.tableNumber });
+    io.emit("tableOrderFinalized", { tableNumber: payload.tableNumber, order });
 
     res.json({
       success: true,
-      order,
-      draft
+      order
     });
   } catch (err) {
-    console.error("Print/finalize table draft error:", err);
+    console.error("Finalize table draft error:", err);
     res.status(500).json({
       success: false,
-      error: "Could not print/finalize table draft"
+      error: "Could not finalize table draft"
     });
   }
+});
+
+// Print/finalize one table draft as a real order (legacy endpoint kept for compatibility)
+app.post("/api/table-orders/print", async (req, res) => {
+  // Redirect to finalize logic
+  req.url = "/api/table-orders/finalize";
+  app._router.handle(req, res, () => {});
 });
 
 // ---------------- DASHBOARD APIs ----------------
