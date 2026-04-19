@@ -174,7 +174,6 @@ tableDraftSchema.pre("save", function (next) {
 const TableDraft = mongoose.model("TableDraft", tableDraftSchema);
 
 // --- Pending Dine-In Request Schema ---
-// Stores customer-submitted dine-in orders waiting for manager acceptance
 const pendingDineInSchema = new mongoose.Schema({
   tableNumber: {
     type: String,
@@ -430,8 +429,12 @@ app.post("/api/orders", async (req, res) => {
 
       await pending.save();
 
+      // FIX: Convert _id to string so manager.html deduplication works correctly
+      const pendingObj = pending.toObject();
+      pendingObj._id = pendingObj._id.toString();
+
       // Notify manager about the new pending dine-in request
-      io.emit("pendingDineIn", pending.toObject());
+      io.emit("pendingDineIn", pendingObj);
 
       return res.json({ success: true, pending: true, pendingId: pending._id });
     }
@@ -589,7 +592,7 @@ app.post("/api/service-request", async (req, res) => {
   }
 });
 
-// Optional: fetch recent service requests for manager dashboard
+// Fetch recent service requests for manager dashboard
 app.get("/api/service-request", async (req, res) => {
   try {
     const { start, end } = getISTDateBounds(
@@ -619,11 +622,19 @@ app.get("/api/service-request", async (req, res) => {
 
 // ---------------- PENDING DINE-IN APIs ----------------
 
-// Get all pending dine-in requests (for manager to review)
+// Get all pending dine-in requests (for manager to review on login)
 app.get("/api/pending-dinein", async (req, res) => {
   try {
     const requests = await PendingDineIn.find({ status: "pending" }).sort({ createdAt: -1 });
-    res.json(requests);
+
+    // FIX: Convert _id to string on each record so manager.html deduplication works
+    const normalized = requests.map((r) => {
+      const obj = r.toObject();
+      obj._id = obj._id.toString();
+      return obj;
+    });
+
+    res.json(normalized);
   } catch (err) {
     console.error("Get pending dine-in error:", err);
     res.status(500).json({ error: "Could not fetch pending requests" });
@@ -711,8 +722,9 @@ app.post("/api/pending-dinein/:id/accept", async (req, res) => {
 
     // Notify all manager clients about the updated draft
     io.emit("tableDraftUpdated", draft.toObject());
-    // Also notify that a pending request was accepted (to remove it from pending list)
-    io.emit("pendingDineInAccepted", { id, tableNumber });
+
+    // FIX: Convert id to string so manager.html removal by ID works correctly
+    io.emit("pendingDineInAccepted", { id: id.toString(), tableNumber });
 
     res.json({ success: true, draft: draft.toObject() });
   } catch (err) {
@@ -736,7 +748,8 @@ app.post("/api/pending-dinein/:id/reject", async (req, res) => {
       return res.status(404).json({ success: false, error: "Pending request not found" });
     }
 
-    io.emit("pendingDineInRejected", { id, tableNumber: pending.tableNumber });
+    // FIX: Convert id to string so manager.html removal by ID works correctly
+    io.emit("pendingDineInRejected", { id: id.toString(), tableNumber: pending.tableNumber });
 
     res.json({ success: true });
   } catch (err) {
@@ -827,7 +840,6 @@ app.post("/api/table-orders/clear", async (req, res) => {
 });
 
 // Finalize table draft — creates real Order and moves to history
-// This is called by manager's "Save & Print" button
 app.post("/api/table-orders/finalize", async (req, res) => {
   try {
     const payload = sanitizeTableDraftPayload(req.body);
@@ -866,7 +878,7 @@ app.post("/api/table-orders/finalize", async (req, res) => {
       paymentVerified: false,
       specialRequest: "",
       requestTags: [],
-      status: "delivered" // Mark as delivered immediately since it's a finalized dine-in bill
+      status: "delivered"
     });
 
     // Remove the table draft from DB
@@ -889,9 +901,8 @@ app.post("/api/table-orders/finalize", async (req, res) => {
   }
 });
 
-// Print/finalize one table draft as a real order (legacy endpoint kept for compatibility)
+// Legacy print endpoint — redirects to finalize
 app.post("/api/table-orders/print", async (req, res) => {
-  // Redirect to finalize logic
   req.url = "/api/table-orders/finalize";
   app._router.handle(req, res, () => {});
 });
