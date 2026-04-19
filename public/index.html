@@ -17,11 +17,12 @@
   --accent-soft2:#f9d869;
   --text:#f5f5f5;
   --muted:#a9b3cf;
-  --dock-h:64px;
-  --cart-h:62px;
+  --help-space:84px;
+  --cart-h:66px;
 }
 
 *{box-sizing:border-box}
+html,body{height:100%}
 body{
   margin:0;
   background:radial-gradient(circle at top,#101b3b 0,#020718 55%);
@@ -34,12 +35,15 @@ body{
 .page{
   min-width:100vw;
   height:100vh;
-  padding:18px 14px calc(var(--cart-h) + var(--dock-h) + 34px);
+  padding:18px 14px calc(var(--cart-h) + 26px);
   background:
     radial-gradient(circle at center, rgba(245,197,24,.06), transparent 60%),
     linear-gradient(160deg,#050b1c,#08152e);
   position:relative;
   overflow-y:auto;
+}
+.page.menu-page{
+  padding-right:calc(var(--help-space) + 12px);
 }
 .page::before{
   content:"ABBA SEENUUU... FAST FOODS";
@@ -96,7 +100,7 @@ h2{font-size:1.4rem}
   padding:8px 16px;
   border-radius:20px;
   font-size:.9rem;
-  z-index:30;
+  z-index:40;
   border:1px solid var(--accent);
 }
 
@@ -162,41 +166,90 @@ select,input,textarea{
   color:#020718;
 }
 
-#actionDock{
+.primary{
+  background:var(--accent);
+  border:none;
+  padding:12px;
+  border-radius:26px;
+  font-weight:700;
+  width:100%;
+  color:#020718;
+}
+.helper{
+  font-size:.72rem;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+.loc-btn{
+  background:var(--paper-soft);
+  color:var(--accent-soft2);
+  border:1px solid rgba(255,255,255,.25);
+  padding:8px 10px;
+  border-radius:999px;
+  font-size:.75rem;
+  margin-bottom:6px;
+}
+
+#helpFab{
   position:fixed;
-  left:0;right:0;
-  bottom:var(--cart-h);
-  z-index:85;
-  padding:8px 10px calc(env(safe-area-inset-bottom, 0px) + 6px);
-  background:linear-gradient(to top, rgba(2,7,24,.98), rgba(2,7,24,.9));
-  border-top:1px solid rgba(245,197,24,.18);
+  right:12px;
+  bottom:calc(var(--cart-h) + 16px);
+  z-index:96;
+  border:none;
+  border-radius:999px;
+  background:var(--accent);
+  color:#020718;
+  font-weight:700;
+  padding:14px 16px;
+  min-width:64px;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
 }
-#actionDockInner{
+
+#helpPanel{
+  position:fixed;
+  right:12px;
+  bottom:calc(var(--cart-h) + 74px);
+  width:min(280px, calc(100vw - 24px));
+  background:#050c1d;
+  border:1px solid rgba(245,197,24,.35);
+  border-radius:18px;
+  padding:12px;
+  display:none;
+  z-index:97;
+  box-shadow:0 18px 40px rgba(0,0,0,.45);
+}
+#helpPanel.open{display:block}
+.help-title{
+  font-size:.9rem;
+  font-weight:700;
+  color:var(--accent-soft2);
+  margin-bottom:8px;
+}
+.help-actions{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:1fr;
   gap:8px;
-  max-width:760px;
-  margin:0 auto;
 }
-.dockBtn{
+.help-btn{
   min-height:46px;
   border:none;
   border-radius:14px;
   background:var(--paper-soft);
   color:var(--accent-soft2);
   border:1px solid rgba(245,197,24,.45);
-  font-size:.78rem;
+  font-size:.82rem;
   font-weight:700;
-  padding:8px 6px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  text-align:center;
+  padding:10px 12px;
+  text-align:left;
 }
-.dockBtn.chat{
+.help-btn.chat{
   background:var(--accent);
   color:#020718;
+}
+.help-note{
+  margin-top:8px;
+  font-size:.72rem;
+  color:var(--muted);
 }
 
 #cartBar{
@@ -209,7 +262,7 @@ select,input,textarea{
   justify-content:space-between;
   align-items:center;
   padding:10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
-  z-index:90;
+  z-index:95;
 }
 #cartSummary{font-weight:600}
 #checkoutBtn{
@@ -258,35 +311,11 @@ select,input,textarea{
   border-radius:6px;
   margin:0 4px;
 }
-textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
-
-.primary{
-  background:var(--accent);
-  border:none;
-  padding:12px;
-  border-radius:26px;
-  font-weight:700;
-  width:100%;
-  color:#020718;
-}
-.helper{
-  font-size:.72rem;
-  color:var(--muted);
-  margin-bottom:6px;
-}
-.loc-btn{
-  background:var(--paper-soft);
-  color:var(--accent-soft2);
-  border:1px solid rgba(255,255,255,.25);
-  padding:8px 10px;
-  border-radius:999px;
-  font-size:.75rem;
-  margin-bottom:6px;
-}
+textarea#address, textarea#specialRequest, textarea#pageAddress{resize:vertical;min-height:60px}
 
 #toast{
   position:fixed;
-  bottom:calc(var(--cart-h) + var(--dock-h) + 18px);
+  bottom:calc(var(--cart-h) + 18px);
   left:50%;
   transform:translateX(-50%);
   background:#0b1325;
@@ -299,7 +328,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 }
 #hint{
   position:fixed;
-  bottom:calc(var(--cart-h) + var(--dock-h) + 48px);
+  bottom:calc(var(--cart-h) + 50px);
   left:50%;
   transform:translateX(-50%);
   background:rgba(0,0,0,.7);
@@ -335,7 +364,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   position:fixed;
   right:10px;
   left:10px;
-  bottom:calc(var(--cart-h) + var(--dock-h) + 12px);
+  bottom:calc(var(--cart-h) + 12px);
   height:min(62vh,520px);
   max-width:420px;
   margin-left:auto;
@@ -464,26 +493,20 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   border:1px solid rgba(255,255,255,.16);
   margin-bottom:10px;
 }
-
 .payment-wrap.hidden{
   display:none;
 }
 
 @media(max-width:480px){
   :root{
-    --dock-h:70px;
+    --help-space:88px;
     --cart-h:68px;
   }
   .page{
-    padding:16px 12px calc(var(--cart-h) + var(--dock-h) + 34px);
+    padding:16px 12px calc(var(--cart-h) + 24px);
   }
-  #actionDockInner{
-    gap:6px;
-  }
-  .dockBtn{
-    min-height:48px;
-    font-size:.72rem;
-    padding:8px 4px;
+  .page.menu-page{
+    padding-right:calc(var(--help-space) + 10px);
   }
   #cartSummary{
     font-size:.86rem;
@@ -498,6 +521,15 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
     margin:20px auto;
     max-height:84vh;
   }
+  #helpFab{
+    right:10px;
+    padding:13px 14px;
+    font-size:.86rem;
+  }
+  #helpPanel{
+    right:10px;
+    width:min(260px, calc(100vw - 20px));
+  }
 }
 </style>
 </head>
@@ -510,12 +542,16 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 <div id="next" class="nav">❯</div>
 <button id="contentsBtn" onclick="go(3)">📑 Menu</button>
 
-<div id="actionDock">
-  <div id="actionDockInner">
-    <button class="dockBtn" id="callWaiterBtn">🔔 Waiter</button>
-    <button class="dockBtn" id="callManagerBtn">👨‍💼 Manager</button>
-    <button class="dockBtn chat" id="chatFab">💬 Chat</button>
+<button id="helpFab" type="button">Help</button>
+
+<div id="helpPanel">
+  <div class="help-title">Need help?</div>
+  <div class="help-actions">
+    <button class="help-btn" id="callWaiterBtn" type="button">🔔 Call Waiter</button>
+    <button class="help-btn" id="callManagerBtn" type="button">👨‍💼 Call Manager</button>
+    <button class="help-btn chat" id="chatFab" type="button">💬 Open Chat</button>
   </div>
+  <div class="help-note">Use Help for waiter, manager, or quick chat support.</div>
 </div>
 
 <div id="chatPanel">
@@ -677,6 +713,9 @@ const upiPaidBtn=document.getElementById("upiPaidBtn");
 const upiCancelBtn=document.getElementById("upiCancelBtn");
 const upiQrImg=document.getElementById("upiQrImg");
 
+const helpFab=document.getElementById("helpFab");
+const helpPanel=document.getElementById("helpPanel");
+
 const chatFab=document.getElementById("chatFab");
 const chatPanel=document.getElementById("chatPanel");
 const chatClose=document.getElementById("chatClose");
@@ -691,6 +730,28 @@ let cart=[],page=0,locked=false,menu={};
 let customerLocation=null;
 let pendingOrderPayload=null;
 let selectedRequestTags=[];
+let submitting=false;
+
+function setPageModeClasses(){
+  [...book.children].forEach((section, index)=>{
+    if(index >= 4) section.classList.add("menu-page");
+    else section.classList.remove("menu-page");
+  });
+}
+
+function toggleHelpPanel(force){
+  const shouldOpen = typeof force === "boolean" ? force : !helpPanel.classList.contains("open");
+  helpPanel.classList.toggle("open", shouldOpen);
+}
+
+helpFab.onclick=()=>toggleHelpPanel();
+document.addEventListener("click",(e)=>{
+  const insidePanel = helpPanel.contains(e.target);
+  const insideFab = helpFab.contains(e.target);
+  if(!insidePanel && !insideFab){
+    helpPanel.classList.remove("open");
+  }
+});
 
 function updateOrderTypeUI(){
   const orderType = orderTypeSel.value;
@@ -712,8 +773,21 @@ function updateOrderTypeUI(){
     customerLocation = null;
     locStatus.textContent = "";
   }
+
+  syncPageVisibilityOnly();
 }
 orderTypeSel.addEventListener("change", updateOrderTypeUI);
+
+function syncPageVisibilityOnly(){
+  const pageOrderType = document.getElementById("pageOrderType");
+  const pageTableWrap = document.getElementById("pageTableWrap");
+  const pageDeliveryWrap = document.getElementById("pageDeliveryWrap");
+
+  if(!pageOrderType || !pageTableWrap || !pageDeliveryWrap) return;
+
+  pageTableWrap.classList.toggle("hidden", pageOrderType.value !== "dinein");
+  pageDeliveryWrap.classList.toggle("hidden", pageOrderType.value !== "delivery");
+}
 
 function toggleDetailsInCart(){
   const sec = document.getElementById("detailsSection");
@@ -767,6 +841,7 @@ checkoutBtn.onclick=()=>{
   }
   cartModal.style.display="block";
 };
+
 function closeCart(){cartModal.style.display="none"}
 
 function toast(msg){
@@ -775,6 +850,35 @@ function toast(msg){
   t.style.display="block";
   setTimeout(()=>t.style.display="none",1400);
 }
+
+function captureDeliveryLocation(fromPage=false){
+  const statusEl = fromPage ? document.getElementById("pageLocStatus") : locStatus;
+  if(orderTypeSel.value !== "delivery"){
+    statusEl.textContent = "Location is only required for delivery orders.";
+    return;
+  }
+  if(!navigator.geolocation){
+    statusEl.textContent = "Geolocation not supported on this device.";
+    return;
+  }
+  statusEl.textContent = "Getting your location...";
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      customerLocation = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+      };
+      statusEl.textContent = "Location captured ✔";
+      if(fromPage) locStatus.textContent = "Location captured ✔";
+    },
+    err => {
+      console.error(err);
+      statusEl.textContent = "Could not get location. Please allow permission.";
+    },
+    { enableHighAccuracy:true, timeout:10000 }
+  );
+}
+locBtn.onclick = ()=>captureDeliveryLocation(false);
 
 fetch("/menu.json?_=" + Date.now(), { cache: "no-store" })
   .then(r=>r.json())
@@ -861,9 +965,11 @@ function build(){
       <p style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;">
         Please share your basic details so we can serve you better.
       </p>
-      <input placeholder="Customer Name" oninput="nameInput.value=this.value" value="">
-      <input placeholder="Mobile Number" oninput="mobileInput.value=this.value" value="">
-      <input placeholder="Registration / Room No. (optional)" oninput="regInput.value=this.value" value="">
+
+      <input id="pageName" placeholder="Customer Name" oninput="nameInput.value=this.value" value="">
+      <input id="pageMobile" placeholder="Mobile Number" oninput="mobileInput.value=this.value" value="">
+      <input id="pageRegno" placeholder="Registration / Room No. (optional)" oninput="regInput.value=this.value" value="">
+
       <select id="pageOrderType" onchange="syncPageDetails()">
         <option value="">Select Order Type</option>
         <option value="dinein">Dine-in</option>
@@ -880,6 +986,12 @@ function build(){
           <option value="T4">Table 4</option>
           <option value="T5">Table 5</option>
         </select>
+      </div>
+
+      <div id="pageDeliveryWrap" class="hidden">
+        <textarea id="pageAddress" placeholder="Delivery address / landmark" oninput="addressInput.value=this.value"></textarea>
+        <button id="pageLocBtn" class="loc-btn" type="button" onclick="captureDeliveryLocation(true)">📍 Use current location (mandatory for delivery)</button>
+        <div id="pageLocStatus" class="helper"></div>
       </div>
 
       <p style="font-size:0.8rem;color:var(--muted);margin:4px 0 12px;">
@@ -972,18 +1084,32 @@ function build(){
         </div>`;
       });
       html += `</div>`;
-      book.innerHTML += `<section class="page">${html}<div class="pageNo">${pg++}</div></section>`;
+      book.innerHTML += `<section class="page menu-page">${html}<div class="pageNo">${pg++}</div></section>`;
     }
   }
+
+  setPageModeClasses();
 }
 
 function syncPageDetails(){
+  const pageName = document.getElementById("pageName");
+  const pageMobile = document.getElementById("pageMobile");
+  const pageRegno = document.getElementById("pageRegno");
   const pageOrderType = document.getElementById("pageOrderType");
   const pageTableWrap = document.getElementById("pageTableWrap");
   const pageTableNumber = document.getElementById("pageTableNumber");
+  const pageDeliveryWrap = document.getElementById("pageDeliveryWrap");
+  const pageAddress = document.getElementById("pageAddress");
+  const pageLocStatus = document.getElementById("pageLocStatus");
 
+  nameInput.value = pageName.value;
+  mobileInput.value = pageMobile.value;
+  regInput.value = pageRegno.value;
   orderTypeSel.value = pageOrderType.value;
+  addressInput.value = pageAddress ? pageAddress.value : addressInput.value;
+
   pageTableWrap.classList.toggle("hidden", pageOrderType.value !== "dinein");
+  pageDeliveryWrap.classList.toggle("hidden", pageOrderType.value !== "delivery");
 
   if(pageOrderType.value !== "dinein"){
     pageTableNumber.value = "";
@@ -992,12 +1118,22 @@ function syncPageDetails(){
     tableNumberSel.value = pageTableNumber.value;
   }
 
+  if(pageOrderType.value !== "delivery"){
+    if(pageAddress) pageAddress.value = "";
+    addressInput.value = "";
+    customerLocation = null;
+    if(pageLocStatus) pageLocStatus.textContent = "";
+  }else{
+    addressInput.value = pageAddress.value;
+  }
+
   updateOrderTypeUI();
 }
 
 function goNextFromDetails(){
   const pageOrderType = document.getElementById("pageOrderType");
   const pageTableNumber = document.getElementById("pageTableNumber");
+  const pageAddress = document.getElementById("pageAddress");
 
   if(!nameInput.value.trim()) return alert("Enter customer name");
   if(!mobileInput.value.trim()) return alert("Enter mobile number");
@@ -1005,6 +1141,14 @@ function goNextFromDetails(){
 
   if(pageOrderType.value === "dinein" && !pageTableNumber.value){
     return alert("Please select table number");
+  }
+
+  if(pageOrderType.value === "delivery" && !pageAddress.value.trim()){
+    return alert("Enter delivery address / hostel / block");
+  }
+
+  if(pageOrderType.value === "delivery" && !customerLocation){
+    return alert("Please tap 'Use current location' and allow location access for delivery orders.");
   }
 
   syncPageDetails();
@@ -1046,38 +1190,12 @@ function updateCart(){
   totalSpan.innerText=total;
   cartSummary.innerText=`🛒 ${cart.reduce((s,i)=>s+i.qty,0)} items | ₹${total}`;
 }
+
 function chg(i,d){
   cart[i].qty+=d;
   if(cart[i].qty<=0)cart.splice(i,1);
   updateCart();
 }
-
-locBtn.onclick = () => {
-  const orderType = orderTypeSel.value;
-  if(orderType !== "delivery"){
-    locStatus.textContent = "Location is only required for delivery orders.";
-    return;
-  }
-  if(!navigator.geolocation){
-    locStatus.textContent = "Geolocation not supported on this device.";
-    return;
-  }
-  locStatus.textContent = "Getting your location…";
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      customerLocation = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude
-      };
-      locStatus.textContent = "Location captured ✔";
-    },
-    err => {
-      console.error(err);
-      locStatus.textContent = "Could not get location. Please allow permission.";
-    },
-    { enableHighAccuracy:true, timeout:10000 }
-  );
-};
 
 function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethodLabel){
   const overlay=document.createElement("div");
@@ -1119,6 +1237,7 @@ function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethodLabel){
     </div>
   `;
   document.body.appendChild(overlay);
+
   document.getElementById("successDoneBtn").onclick=()=>{
     document.body.removeChild(overlay);
     cart=[];
@@ -1136,15 +1255,24 @@ function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethodLabel){
     locStatus.textContent="";
     selectedRequestTags=[];
     document.querySelectorAll(".request-chip").forEach(ch=>ch.classList.remove("active"));
-    updateOrderTypeUI();
 
+    const pageName = document.getElementById("pageName");
+    const pageMobile = document.getElementById("pageMobile");
+    const pageRegno = document.getElementById("pageRegno");
     const pageOrderType = document.getElementById("pageOrderType");
     const pageTableNumber = document.getElementById("pageTableNumber");
-    const pageTableWrap = document.getElementById("pageTableWrap");
-    if(pageOrderType) pageOrderType.value = "";
-    if(pageTableNumber) pageTableNumber.value = "";
-    if(pageTableWrap) pageTableWrap.classList.add("hidden");
+    const pageAddress = document.getElementById("pageAddress");
+    const pageLocStatus = document.getElementById("pageLocStatus");
 
+    if(pageName) pageName.value="";
+    if(pageMobile) pageMobile.value="";
+    if(pageRegno) pageRegno.value="";
+    if(pageOrderType) pageOrderType.value="";
+    if(pageTableNumber) pageTableNumber.value="";
+    if(pageAddress) pageAddress.value="";
+    if(pageLocStatus) pageLocStatus.textContent="";
+
+    updateOrderTypeUI();
     go(0);
   };
 }
@@ -1156,90 +1284,94 @@ async function actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel){
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(payload)
     });
+
     if(!res.ok){
       alert("Could not place order. Please try again.");
-      return;
+      return false;
     }
+
     const data = await res.json();
     if(!data.success){
       alert("Order failed. Please try again.");
-      return;
+      return false;
     }
 
     showSuccessAndReset(
       "Your order has been sent to Abba SEENUUU... FAST FOODS.",
-      paymentMethodLabel === "Counter / later"
+      paymentMethodLabel === "Counter later"
         ? "Please pay at the counter after dine-in."
         : paymentMethodLabel === "COD"
-          ? "Don’t have change? You can also pay using UPI: 7054699905@ptaxis."
+          ? "Don't have change? You can also pay using UPI: 7054699905@ptaxis."
           : "",
       totalAmount,
       paymentMethodLabel
     );
+    return true;
   }catch(e){
     console.error(e);
     alert("Server error. Please try again.");
+    return false;
   }
 }
 
-upiPaidBtn.onclick = async () => {
-  if(!pendingOrderPayload) {
+upiPaidBtn.onclick = async ()=>{
+  if(!pendingOrderPayload){
     upiOverlay.style.display="none";
     return;
   }
+
   const payload = pendingOrderPayload.payload;
   const totalAmount = pendingOrderPayload.total;
   const paymentMethodLabel = pendingOrderPayload.paymentMethodLabel;
+
   pendingOrderPayload = null;
   upiOverlay.style.display="none";
 
-  placeOrderBtn.innerText="Placing order…";
+  placeOrderBtn.innerText="Placing order...";
   placeOrderBtn.disabled=true;
-  await actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel);
+
+  const ok = await actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel);
+
   placeOrderBtn.innerText="Place Order";
   placeOrderBtn.disabled=false;
+  submitting=false;
+
+  if(!ok) return;
 };
 
-upiCancelBtn.onclick = () => {
+upiCancelBtn.onclick = ()=>{
   pendingOrderPayload = null;
   upiOverlay.style.display="none";
 };
 
-let submitting=false;
-placeOrderBtn.onclick = async () => {
-  if(submitting)return;
-  if(cart.length===0)return alert("Cart empty");
+placeOrderBtn.onclick = async ()=>{
+  if(submitting) return;
+  if(cart.length===0) return alert("Cart empty");
 
   const orderType = orderTypeSel.value;
+
   if(!orderType) return alert("Select order type");
   if(!nameInput.value.trim()) return alert("Enter name");
   if(!mobileInput.value.trim()) return alert("Enter mobile");
-
-  if(orderType === "dinein" && !tableNumberSel.value){
-    return alert("Please select table number");
-  }
-
-  if(orderType === "delivery" && !addressInput.value.trim()){
-    return alert("Enter delivery address / hostel / block");
-  }
-
-  if(orderType === "delivery" && !customerLocation){
-    alert("Please tap Use current location and allow location access for delivery orders.");
+  if(orderType==="dinein" && !tableNumberSel.value) return alert("Please select table number");
+  if(orderType==="delivery" && !addressInput.value.trim()) return alert("Enter delivery address / hostel / block");
+  if(orderType==="delivery" && !customerLocation){
+    alert("Please tap 'Use current location' and allow location access for delivery orders.");
     return;
   }
 
-  const totalAmount = cart.reduce((s,i)=>s + i.qty*i.price,0);
+  const totalAmount = cart.reduce((s,i)=>s+i.qty*i.price,0);
 
-  let paymentMethod = "";
-  let paymentMethodLabel = "";
+  let paymentMethod="";
+  let paymentMethodLabel="";
 
-  if(orderType === "dinein"){
-    paymentMethod = "PAYLATER_DINEIN";
-    paymentMethodLabel = "Counter / later";
+  if(orderType==="dinein"){
+    paymentMethod="PAYLATERDINEIN";
+    paymentMethodLabel="Counter later";
   }else{
-    paymentMethod = paymentSel.value;
+    paymentMethod=paymentSel.value;
     if(!paymentMethod) return alert("Select payment method: UPI or COD");
-    paymentMethodLabel = paymentMethod;
+    paymentMethodLabel=paymentMethod;
   }
 
   const payload = {
@@ -1248,26 +1380,32 @@ placeOrderBtn.onclick = async () => {
     registrationNumber:regInput.value.trim(),
     mobile:mobileInput.value.trim(),
     tableNumber: orderType==="dinein" ? tableNumberSel.value : "",
-    address:orderType==="delivery" ? addressInput.value.trim() : "",
+    address: orderType==="delivery" ? addressInput.value.trim() : "",
     location: orderType==="delivery" ? customerLocation : null,
     items:cart,
     paymentMethod,
-    specialRequest:specialRequestInput.value.trim(),
-    requestTags:selectedRequestTags,
+    specialRequest: specialRequestInput.value.trim(),
+    requestTags: selectedRequestTags,
     source:"customer-menu"
   };
 
-  if(orderType !== "dinein" && paymentMethod === "UPI"){
-    pendingOrderPayload = { payload, total: totalAmount, paymentMethodLabel };
+  if(orderType!=="dinein" && paymentMethod==="UPI"){
+    pendingOrderPayload = {
+      payload,
+      total: totalAmount,
+      paymentMethodLabel
+    };
     setUpiQr(totalAmount);
     upiOverlay.style.display="flex";
     return;
   }
 
   submitting=true;
-  placeOrderBtn.innerText="Placing order…";
+  placeOrderBtn.innerText="Placing order...";
   placeOrderBtn.disabled=true;
+
   await actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel);
+
   submitting=false;
   placeOrderBtn.innerText="Place Order";
   placeOrderBtn.disabled=false;
@@ -1322,64 +1460,89 @@ function suggestByIntent(msg){
     },
     {
       match:["delivery","location","address"],
-      reply:"For delivery orders, please enter your address and tap Use current location before placing the order."
+      reply:"For delivery orders, please enter your address and tap 'Use current location' before placing the order."
     },
     {
-      match:["waiter","manager","call waiter","call manager"],
-      reply:"Use the bottom action buttons to call waiter, call manager, or open chat."
+      match:["waiter","manager","call waiter","call manager","help"],
+      reply:"Use the Help button to call waiter, call manager, or open chat."
     }
   ];
 
   for(const item of directAnswers){
-    if(item.match.some(k => text.includes(k))){
-      return { type:"text", text:item.reply };
-    }
+    if(item.match.some(k => text.includes(k))) return {type:"text", text:item.reply};
   }
 
   const trainedGroups = {
-    best:["Abba special chicken","Chicken 65","Chicken fried rice","Abba special chicken noodles","Paneer fried rice"],
-    spicy:["Chilli chicken","Dragon chicken","Chicken 65","Chicken lollipop","Chicken Manchurian"],
-    veg:["Veg Manchurian","Paneer fried rice","Veg fried rice","Gobi fried rice","Veg noodles","Paneer noodles","Gobi noodles"],
-    nonveg:["Chilli chicken","Abba special chicken","Chicken lollipop","Chicken 65","Dragon chicken","Chicken Manchurian","Chicken fried rice","Chicken noodles","Abba special chicken rice","Abba special chicken noodles"],
-    budget:all.filter(i => i.minPrice <= 100).sort((a,b)=>a.minPrice-b.minPrice).slice(0,6).map(i=>i.name),
-    rice:all.filter(i => i.category.toLowerCase().includes("rice")).slice(0,6).map(i=>i.name),
-    noodles:all.filter(i => i.category.toLowerCase().includes("noodles")).slice(0,6).map(i=>i.name),
-    starters:all.filter(i => i.category.toLowerCase().includes("starters")).slice(0,6).map(i=>i.name),
-    egg:all.filter(i => i.lowerName.includes("egg")).map(i=>i.name),
-    paneer:all.filter(i => i.lowerName.includes("paneer")).map(i=>i.name),
-    chicken:all.filter(i => i.lowerName.includes("chicken")).map(i=>i.name)
+    best:[
+      "Abba special chicken",
+      "Chicken 65",
+      "Chicken fried rice",
+      "Abba special chicken noodles",
+      "Paneer fried rice"
+    ],
+    spicy:[
+      "Chilli chicken",
+      "Dragon chicken",
+      "Chicken 65",
+      "Chicken lollipop",
+      "Chicken Manchurian"
+    ],
+    veg:[
+      "Veg Manchurian",
+      "Paneer fried rice",
+      "Veg fried rice",
+      "Gobi fried rice",
+      "Veg noodles",
+      "Paneer noodles",
+      "Gobi noodles"
+    ],
+    nonveg:[
+      "Chilli chicken",
+      "Abba special chicken",
+      "Chicken lollipop",
+      "Chicken 65",
+      "Dragon chicken",
+      "Chicken Manchurian",
+      "Chicken fried rice",
+      "Chicken noodles",
+      "Abba special chicken rice",
+      "Abba special chicken noodles"
+    ],
+    budget: all.filter(i => i.minPrice <= 100).sort((a,b)=>a.minPrice-b.minPrice).slice(0,6).map(i=>i.name),
+    rice: all.filter(i => i.category.toLowerCase().includes("rice")).slice(0,6).map(i=>i.name),
+    noodles: all.filter(i => i.category.toLowerCase().includes("noodles")).slice(0,6).map(i=>i.name),
+    starters: all.filter(i => i.category.toLowerCase().includes("starters")).slice(0,6).map(i=>i.name),
+    egg: all.filter(i => i.lowerName.includes("egg")).map(i=>i.name),
+    paneer: all.filter(i => i.lowerName.includes("paneer")).map(i=>i.name),
+    chicken: all.filter(i => i.lowerName.includes("chicken")).map(i=>i.name)
   };
 
   const intentChecks = [
-    { keys:["best","popular","famous","recommend","suggest"], group:"best", title:"Popular picks" },
-    { keys:["spicy","hot"], group:"spicy", title:"Spicy picks" },
-    { keys:["veg","vegetarian"], group:"veg", title:"Veg suggestions" },
-    { keys:["non veg","nonveg","chicken"], group:"nonveg", title:"Non-veg suggestions" },
-    { keys:["budget","cheap","under 100","under ₹100","low price"], group:"budget", title:"Budget-friendly options" },
-    { keys:["rice","fried rice"], group:"rice", title:"Rice options" },
-    { keys:["noodles","noodle"], group:"noodles", title:"Noodles options" },
-    { keys:["starter","starters","snacks"], group:"starters", title:"Starter options" },
-    { keys:["egg"], group:"egg", title:"Egg options" },
-    { keys:["paneer"], group:"paneer", title:"Paneer options" }
+    {keys:["best","popular","famous","recommend","suggest"], group:"best", title:"Popular picks"},
+    {keys:["spicy","hot"], group:"spicy", title:"Spicy picks"},
+    {keys:["veg","vegetarian"], group:"veg", title:"Veg suggestions"},
+    {keys:["non veg","nonveg","chicken"], group:"nonveg", title:"Non-veg suggestions"},
+    {keys:["budget","cheap","under 100","low price"], group:"budget", title:"Budget-friendly options"},
+    {keys:["rice","fried rice"], group:"rice", title:"Rice options"},
+    {keys:["noodles","noodle"], group:"noodles", title:"Noodles options"},
+    {keys:["starter","starters","snacks"], group:"starters", title:"Starter options"},
+    {keys:["egg"], group:"egg", title:"Egg options"},
+    {keys:["paneer"], group:"paneer", title:"Paneer options"}
   ];
 
   for(const rule of intentChecks){
     if(rule.keys.some(k => text.includes(k))){
       const picks = pickAvailable(trainedGroups[rule.group]);
-      if(picks.length){
-        return { type:"items", title:rule.title, items:picks.slice(0,5) };
-      }
+      if(picks.length) return {type:"items", title:rule.title, items:picks.slice(0,5)};
     }
   }
 
   const nameMatch = all.filter(i => text.includes(i.lowerName) || i.lowerName.includes(text)).slice(0,5);
-  if(nameMatch.length){
-    return { type:"items", title:"Here’s what I found", items:nameMatch };
-  }
+  if(nameMatch.length) return {type:"items", title:"Here's what I found", items:nameMatch};
 
   return {
     type:"text",
-    text:"I can help with best food, spicy food, veg, non-veg, budget food, rice, noodles, starters, payment, or delivery help."
+    text:"I can help with best food, spicy food, veg, non-veg, budget food, rice, noodles, starters, payment, and delivery help."
   };
 }
 
@@ -1390,6 +1553,7 @@ function addBotMessage(text){
   chatMessages.appendChild(div);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+
 function addUserMessage(text){
   const div = document.createElement("div");
   div.className = "msg userMsg";
@@ -1397,10 +1561,12 @@ function addUserMessage(text){
   chatMessages.appendChild(div);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+
 function addBotItemReply(title, items){
   const lines = items.map(i => `${i.name} — from ₹${i.minPrice}`);
   addBotMessage(`${title}\n${lines.join("\n")}`);
 }
+
 function runChatQuery(q){
   if(!q.trim()) return;
   addUserMessage(q);
@@ -1408,32 +1574,41 @@ function runChatQuery(q){
   setTimeout(()=>{
     if(result.type === "items") addBotItemReply(result.title, result.items);
     else addBotMessage(result.text);
-  }, 250);
+  },250);
 }
+
 function initChatbot(){
-  chatMessages.innerHTML="";
+  chatMessages.innerHTML = "";
   addBotMessage("Hi! Welcome to Abba SEENUUU... FAST FOODS. Ask me for best food, spicy food, veg food, noodles, rice, or budget suggestions.");
-}
-chatFab.onclick=()=> chatPanel.style.display = chatPanel.style.display === "flex" ? "none" : "flex";
-chatClose.onclick=()=> chatPanel.style.display = "none";
-chatSend.onclick=()=>{
-  const q = chatInput.value.trim();
-  if(!q) return;
-  runChatQuery(q);
-  chatInput.value="";
-};
-chatInput.addEventListener("keydown", e=>{
-  if(e.key === "Enter"){
-    e.preventDefault();
-    chatSend.click();
-  }
-});
-document.querySelectorAll(".faqBtn").forEach(btn=>{
-  btn.onclick=()=>{
-    const q = btn.getAttribute("data-q");
-    runChatQuery(q);
+
+  chatFab.onclick=()=>{
+    helpPanel.classList.remove("open");
+    chatPanel.style.display = chatPanel.style.display === "flex" ? "none" : "flex";
   };
-});
+
+  chatClose.onclick=()=> chatPanel.style.display = "none";
+
+  chatSend.onclick=()=>{
+    const q = chatInput.value.trim();
+    if(!q) return;
+    runChatQuery(q);
+    chatInput.value = "";
+  };
+
+  chatInput.addEventListener("keydown", e=>{
+    if(e.key === "Enter"){
+      e.preventDefault();
+      chatSend.click();
+    }
+  });
+
+  document.querySelectorAll(".faqBtn").forEach(btn=>{
+    btn.onclick=()=>{
+      const q = btn.getAttribute("data-q");
+      runChatQuery(q);
+    };
+  });
+}
 
 function validateServiceRequestContext(){
   if(!nameInput.value.trim()){
@@ -1446,8 +1621,18 @@ function validateServiceRequestContext(){
     cartModal.style.display="block";
     return false;
   }
-  if(orderTypeSel.value === "dinein" && !tableNumberSel.value){
+  if(orderTypeSel.value==="dinein" && !tableNumberSel.value){
     toast("Select your table number first");
+    cartModal.style.display="block";
+    return false;
+  }
+  if(orderTypeSel.value==="delivery" && !addressInput.value.trim()){
+    toast("Enter delivery address first");
+    cartModal.style.display="block";
+    return false;
+  }
+  if(orderTypeSel.value==="delivery" && !customerLocation){
+    toast("Capture live location first");
     cartModal.style.display="block";
     return false;
   }
@@ -1463,11 +1648,11 @@ async function sendServiceRequest(type){
     mobile: mobileInput.value.trim(),
     registrationNumber: regInput.value.trim(),
     orderType: orderTypeSel.value,
-    tableNumber: orderTypeSel.value === "dinein" ? tableNumberSel.value : "",
-    address: orderTypeSel.value === "delivery" ? addressInput.value.trim() : "",
+    tableNumber: orderTypeSel.value==="dinein" ? tableNumberSel.value : "",
+    address: orderTypeSel.value==="delivery" ? addressInput.value.trim() : "",
     location: customerLocation || null,
     createdAt: new Date().toISOString(),
-    source:"customer-menu"
+    source: "customer-menu"
   };
 
   try{
@@ -1476,8 +1661,13 @@ async function sendServiceRequest(type){
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify(payload)
     });
-    if(res.ok) toast(`${type} request sent`);
-    else toast(`Could not send ${type.toLowerCase()} request`);
+
+    if(res.ok){
+      toast(`${type} request sent`);
+      helpPanel.classList.remove("open");
+    }else{
+      toast(`Could not send ${type.toLowerCase()} request`);
+    }
   }catch(e){
     console.error(e);
     toast(`Could not send ${type.toLowerCase()} request`);
