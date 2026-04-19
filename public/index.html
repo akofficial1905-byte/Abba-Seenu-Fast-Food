@@ -17,6 +17,8 @@
   --accent-soft2:#f9d869;
   --text:#f5f5f5;
   --muted:#a9b3cf;
+  --dock-h:64px;
+  --cart-h:62px;
 }
 
 *{box-sizing:border-box}
@@ -32,11 +34,12 @@ body{
 .page{
   min-width:100vw;
   height:100vh;
-  padding:18px 14px 130px;
+  padding:18px 14px calc(var(--cart-h) + var(--dock-h) + 34px);
   background:
     radial-gradient(circle at center, rgba(245,197,24,.06), transparent 60%),
     linear-gradient(160deg,#050b1c,#08152e);
   position:relative;
+  overflow-y:auto;
 }
 .page::before{
   content:"ABBA SEENUUU... FAST FOODS";
@@ -56,7 +59,7 @@ h1,h2{
 h1{font-size:2.4rem}
 h2{font-size:1.4rem}
 .center{
-  height:100%;
+  min-height:100%;
   display:flex;
   flex-direction:column;
   justify-content:center;
@@ -132,9 +135,7 @@ h2{font-size:1.4rem}
 .item b{display:block;font-size:.9rem;margin-bottom:4px;color:#ffffff}
 .price{font-size:.75rem;color:var(--accent-soft);margin-bottom:6px}
 
-select,
-input,
-textarea{
+select,input,textarea{
   width:100%;
   padding:10px;
   border-radius:10px;
@@ -161,16 +162,54 @@ textarea{
   color:#020718;
 }
 
+#actionDock{
+  position:fixed;
+  left:0;right:0;
+  bottom:var(--cart-h);
+  z-index:85;
+  padding:8px 10px calc(env(safe-area-inset-bottom, 0px) + 6px);
+  background:linear-gradient(to top, rgba(2,7,24,.98), rgba(2,7,24,.9));
+  border-top:1px solid rgba(245,197,24,.18);
+}
+#actionDockInner{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  max-width:760px;
+  margin:0 auto;
+}
+.dockBtn{
+  min-height:46px;
+  border:none;
+  border-radius:14px;
+  background:var(--paper-soft);
+  color:var(--accent-soft2);
+  border:1px solid rgba(245,197,24,.45);
+  font-size:.78rem;
+  font-weight:700;
+  padding:8px 6px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  text-align:center;
+}
+.dockBtn.chat{
+  background:var(--accent);
+  color:#020718;
+}
+
 #cartBar{
   position:fixed;
   bottom:0;left:0;right:0;
+  min-height:var(--cart-h);
   background:#020718;
   border-top:2px solid var(--accent);
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:10px 14px;
-  z-index:40;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+  z-index:90;
 }
 #cartSummary{font-weight:600}
 #checkoutBtn{
@@ -186,7 +225,7 @@ textarea{
   position:fixed;inset:0;
   background:rgba(0,0,0,.78);
   display:none;
-  z-index:50;
+  z-index:100;
 }
 #cartBox{
   background:#050c1d;
@@ -239,7 +278,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   background:var(--paper-soft);
   color:var(--accent-soft2);
   border:1px solid rgba(255,255,255,.25);
-  padding:6px 10px;
+  padding:8px 10px;
   border-radius:999px;
   font-size:.75rem;
   margin-bottom:6px;
@@ -247,7 +286,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 
 #toast{
   position:fixed;
-  bottom:90px;
+  bottom:calc(var(--cart-h) + var(--dock-h) + 18px);
   left:50%;
   transform:translateX(-50%);
   background:#0b1325;
@@ -256,11 +295,11 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   border-radius:20px;
   font-size:.8rem;
   display:none;
-  z-index:60;
+  z-index:110;
 }
 #hint{
   position:fixed;
-  bottom:120px;
+  bottom:calc(var(--cart-h) + var(--dock-h) + 48px);
   left:50%;
   transform:translateX(-50%);
   background:rgba(0,0,0,.7);
@@ -268,7 +307,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   padding:8px 14px;
   border-radius:18px;
   font-size:.75rem;
-  z-index:70;
+  z-index:110;
 }
 
 #upiOverlay{
@@ -278,7 +317,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   display:none;
   align-items:center;
   justify-content:center;
-  z-index:80;
+  z-index:120;
 }
 #upiBox{
   background:#050c1d;
@@ -292,53 +331,21 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 }
 #upiBox h3{margin-top:0;color:var(--accent-soft2)}
 
-#chatFab{
-  position:fixed;
-  right:14px;
-  bottom:88px;
-  width:54px;
-  height:54px;
-  border-radius:50%;
-  border:none;
-  background:var(--accent);
-  color:#020718;
-  font-size:1.4rem;
-  font-weight:700;
-  z-index:85;
-  box-shadow:0 8px 25px rgba(0,0,0,.35);
-}
-#servicePanel{
-  position:fixed;
-  left:12px;
-  bottom:96px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  z-index:85;
-}
-.serviceBtn{
-  background:var(--paper-soft);
-  color:var(--accent-soft2);
-  border:1px solid rgba(245,197,24,.55);
-  border-radius:999px;
-  padding:8px 12px;
-  font-size:.78rem;
-  font-weight:600;
-}
-
 #chatPanel{
   position:fixed;
-  right:12px;
-  bottom:148px;
-  width:min(92vw,360px);
-  height:470px;
+  right:10px;
+  left:10px;
+  bottom:calc(var(--cart-h) + var(--dock-h) + 12px);
+  height:min(62vh,520px);
+  max-width:420px;
+  margin-left:auto;
   background:#050c1d;
   border:1px solid rgba(245,197,24,.45);
   border-radius:20px;
   display:none;
   flex-direction:column;
   overflow:hidden;
-  z-index:90;
+  z-index:115;
   box-shadow:0 14px 40px rgba(0,0,0,.45);
 }
 #chatHeader{
@@ -448,12 +455,8 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   padding:6px 0;
   margin-bottom:6px;
 }
-#detailsToggle span{
-  font-weight:600;
-}
-#detailsIcon{
-  font-size:1rem;
-}
+#detailsToggle span{font-weight:600}
+#detailsIcon{font-size:1rem}
 #detailsSection{
   border-radius:12px;
   padding:8px 8px 2px;
@@ -462,12 +465,39 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
   margin-bottom:10px;
 }
 
+.payment-wrap.hidden{
+  display:none;
+}
+
 @media(max-width:480px){
-  #servicePanel{left:8px;bottom:96px}
-  .serviceBtn{font-size:.72rem;padding:7px 10px}
-  #chatPanel{right:8px;left:8px;width:auto;height:62vh;bottom:148px}
-  #chatFab{right:12px;bottom:92px}
-  #cartBox{margin:24px auto;max-height:84vh}
+  :root{
+    --dock-h:70px;
+    --cart-h:68px;
+  }
+  .page{
+    padding:16px 12px calc(var(--cart-h) + var(--dock-h) + 34px);
+  }
+  #actionDockInner{
+    gap:6px;
+  }
+  .dockBtn{
+    min-height:48px;
+    font-size:.72rem;
+    padding:8px 4px;
+  }
+  #cartSummary{
+    font-size:.86rem;
+    max-width:52%;
+    line-height:1.2;
+  }
+  #checkoutBtn{
+    padding:10px 14px;
+    font-size:.82rem;
+  }
+  #cartBox{
+    margin:20px auto;
+    max-height:84vh;
+  }
 }
 </style>
 </head>
@@ -480,12 +510,13 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 <div id="next" class="nav">❯</div>
 <button id="contentsBtn" onclick="go(3)">📑 Menu</button>
 
-<div id="servicePanel">
-  <button class="serviceBtn" id="callWaiterBtn">🔔 Call Waiter</button>
-  <button class="serviceBtn" id="callManagerBtn">👨‍💼 Call Manager</button>
+<div id="actionDock">
+  <div id="actionDockInner">
+    <button class="dockBtn" id="callWaiterBtn">🔔 Waiter</button>
+    <button class="dockBtn" id="callManagerBtn">👨‍💼 Manager</button>
+    <button class="dockBtn chat" id="chatFab">💬 Chat</button>
+  </div>
 </div>
-
-<button id="chatFab">💬</button>
 
 <div id="chatPanel">
   <div id="chatHeader">
@@ -549,7 +580,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 
       <div id="deliveryFields" class="hidden">
         <textarea id="address" placeholder="Delivery address / landmark"></textarea>
-        <button id="locBtn" class="loc-btn">📍 Use current location (mandatory for delivery)</button>
+        <button id="locBtn" class="loc-btn" type="button">📍 Use current location (mandatory for delivery)</button>
         <div id="locStatus" class="helper"></div>
       </div>
     </div>
@@ -559,14 +590,19 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
 
     <hr style="margin:8px 0;border-color:#3b4762;">
 
-    <select id="paymentMethod">
-      <option value="">Select Payment Method</option>
-      <option value="UPI">UPI (Scan QR)</option>
-      <option value="COD">Cash on Delivery</option>
-    </select>
+    <div id="paymentWrap" class="payment-wrap">
+      <select id="paymentMethod">
+        <option value="">Select Payment Method</option>
+        <option value="UPI">UPI (Scan QR)</option>
+        <option value="COD">Cash on Delivery</option>
+      </select>
+      <div class="helper" id="paymentHelpText">
+        If you choose UPI, please scan the QR and pay before placing the order.
+      </div>
+    </div>
 
-    <div class="helper">
-      If you choose UPI, please scan the QR and pay before placing the order.
+    <div class="helper" id="dineInHelpText" style="display:none;">
+      Dine-in orders do not require payment here. You can pay at the counter.
     </div>
 
     <div style="margin-top:6px;font-size:.83rem;font-weight:600;color:var(--accent-soft2);">Quick Requests</div>
@@ -603,9 +639,7 @@ textarea#address, textarea#specialRequest{resize:vertical;min-height:60px}
       >
     </div>
     <button id="upiPaidBtn" class="primary" style="margin-top:6px;">I have paid</button>
-    <button id="upiCancelBtn" class="primary" style="margin-top:6px;background:var(--paper-soft);border:1px solid rgba(255,255,255,.3);color:#fff;">
-      Cancel
-    </button>
+    <button id="upiCancelBtn" class="primary" style="margin-top:6px;background:var(--paper-soft);border:1px solid rgba(255,255,255,.3);color:#fff;">Cancel</button>
   </div>
 </div>
 
@@ -629,6 +663,8 @@ const mobileInput=document.getElementById("mobile");
 const addressInput=document.getElementById("address");
 const orderTypeSel=document.getElementById("orderType");
 const paymentSel=document.getElementById("paymentMethod");
+const paymentWrap=document.getElementById("paymentWrap");
+const dineInHelpText=document.getElementById("dineInHelpText");
 const locBtn=document.getElementById("locBtn");
 const locStatus=document.getElementById("locStatus");
 const specialRequestInput=document.getElementById("specialRequest");
@@ -658,8 +694,17 @@ let selectedRequestTags=[];
 
 function updateOrderTypeUI(){
   const orderType = orderTypeSel.value;
+
   tableWrap.classList.toggle("hidden", orderType !== "dinein");
   deliveryFields.classList.toggle("hidden", orderType !== "delivery");
+
+  const isDineIn = orderType === "dinein";
+  paymentWrap.classList.toggle("hidden", isDineIn);
+  dineInHelpText.style.display = isDineIn ? "block" : "none";
+
+  if(isDineIn){
+    paymentSel.value = "";
+  }
 
   if(orderType !== "dinein") tableNumberSel.value = "";
   if(orderType !== "delivery"){
@@ -819,16 +864,28 @@ function build(){
       <input placeholder="Customer Name" oninput="nameInput.value=this.value" value="">
       <input placeholder="Mobile Number" oninput="mobileInput.value=this.value" value="">
       <input placeholder="Registration / Room No. (optional)" oninput="regInput.value=this.value" value="">
-      <select onchange="orderTypeSel.value=this.value;updateOrderTypeUI();">
+      <select id="pageOrderType" onchange="syncPageDetails()">
         <option value="">Select Order Type</option>
         <option value="dinein">Dine-in</option>
         <option value="takeaway">Takeaway</option>
         <option value="delivery">Delivery</option>
       </select>
+
+      <div id="pageTableWrap" class="hidden">
+        <select id="pageTableNumber" onchange="tableNumberSel.value=this.value">
+          <option value="">Select Table Number</option>
+          <option value="T1">Table 1</option>
+          <option value="T2">Table 2</option>
+          <option value="T3">Table 3</option>
+          <option value="T4">Table 4</option>
+          <option value="T5">Table 5</option>
+        </select>
+      </div>
+
       <p style="font-size:0.8rem;color:var(--muted);margin:4px 0 12px;">
         You can always edit these details later from the cart.
       </p>
-      <button class="primary" onclick="go(2)">Next</button>
+      <button class="primary" onclick="goNextFromDetails()">Next</button>
     </div>
     <div class="pageNo">2</div>
   </section>`;
@@ -839,9 +896,10 @@ function build(){
       <h2>How it works</h2>
       <ul style="font-size:0.85rem;color:var(--muted);padding-left:18px;margin-bottom:18px;">
         <li>Browse the menu and add your favourite dishes to cart.</li>
+        <li>For dine-in, select your table number before placing order.</li>
+        <li>Dine-in orders do not require payment in the app.</li>
+        <li>For takeaway or delivery, payment method is required.</li>
         <li>For delivery, please share your address and tap on current location.</li>
-        <li>You can call waiter/manager anytime using the buttons on screen.</li>
-        <li>Choose to pay by UPI or Cash at checkout.</li>
       </ul>
       <button class="primary" onclick="go(3)">Go to Menu</button>
     </div>
@@ -919,6 +977,40 @@ function build(){
   }
 }
 
+function syncPageDetails(){
+  const pageOrderType = document.getElementById("pageOrderType");
+  const pageTableWrap = document.getElementById("pageTableWrap");
+  const pageTableNumber = document.getElementById("pageTableNumber");
+
+  orderTypeSel.value = pageOrderType.value;
+  pageTableWrap.classList.toggle("hidden", pageOrderType.value !== "dinein");
+
+  if(pageOrderType.value !== "dinein"){
+    pageTableNumber.value = "";
+    tableNumberSel.value = "";
+  }else{
+    tableNumberSel.value = pageTableNumber.value;
+  }
+
+  updateOrderTypeUI();
+}
+
+function goNextFromDetails(){
+  const pageOrderType = document.getElementById("pageOrderType");
+  const pageTableNumber = document.getElementById("pageTableNumber");
+
+  if(!nameInput.value.trim()) return alert("Enter customer name");
+  if(!mobileInput.value.trim()) return alert("Enter mobile number");
+  if(!pageOrderType.value) return alert("Select order type");
+
+  if(pageOrderType.value === "dinein" && !pageTableNumber.value){
+    return alert("Please select table number");
+  }
+
+  syncPageDetails();
+  go(2);
+}
+
 function add(name,btn){
   const sel=btn.previousElementSibling;
   if(!sel.value){alert("Please choose an option");return;}
@@ -987,7 +1079,7 @@ locBtn.onclick = () => {
   );
 };
 
-function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethod){
+function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethodLabel){
   const overlay=document.createElement("div");
   overlay.style.position="fixed";
   overlay.style.inset="0";
@@ -995,7 +1087,7 @@ function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethod){
   overlay.style.display="flex";
   overlay.style.alignItems="center";
   overlay.style.justifyContent="center";
-  overlay.style.zIndex="100";
+  overlay.style.zIndex="130";
 
   overlay.innerHTML=`
     <div style="
@@ -1011,12 +1103,8 @@ function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethod){
     ">
       <h3 style="margin-top:0;color:var(--accent-soft2);">Order placed</h3>
       <p style="font-size:.9rem;margin:8px 0 10px;">${mainMsg}</p>
-      <div style="font-weight:600;margin-bottom:6px;">
-        Bill Amount: ₹${total}
-      </div>
-      <div style="font-size:.83rem;margin-bottom:10px;">
-        Payment method: <b>${paymentMethod}</b>
-      </div>
+      <div style="font-weight:600;margin-bottom:6px;">Bill Amount: ₹${total}</div>
+      <div style="font-size:.83rem;margin-bottom:10px;">Payment: <b>${paymentMethodLabel}</b></div>
       ${extraMsg ? `<div style="font-size:0.78rem;margin-bottom:12px;color:var(--accent-soft);">${extraMsg}</div>` : ``}
       <button id="successDoneBtn" style="
         background:var(--accent);
@@ -1027,9 +1115,7 @@ function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethod){
         color:#020718;
         width:100%;
         font-size:.9rem;
-      ">
-        Done
-      </button>
+      ">Done</button>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -1055,7 +1141,7 @@ function showSuccessAndReset(mainMsg, extraMsg, total, paymentMethod){
   };
 }
 
-async function actuallyPlaceOrder(payload, totalAmount, paymentMethod){
+async function actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel){
   try{
     const res = await fetch("/api/orders",{
       method:"POST",
@@ -1074,11 +1160,13 @@ async function actuallyPlaceOrder(payload, totalAmount, paymentMethod){
 
     showSuccessAndReset(
       "Your order has been sent to Abba SEENUUU... FAST FOODS.",
-      paymentMethod === "UPI"
-        ? ""
-        : "Don’t have change? Pay using UPI: 7054699905@ptaxis, else pay to the delivery boy at the time of delivery.",
+      paymentMethodLabel === "Counter / later"
+        ? "Please pay at the counter after dine-in."
+        : paymentMethodLabel === "COD"
+          ? "Don’t have change? You can also pay using UPI: 7054699905@ptaxis."
+          : "",
       totalAmount,
-      paymentMethod
+      paymentMethodLabel
     );
   }catch(e){
     console.error(e);
@@ -1093,13 +1181,13 @@ upiPaidBtn.onclick = async () => {
   }
   const payload = pendingOrderPayload.payload;
   const totalAmount = pendingOrderPayload.total;
-  const paymentMethod = pendingOrderPayload.paymentMethod;
+  const paymentMethodLabel = pendingOrderPayload.paymentMethodLabel;
   pendingOrderPayload = null;
   upiOverlay.style.display="none";
 
   placeOrderBtn.innerText="Placing order…";
   placeOrderBtn.disabled=true;
-  await actuallyPlaceOrder(payload, totalAmount, paymentMethod);
+  await actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel);
   placeOrderBtn.innerText="Place Order";
   placeOrderBtn.disabled=false;
 };
@@ -1132,18 +1220,19 @@ placeOrderBtn.onclick = async () => {
     return;
   }
 
-  let paymentMethod = paymentSel.value;
-
-  if(orderType === "dinein" && !paymentMethod){
-    const proceed = confirm("Dine-in selected without payment method. Press OK to continue with Cash on Delivery.");
-    if(!proceed) return;
-    paymentMethod = "COD";
-    paymentSel.value = "COD";
-  }
-
-  if(!paymentMethod) return alert("Select payment method (UPI or COD)");
-
   const totalAmount = cart.reduce((s,i)=>s + i.qty*i.price,0);
+
+  let paymentMethod = "";
+  let paymentMethodLabel = "";
+
+  if(orderType === "dinein"){
+    paymentMethod = "PAY_LATER_DINEIN";
+    paymentMethodLabel = "Counter / later";
+  }else{
+    paymentMethod = paymentSel.value;
+    if(!paymentMethod) return alert("Select payment method (UPI or COD)");
+    paymentMethodLabel = paymentMethod;
+  }
 
   const payload = {
     orderType,
@@ -1160,11 +1249,11 @@ placeOrderBtn.onclick = async () => {
     source:"customer-menu"
   };
 
-  if(paymentMethod === "UPI"){
+  if(orderType !== "dinein" && paymentMethod === "UPI"){
     pendingOrderPayload = {
       payload,
       total: totalAmount,
-      paymentMethod
+      paymentMethodLabel
     };
     setUpiQr(totalAmount);
     upiOverlay.style.display="flex";
@@ -1175,7 +1264,7 @@ placeOrderBtn.onclick = async () => {
   placeOrderBtn.innerText="Placing order…";
   placeOrderBtn.disabled=true;
 
-  await actuallyPlaceOrder(payload, totalAmount, paymentMethod);
+  await actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel);
 
   submitting=false;
   placeOrderBtn.innerText="Place Order";
@@ -1227,7 +1316,7 @@ function suggestByIntent(msg){
     },
     {
       match: ["payment", "upi", "cod", "cash"],
-      reply: "We support UPI and Cash on Delivery. If you choose UPI, you can scan the QR before placing the order."
+      reply: "Dine-in orders can pay later at the counter. Takeaway and delivery support UPI and COD."
     },
     {
       match: ["delivery", "location", "address"],
@@ -1235,7 +1324,7 @@ function suggestByIntent(msg){
     },
     {
       match: ["waiter", "manager", "call waiter", "call manager"],
-      reply: "You can tap the Call Waiter or Call Manager buttons, and the manager panel can receive your name and table number for dine-in service."
+      reply: "Use the bottom action buttons to call waiter, call manager, or open chat."
     }
   ];
 
@@ -1286,7 +1375,7 @@ function suggestByIntent(msg){
 
   return {
     type:"text",
-    text:"I can help with:\n• best food\n• spicy food\n• veg / non-veg\n• budget food\n• rice\n• noodles\n• starters\n• payment\n• delivery help"
+    text:"I can help with:\n• best food\n• spicy food\n• veg / non-veg\n• budget food\n• rice / noodles / starters\n• payment / delivery help"
   };
 }
 
@@ -1307,7 +1396,7 @@ function addUserMessage(text){
 }
 
 function addBotItemReply(title, items){
-  const lines = items.map(i => `${i.name} — from ₹${i.minPrice}`);
+  const lines = items.map(i => `• ${i.name} — from ₹${i.minPrice}`);
   addBotMessage(`${title}\n${lines.join("\n")}`);
 }
 
@@ -1316,17 +1405,22 @@ function runChatQuery(q){
   addUserMessage(q);
   const result = suggestByIntent(q);
   setTimeout(()=>{
-    if(result.type === "items") addBotItemReply(result.title, result.items);
-    else addBotMessage(result.text);
+    if(result.type === "items"){
+      addBotItemReply(result.title, result.items);
+    }else{
+      addBotMessage(result.text);
+    }
   }, 250);
 }
 
 function initChatbot(){
   chatMessages.innerHTML = "";
-  addBotMessage("Hi 👋 Welcome to Abba SEENUUU... FAST FOODS. Ask me for best food, spicy food, veg food, noodles, rice, or budget suggestions.");
+  addBotMessage("Hi 👋 Welcome to Abba SEENUUU... FAST FOODS.\nAsk me for best food, spicy food, veg food, noodles, rice, or budget suggestions.");
 }
 
-chatFab.onclick = ()=> chatPanel.style.display = chatPanel.style.display === "flex" ? "none" : "flex";
+chatFab.onclick = ()=>{
+  chatPanel.style.display = chatPanel.style.display === "flex" ? "none" : "flex";
+};
 chatClose.onclick = ()=> chatPanel.style.display = "none";
 chatSend.onclick = ()=>{
   const q = chatInput.value.trim();
@@ -1347,7 +1441,7 @@ document.querySelectorAll(".faqBtn").forEach(btn=>{
   };
 });
 
-function validateServiceRequestContext(type){
+function validateServiceRequestContext(){
   if(!nameInput.value.trim()){
     toast("Enter your name in cart details first");
     cartModal.style.display="block";
@@ -1367,14 +1461,14 @@ function validateServiceRequestContext(type){
 }
 
 async function sendServiceRequest(type){
-  if(!validateServiceRequestContext(type)) return;
+  if(!validateServiceRequestContext()) return;
 
   const payload = {
     type,
-    customerName: nameInput.value.trim(),
-    mobile: mobileInput.value.trim(),
-    registrationNumber: regInput.value.trim(),
-    orderType: orderTypeSel.value,
+    customerName: nameInput.value.trim() || "",
+    mobile: mobileInput.value.trim() || "",
+    registrationNumber: regInput.value.trim() || "",
+    orderType: orderTypeSel.value || "",
     tableNumber: orderTypeSel.value === "dinein" ? tableNumberSel.value : "",
     address: orderTypeSel.value === "delivery" ? addressInput.value.trim() : "",
     location: customerLocation || null,
@@ -1383,14 +1477,17 @@ async function sendServiceRequest(type){
   };
 
   try{
-    const res = await fetch("/api/service-request",{
+    const res = await fetch("/api/service-request", {
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body: JSON.stringify(payload)
     });
 
-    if(res.ok) toast(`${type} request sent`);
-    else toast(`Could not send ${type.toLowerCase()} request`);
+    if(res.ok){
+      toast(`${type} request sent`);
+    }else{
+      toast(`Could not send ${type.toLowerCase()} request`);
+    }
   }catch(e){
     console.error(e);
     toast(`Could not send ${type.toLowerCase()} request`);
@@ -1400,8 +1497,10 @@ async function sendServiceRequest(type){
 callWaiterBtn.onclick = ()=> sendServiceRequest("Call Waiter");
 callManagerBtn.onclick = ()=> sendServiceRequest("Call Manager");
 
+build();
 updateCart();
 updateOrderTypeUI();
 </script>
+
 </body>
 </html>
