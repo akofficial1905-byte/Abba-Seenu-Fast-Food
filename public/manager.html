@@ -55,7 +55,6 @@
       box-shadow:0 0 0 1px rgba(0,0,0,0.1);
     }
 
-    /* Badge for pending dine-in count on Tables tab */
     .tab-btn-badge {
       display:inline-flex;
       align-items:center;
@@ -163,7 +162,6 @@
       background:rgba(15,23,42,.75);
     }
 
-    /* Pending request card styling */
     .pending-request-card {
       border:1px solid rgba(239,68,68,.4);
       background:rgba(239,68,68,.07);
@@ -673,6 +671,10 @@
           await renderDashboard();
           renderTablesList();
           selectTable(1);
+
+          // ── FIX 1: Load existing pending dine-in requests from DB on login ──
+          await loadPendingDineInRequests();
+
           renderPendingDineInSection();
         } else {
           loginError.textContent = data.message || `Login failed (status ${res.status})`;
@@ -895,17 +897,14 @@
       return `<div class="order-card-meta text-gray-300 mt-1">📍 ${o.address || "—"}</div>`;
     }
 
-    // IMPORTANT: dine-in orders NEVER appear in live orders panel.
-    // They only appear in history AFTER manager finalises (Save & Print).
     function isLiveOrder(o) {
       if (!o) return false;
-      if (o.orderType === "dinein") return false;   // dine-in never live here
+      if (o.orderType === "dinein") return false;
       return o.status !== "delivered";
     }
 
     function isHistoryOrder(o) {
       if (!o) return false;
-      // Dine-in shows in history ONLY if finalized (isDraft === false OR status === delivered)
       if (o.orderType === "dinein") return o.isDraft === false || o.status === "delivered";
       return o.status === "delivered";
     }
@@ -1039,8 +1038,8 @@
     const insightName    = document.getElementById("insightName");
 
     insightType.onchange = () => {
-      compareByLabel.style.display = insightType.value === "compare_sales"    ? "" : "none";
-      insightName.style.display    = insightType.value === "customer_search"  ? "" : "none";
+      compareByLabel.style.display = insightType.value === "compare_sales"   ? "" : "none";
+      insightName.style.display    = insightType.value === "customer_search" ? "" : "none";
     };
 
     async function runInsight() {
@@ -1107,15 +1106,19 @@
     };
 
     // ── Socket: live order events ──────────────────────────────────────
+    // FIX 2: "newOrder" only handles takeaway/delivery now.
+    // Dine-in pending requests come via "pendingDineIn" event below.
     socket.on("newOrder", async (orderData) => {
-      // If it's a dine-in order from customer portal → add to pending queue, NOT orders tab
-      if (orderData && orderData.orderType === "dinein") {
-        addPendingDineInRequest(orderData);
-        toast(`🔔 New dine-in request from ${orderData.customerName || "Guest"} — Table ${orderData.tableNumber || "?"}`);
-        return;
-      }
+      if (!orderData || orderData.orderType === "dinein") return; // dine-in never lands here
       await fetchOrders(datePicker.value);
       await renderDashboard();
+    });
+
+    // FIX 3: Dedicated listener for pending dine-in requests from customer portal
+    socket.on("pendingDineIn", (orderData) => {
+      if (!orderData) return;
+      addPendingDineInRequest(orderData);
+      toast(`🔔 New dine-in order — Table ${orderData.tableNumber || "?"} — ${orderData.customerName || "Guest"}`);
     });
 
     socket.on("orderUpdated", async () => {
@@ -1164,10 +1167,23 @@
     renderServiceRequests();
 
     // ═══════════════════════════════════════════════════════════════════
-    //  PENDING DINE-IN REQUESTS — customer portal dine-in orders
-    //  pending manager approval before merging into table draft
+    //  PENDING DINE-IN REQUESTS
     // ═══════════════════════════════════════════════════════════════════
-    let pendingDineInRequests = [];   // [{...orderData}]
+    let pendingDineInRequests = [];
+
+    // FIX 4: Load pending requests that already exist in DB when manager logs in
+    async function loadPendingDineInRequests() {
+      try {
+        const res = await fetch("/api/pending-dinein");
+        if (!res.ok) return;
+        const list = await res.json();
+        if (Array.isArray(list)) {
+          list.forEach(req => addPendingDineInRequest(req));
+        }
+      } catch(e) {
+        console.warn("Could not load pending dine-in requests:", e);
+      }
+    }
 
     function getPendingForTable(tableNo) {
       return pendingDineInRequests.filter(r => Number(r.tableNumber) === Number(tableNo));
@@ -1181,20 +1197,21 @@
       const badge = document.getElementById("pendingTabBadge");
       const count = getTotalPendingCount();
       if (count > 0) {
-        badge.textContent    = count;
-        badge.style.display  = "inline-flex";
+        badge.textContent   = count;
+        badge.style.display = "inline-flex";
       } else {
-        badge.style.display  = "none";
+        badge.style.display = "none";
       }
     }
 
     function addPendingDineInRequest(orderData) {
-      // Avoid exact duplicate (same _id)
-      if (orderData._id && pendingDineInRequests.find(r => r._id === orderData._id)) return;
+      // Deduplicate by _id
+      const id = orderData._id || orderData.id;
+      if (id && pendingDineInRequests.find(r => (r._id || r.id) === id)) return;
       pendingDineInRequests.push(orderData);
       updatePendingTabBadge();
       renderPendingDineInSection();
-      renderTablesList(); // show red border on table card that has pending items
+      renderTablesList();
     }
 
     function removePendingRequest(idx) {
@@ -1256,28 +1273,47 @@
       });
     }
 
-    function acceptPendingDineIn(idx) {
-      const req     = pendingDineInRequests[idx];
-      const tableNo = Number(req.tableNumber);
+    // FIX 5: acceptPendingDineIn now calls the server endpoint properly
+    async function acceptPendingDineIn(idx) {
+      const req       = pendingDineInRequests[idx];
+      const tableNo   = Number(req.tableNumber);
+      const pendingId = req._id || req.id;
 
       if (!tableNo || tableNo < 1 || tableNo > TABLE_COUNT) {
         toast("Invalid table number in request");
         return;
       }
 
+      if (!pendingId) {
+        toast("Missing request ID — cannot accept");
+        return;
+      }
+
+      // Call server to persist the accept (marks pending as accepted, merges into TableDraft in DB)
+      try {
+        const res = await fetch(`/api/pending-dinein/${pendingId}/accept`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" }
+        });
+        if (!res.ok) throw new Error("Server accept failed");
+      } catch(e) {
+        console.error(e);
+        toast("Could not accept — server error. Please try again.");
+        return;
+      }
+
+      // Merge locally into tableOrders for instant UI update
       const table = tableOrders[tableNo];
 
-      // Auto-fill customer details if the table doesn't have them yet
-      if (!table.customerName && req.customerName) {
-        table.customerName = req.customerName;
-      }
-      if (!table.mobile && req.mobile) {
-        table.mobile = req.mobile;
-      }
+      // Auto-fill customer details if not already set
+      if (!table.customerName && req.customerName) table.customerName = req.customerName;
+      if (!table.mobile && req.mobile)             table.mobile = req.mobile;
 
-      // Merge items into the table draft
+      // Merge items
       (req.items || []).forEach(incomingItem => {
-        const existing = table.items.find(x => x.name === incomingItem.name && x.variant === (incomingItem.variant || ""));
+        const existing = table.items.find(
+          x => x.name === incomingItem.name && x.variant === (incomingItem.variant || "")
+        );
         if (existing) {
           existing.qty += Number(incomingItem.qty || 1);
         } else {
@@ -1293,7 +1329,7 @@
 
       table.status = "draft";
 
-      // If the currently selected table is this table, update UI fields too
+      // If this table is currently selected, refresh the UI fields
       if (selectedTable === tableNo) {
         tableCustomerName.value   = table.customerName || "";
         tableCustomerMobile.value = table.mobile || "";
@@ -1303,39 +1339,51 @@
       removePendingRequest(idx);
       renderTablesList();
 
-      // Auto-save the draft to server
-      saveTableDraftForTableNo(tableNo);
-
-      toast(`✓ Accepted — items added to Table ${tableNo}`);
-
-      // Switch to tables tab and select the table for convenience
+      // Switch to tables tab and select the relevant table
       setActiveTab("tables");
       selectTable(tableNo);
+
+      toast(`✓ Accepted — items added to Table ${tableNo}`);
     }
 
-    function rejectPendingDineIn(idx) {
-      const req = pendingDineInRequests[idx];
+    // FIX 6: rejectPendingDineIn now calls the server endpoint properly
+    async function rejectPendingDineIn(idx) {
+      const req       = pendingDineInRequests[idx];
+      const pendingId = req._id || req.id;
+
+      if (pendingId) {
+        try {
+          await fetch(`/api/pending-dinein/${pendingId}/reject`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+          });
+        } catch(e) {
+          console.warn("Reject server call failed:", e);
+          // Still remove from local list even if server call fails
+        }
+      }
+
       removePendingRequest(idx);
-      toast(`✗ Rejected order from ${req.customerName || "Guest"} for Table ${req.tableNumber}`);
+      toast(`✗ Rejected order from ${req.customerName || "Guest"} for Table ${req.tableNumber || "?"}`);
     }
 
     // ═══════════════════════════════════════════════════════════════════
     //  TABLE POS LOGIC
     // ═══════════════════════════════════════════════════════════════════
-    const TABLE_COUNT             = 5;
-    const tablesList              = document.getElementById("tablesList");
-    const selectedTableTitle      = document.getElementById("selectedTableTitle");
-    const selectedTableBadge      = document.getElementById("selectedTableBadge");
-    const tableCustomerName       = document.getElementById("tableCustomerName");
-    const tableCustomerMobile     = document.getElementById("tableCustomerMobile");
-    const tableGuestCount         = document.getElementById("tableGuestCount");
-    const tableMenuSearch         = document.getElementById("tableMenuSearch");
-    const tableMenuList           = document.getElementById("tableMenuList");
-    const tableDraftItems         = document.getElementById("tableDraftItems");
-    const tableDraftTotal         = document.getElementById("tableDraftTotal");
-    const saveTableDraftBtn       = document.getElementById("saveTableDraftBtn");
-    const saveAndPrintTableBillBtn= document.getElementById("saveAndPrintTableBillBtn");
-    const clearTableBtn           = document.getElementById("clearTableBtn");
+    const TABLE_COUNT              = 5;
+    const tablesList               = document.getElementById("tablesList");
+    const selectedTableTitle       = document.getElementById("selectedTableTitle");
+    const selectedTableBadge       = document.getElementById("selectedTableBadge");
+    const tableCustomerName        = document.getElementById("tableCustomerName");
+    const tableCustomerMobile      = document.getElementById("tableCustomerMobile");
+    const tableGuestCount          = document.getElementById("tableGuestCount");
+    const tableMenuSearch          = document.getElementById("tableMenuSearch");
+    const tableMenuList            = document.getElementById("tableMenuList");
+    const tableDraftItems          = document.getElementById("tableDraftItems");
+    const tableDraftTotal          = document.getElementById("tableDraftTotal");
+    const saveTableDraftBtn        = document.getElementById("saveTableDraftBtn");
+    const saveAndPrintTableBillBtn = document.getElementById("saveAndPrintTableBillBtn");
+    const clearTableBtn            = document.getElementById("clearTableBtn");
 
     function createEmptyTable(tableNumber) {
       return { tableNumber, customerName:"", mobile:"", guestCount:1, status:"available", items:[] };
@@ -1374,7 +1422,7 @@
         const drafts = await res.json();
         if (!Array.isArray(drafts)) return;
         for (let i = 1; i <= TABLE_COUNT; i++) {
-          const found   = drafts.find(t => Number(t.tableNumber) === i);
+          const found    = drafts.find(t => Number(t.tableNumber) === i);
           tableOrders[i] = found ? normalizeTablePayload(found, i) : createEmptyTable(i);
         }
       } catch(e) { console.warn("Could not load table drafts:", e); }
@@ -1543,7 +1591,7 @@
 
     tableMenuSearch.oninput = renderTableMenuList;
 
-    // ── Save draft for a specific table (used by accept flow) ──────────
+    // ── Save draft for a specific table number ─────────────────────────
     async function saveTableDraftForTableNo(tableNo, showToast = false) {
       const table = tableOrders[tableNo];
       table.status = table.items.length ? "draft" : "available";
@@ -1552,10 +1600,13 @@
         const res = await fetch("/api/table-orders/save-draft", {
           method:"POST", headers:{"Content-Type":"application/json"},
           body: JSON.stringify({
-            ...table,
-            orderType: "dinein",
-            total:     getTableTotal(tableNo),
-            isDraft:   true
+            tableNumber:  String(tableNo),   // send as string to match schema
+            customerName: table.customerName || "",
+            mobile:       table.mobile || "",
+            guestCount:   table.guestCount || 1,
+            status:       table.status,
+            items:        table.items,
+            total:        getTableTotal(tableNo)
           })
         });
         if (!res.ok) throw new Error("Failed to save draft");
@@ -1587,7 +1638,7 @@
       try {
         await fetch("/api/table-orders/clear", {
           method:"POST", headers:{"Content-Type":"application/json"},
-          body: JSON.stringify({ tableNumber: selectedTable })
+          body: JSON.stringify({ tableNumber: String(selectedTable) })
         });
       } catch(e) { console.error(e); }
       toast(`Table ${selectedTable} cleared`);
@@ -1636,11 +1687,14 @@
       if (!saved) { toast("Please save draft first"); return; }
 
       const finalizePayload = {
-        ...table,
-        tableNumber:  selectedTable,
+        tableNumber:  String(selectedTable),
+        customerName: table.customerName || "",
+        mobile:       table.mobile || "",
+        guestCount:   table.guestCount || 1,
         orderType:    "dinein",
+        items:        table.items,
         total:        getTableTotal(selectedTable),
-        isDraft:      false,              // ← marks it as finalized → appears in history
+        isDraft:      false,
         status:       "delivered",
         finalizedAt:  new Date().toISOString()
       };
@@ -1696,6 +1750,17 @@
       selectTable(selectedTable);
       await fetchOrders(datePicker.value);
       await renderDashboard();
+    });
+
+    // ── Socket: pending dine-in accepted/rejected by another manager session ──
+    socket.on("pendingDineInAccepted", ({ id }) => {
+      const idx = pendingDineInRequests.findIndex(r => (r._id || r.id) === id);
+      if (idx !== -1) removePendingRequest(idx);
+    });
+
+    socket.on("pendingDineInRejected", ({ id }) => {
+      const idx = pendingDineInRequests.findIndex(r => (r._id || r.id) === id);
+      if (idx !== -1) removePendingRequest(idx);
     });
 
     // ── Initial render ─────────────────────────────────────────────────
