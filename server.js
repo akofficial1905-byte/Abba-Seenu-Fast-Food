@@ -1,35 +1,75 @@
-// server.js – Abba SEENUUU... FAST FOODS (NO Razorpay)
+// server.js – Abba SEENUUU... FAST FOODS
 
-const express = require("express");
-const http = require("http");
+const express  = require("express");
+const http     = require("http");
 const socketio = require("socket.io");
-const cors = require("cors");
-const path = require("path");
+const cors     = require("cors");
+const path     = require("path");
 const mongoose = require("mongoose");
-const fs = require("fs");
+const fs       = require("fs");
 
 require("dotenv").config();
 
-const app = express();
+const app    = express();
 const server = http.createServer(app);
-const io = socketio(server, {
+const io     = socketio(server, {
   cors: { origin: "*", methods: ["GET", "POST", "PATCH", "DELETE"] }
 });
 
-const PORT = process.env.PORT || 4000;
-let managerUser = process.env.MANAGER_USER || "admin";
-let managerPass = process.env.MANAGER_PASS || "abbaseenu2025";
-
-const MONGO_URI =
-  process.env.MONGO_URI ||
+const PORT        = process.env.PORT         || 4000;
+const managerUser = process.env.MANAGER_USER || "admin";
+const managerPass = process.env.MANAGER_PASS || "abbaseenu2025";
+const MONGO_URI   = process.env.MONGO_URI    ||
   "mongodb+srv://architkumarsncp2123_db_user:abbaseenu@abbaseenudb.5sndjat.mongodb.net/?appName=AbbaSeenudb";
 
 mongoose.connect(MONGO_URI, { dbName: "AbbaSeenudb" });
-mongoose.connection.on("connected", () => console.log("✅ Connected to MongoDB"));
-mongoose.connection.on("error",     (err) => console.error("❌ MongoDB Error:", err));
+mongoose.connection.on("connected", () => console.log("✅ MongoDB connected"));
+mongoose.connection.on("error",     (e) => console.error("❌ MongoDB error:", e));
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function calcTotal(items = []) {
+  return (items || []).reduce((s, i) => s + Number(i.price || 0) * Number(i.qty || 0), 0);
+}
+
+function getISTDateBounds(dateStr) {
+  const d = dateStr || new Date().toISOString().slice(0, 10);
+  return {
+    start: new Date(Date.parse(d + "T00:00:00+05:30")),
+    end:   new Date(Date.parse(d + "T23:59:59+05:30"))
+  };
+}
+
+function normalizeRequestType(v) {
+  const s = String(v || "").trim().toLowerCase();
+  if (s === "manager" || s === "call manager") return "manager";
+  if (s === "waiter"  || s === "call waiter")  return "waiter";
+  return s || "waiter";
+}
+
+function sanitizeTableDraftPayload(body = {}) {
+  const items = Array.isArray(body.items)
+    ? body.items
+        .map((i) => ({
+          name:     String(i?.name     || "").trim(),
+          variant:  String(i?.variant  || "").trim(),
+          price:    Number(i?.price    || 0),
+          qty:      Number(i?.qty      || 0),
+          category: String(i?.category || "").trim()
+        }))
+        .filter((x) => x.name && x.qty > 0)
+    : [];
+  return {
+    tableNumber:  String(body.tableNumber  || "").trim(),
+    customerName: String(body.customerName || "").trim(),
+    mobile:       String(body.mobile       || "").trim(),
+    guestCount:   Math.max(1, Number(body.guestCount || 1)),
+    status:       items.length ? "draft" : "available",
+    items,
+    total:        calcTotal(items)
+  };
+}
 
 // ─── SCHEMAS ──────────────────────────────────────────────────────────────────
-
 const orderSchema = new mongoose.Schema(
   {
     orderType:          String,
@@ -44,11 +84,11 @@ const orderSchema = new mongoose.Schema(
     specialRequest:     String,
     requestTags:        [String],
     items: [{ name: String, variant: String, price: Number, qty: Number }],
-    total:              Number,
-    isDraft:            { type: Boolean, default: false },
-    source:             { type: String,  default: "" },
-    status:             { type: String,  default: "incoming" },
-    createdAt:          { type: Date,    default: Date.now, index: true }
+    total:    Number,
+    isDraft:  { type: Boolean, default: false },
+    source:   { type: String,  default: "" },
+    status:   { type: String,  default: "incoming" },
+    createdAt:{ type: Date,    default: Date.now, index: true }
   },
   { strict: false }
 );
@@ -59,40 +99,35 @@ const serviceRequestSchema = new mongoose.Schema({
   type: String, requestType: String, customerName: String, mobile: String,
   registrationNumber: String, orderType: String, tableNumber: String,
   address: String, location: { lat: Number, lng: Number },
-  status: { type: String, default: "pending" },
-  createdAt: { type: Date, default: Date.now, index: true }
+  status:    { type: String, default: "pending" },
+  createdAt: { type: Date,   default: Date.now, index: true }
 });
 serviceRequestSchema.index({ createdAt: 1 }, { expireAfterSeconds: 604800 });
 const ServiceRequest = mongoose.model("ServiceRequest", serviceRequestSchema);
 
-// ── FIX: The old pre('save') used an arrow function for the middleware
-//    but named the parameter "next" which shadowed nothing — however the
-//    real bug was that tableDraftSchema.pre("save", function (next) { … next(); })
-//    was fine syntactically but Mongoose 7+ requires calling next() correctly.
-//    Using a regular function (not arrow) is the safest pattern.
+// ── TableDraft ────────────────────────────────────────────────────────────────
+// THE FIX: Use async pre-save with NO `next` parameter.
+// This is the only pattern that works in Mongoose 5, 6, 7, AND 8.
+// In Mongoose 8, passing `next` as a parameter is unreliable in some environments —
+// the callback may not be injected, so calling it throws "next is not a function".
+// With async functions, Mongoose uses the returned Promise as the completion signal
+// and never injects a `next` callback at all — so there is nothing to break.
 const tableDraftSchema = new mongoose.Schema({
-  tableNumber:  { type: String, required: true, unique: true, index: true },
-  customerName: { type: String, default: "" },
-  mobile:       { type: String, default: "" },
-  guestCount:   { type: Number, default: 1 },
-  status:       { type: String, default: "available" },
+  tableNumber:   { type: String, required: true, unique: true, index: true },
+  customerName:  { type: String, default: "" },
+  mobile:        { type: String, default: "" },
+  guestCount:    { type: Number, default: 1 },
+  status:        { type: String, default: "available" },
   items: [{ name: String, variant: String, price: Number, qty: Number, category: String }],
-  total:        { type: Number, default: 0 },
+  total:         { type: Number, default: 0 },
   lastPrintedAt: Date,
-  updatedAt:    { type: Date, default: Date.now },
-  createdAt:    { type: Date, default: Date.now }
+  updatedAt:     { type: Date, default: Date.now },
+  createdAt:     { type: Date, default: Date.now }
 });
 
-// ── CRITICAL FIX: Use a named regular function, NOT an arrow function.
-//    Arrow functions do not bind their own `this`, so `this.updatedAt` and
-//    `this.total` would be undefined. Also ensure `done` (the cb) is called
-//    as `done()` — renaming from "next" avoids any theoretical shadowing.
-tableDraftSchema.pre("save", function (done) {
+tableDraftSchema.pre("save", async function () {
   this.updatedAt = new Date();
-  this.total = (this.items || []).reduce(
-    (s, i) => s + Number(i.price || 0) * Number(i.qty || 0), 0
-  );
-  done();
+  this.total     = calcTotal(this.items);
 });
 
 const TableDraft = mongoose.model("TableDraft", tableDraftSchema);
@@ -104,73 +139,21 @@ const pendingDineInSchema = new mongoose.Schema({
   registrationNumber: { type: String, default: "" },
   guestCount:         { type: Number, default: 1 },
   items: [{ name: String, variant: String, price: Number, qty: Number, category: String }],
-  total:              { type: Number, default: 0 },
-  specialRequest:     { type: String, default: "" },
-  requestTags:        [String],
-  status:             { type: String, default: "pending" },
-  createdAt:          { type: Date,   default: Date.now, index: true }
+  total:          { type: Number, default: 0 },
+  specialRequest: { type: String, default: "" },
+  requestTags:    [String],
+  status:         { type: String, default: "pending" },
+  createdAt:      { type: Date,   default: Date.now, index: true }
 });
 pendingDineInSchema.index({ createdAt: 1 }, { expireAfterSeconds: 86400 });
 const PendingDineIn = mongoose.model("PendingDineIn", pendingDineInSchema);
 
+// ─── APP SETUP ────────────────────────────────────────────────────────────────
 let printQueue = [];
 
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
 app.use(express.static(path.join(__dirname, "public")));
-
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-function normalizeRequestType(v) {
-  const s = String(v || "").trim().toLowerCase();
-  if (s === "manager" || s === "call manager") return "manager";
-  if (s === "waiter"  || s === "call waiter")  return "waiter";
-  return s || "waiter";
-}
-
-function getISTDateBounds(dateStr) {
-  const d = dateStr || new Date().toISOString().slice(0, 10);
-  return {
-    start: new Date(Date.parse(d + "T00:00:00+05:30")),
-    end:   new Date(Date.parse(d + "T23:59:59+05:30"))
-  };
-}
-
-function calcTotal(items = []) {
-  return items.reduce((s, i) => s + Number(i.price || 0) * Number(i.qty || 0), 0);
-}
-
-// ── Only takeaway/delivery orders go through saveAndBroadcastOrder for live tab.
-//    Finalized dine-in orders are saved directly (see /finalize endpoint).
-async function saveAndBroadcastOrder(data) {
-  const order = new Order(data);
-  await order.save();
-  io.emit("newOrder", order);
-  // Only queue for printing if not a dine-in being added to history silently
-  if (data.orderType !== "dinein") {
-    printQueue.push(order);
-  }
-  return order;
-}
-
-function sanitizeTableDraftPayload(body = {}) {
-  const items = Array.isArray(body.items)
-    ? body.items
-        .map((i) => ({
-          name: i?.name || "", variant: i?.variant || "",
-          price: Number(i?.price || 0), qty: Number(i?.qty || 0), category: i?.category || ""
-        }))
-        .filter((x) => x.name && x.qty > 0)
-    : [];
-  return {
-    tableNumber:  String(body.tableNumber || "").trim(),
-    customerName: String(body.customerName || "").trim(),
-    mobile:       String(body.mobile || "").trim(),
-    guestCount:   Math.max(1, Number(body.guestCount || 1)),
-    status:       body.status === "billed" ? "billed" : items.length ? "draft" : "available",
-    items,
-    total:        calcTotal(items)
-  };
-}
 
 // ─── MANAGER LOGIN ────────────────────────────────────────────────────────────
 app.post("/api/manager/login", (req, res) => {
@@ -185,7 +168,7 @@ app.post("/api/manager/login", (req, res) => {
 app.post("/api/manager/change-credentials", (_req, res) =>
   res.status(400).json({
     success: false,
-    message: "Change login is disabled. Update MANAGER_USER and MANAGER_PASS in .env file."
+    message: "Disabled. Update MANAGER_USER and MANAGER_PASS in .env file."
   })
 );
 
@@ -195,22 +178,21 @@ app.get("/menu.json", (req, res) =>
 );
 
 app.post("/update-menu", (req, res) => {
-  const filePath = path.join(__dirname, "public", "menu.json");
-  fs.writeFile(filePath, JSON.stringify(req.body, null, 2), "utf8", (err) => {
-    if (err) return res.status(500).json({ error: "Failed to save menu" });
-    res.json({ success: true });
-  });
+  fs.writeFile(
+    path.join(__dirname, "public", "menu.json"),
+    JSON.stringify(req.body, null, 2),
+    "utf8",
+    (err) => {
+      if (err) return res.status(500).json({ error: "Failed to save menu" });
+      res.json({ success: true });
+    }
+  );
 });
 
-// ─── ORDERS ──────────────────────────────────────────────────────────────────
+// ─── ORDERS ───────────────────────────────────────────────────────────────────
 app.get("/api/orders", async (req, res) => {
   try {
-    const { start, end } = getISTDateBounds(
-      req.query.date || new Date().toISOString().slice(0, 10)
-    );
-    // ── IMPORTANT: For Orders tab we ONLY return takeaway/delivery in live view.
-    //    Dine-in finalized orders appear in history (status=delivered, source=manager-pos).
-    //    The frontend filters further, but we return all non-deleted for the date.
+    const { start, end } = getISTDateBounds(req.query.date || new Date().toISOString().slice(0, 10));
     const q = { createdAt: { $gte: start, $lte: end }, status: { $ne: "deleted" } };
     if (req.query.status) q.status = req.query.status;
     res.json(await Order.find(q).sort({ createdAt: -1 }));
@@ -229,58 +211,56 @@ app.post("/api/orders", async (req, res) => {
 
     const normalItems = Array.isArray(items)
       ? items.map((i) => ({
-          name: i?.name || "", variant: i?.variant || "",
-          price: Number(i?.price || 0), qty: Number(i?.qty || 0)
+          name:    String(i?.name    || ""),
+          variant: String(i?.variant || ""),
+          price:   Number(i?.price   || 0),
+          qty:     Number(i?.qty     || 0)
         }))
       : [];
     const total = calcTotal(normalItems);
 
-    // ── DINE-IN → goes to pending queue only (requires manager acceptance)
-    //    It does NOT create an Order record yet. Order record is created only
-    //    when the manager clicks Save & Print (finalize endpoint).
+    // DINE-IN → pending queue only. No Order record created until manager finalizes.
     if (orderType === "dinein") {
-      console.log(`📋 Dine-in pending: table ${tableNumber}, customer ${customerName}`);
-
-      const pendingItems = Array.isArray(items)
-        ? items.map((i) => ({
-            name: i?.name || "", variant: i?.variant || "",
-            price: Number(i?.price || 0), qty: Number(i?.qty || 0),
-            category: i?.category || ""
-          }))
-        : [];
-
       const pending = new PendingDineIn({
         tableNumber:        String(tableNumber || "").trim(),
         customerName:       customerName       || "",
         mobile:             mobile             || "",
         registrationNumber: registrationNumber || "",
         guestCount:         1,
-        items:              pendingItems,
+        items: Array.isArray(items)
+          ? items.map((i) => ({
+              name: i?.name || "", variant: i?.variant || "",
+              price: Number(i?.price || 0), qty: Number(i?.qty || 0),
+              category: i?.category || ""
+            }))
+          : [],
         total,
-        specialRequest:     specialRequest || "",
-        requestTags:        Array.isArray(requestTags) ? requestTags : [],
-        status:             "pending"
+        specialRequest: specialRequest || "",
+        requestTags:    Array.isArray(requestTags) ? requestTags : [],
+        status:         "pending"
       });
       await pending.save();
-
-      const obj  = pending.toObject();
-      obj._id    = obj._id.toString();
+      const obj = pending.toObject();
+      obj._id   = obj._id.toString();
       io.emit("pendingDineIn", obj);
       return res.json({ success: true, pending: true, pendingId: obj._id });
     }
 
-    // ── TAKEAWAY / DELIVERY → create order immediately, show in Orders tab
-    const order = await saveAndBroadcastOrder({
+    // TAKEAWAY / DELIVERY → create Order immediately
+    const order = new Order({
       orderType, customerName, registrationNumber, mobile,
       tableNumber: tableNumber ? String(tableNumber) : "",
       address: address || "", location: location || null,
       items: normalItems, total,
-      paymentMethod: paymentMethod || "COD",
+      paymentMethod:   paymentMethod || "COD",
       paymentVerified: false,
-      specialRequest: specialRequest || "",
-      requestTags:    Array.isArray(requestTags) ? requestTags : [],
+      specialRequest:  specialRequest || "",
+      requestTags:     Array.isArray(requestTags) ? requestTags : [],
       isDraft: false, source: "customer-menu", status: "incoming"
     });
+    await order.save();
+    io.emit("newOrder", order);
+    printQueue.push(order);
     res.json({ success: true, order });
   } catch (err) {
     console.error("Create order error:", err);
@@ -293,7 +273,7 @@ app.patch("/api/orders/:id/status", async (req, res) => {
     const order = await Order.findByIdAndUpdate(
       req.params.id, { status: req.body?.status }, { new: true }
     );
-    if (!order) return res.status(404).json({ success: false, error: "Order not found" });
+    if (!order) return res.status(404).json({ success: false, error: "Not found" });
     io.emit("orderUpdated", order);
     res.json({ success: true, order });
   } catch (err) {
@@ -306,7 +286,7 @@ app.patch("/api/orders/:id/payment-verified", async (req, res) => {
     const order = await Order.findByIdAndUpdate(
       req.params.id, { paymentVerified: !!req.body?.paymentVerified }, { new: true }
     );
-    if (!order) return res.status(404).json({ success: false, error: "Order not found" });
+    if (!order) return res.status(404).json({ success: false, error: "Not found" });
     io.emit("orderUpdated", order);
     res.json({ success: true, order });
   } catch (err) {
@@ -323,7 +303,7 @@ app.delete("/api/orders/:id", async (req, res) => {
   }
 });
 
-// ─── SERVICE REQUESTS ────────────────────────────────────────────────────────
+// ─── SERVICE REQUESTS ─────────────────────────────────────────────────────────
 app.post("/api/service-request", async (req, res) => {
   try {
     const { type, requestType, customerName, mobile,
@@ -359,7 +339,7 @@ app.get("/api/service-request", async (req, res) => {
   }
 });
 
-// ─── PENDING DINE-IN ─────────────────────────────────────────────────────────
+// ─── PENDING DINE-IN ──────────────────────────────────────────────────────────
 app.get("/api/pending-dinein", async (req, res) => {
   try {
     const list = await PendingDineIn.find({ status: "pending" }).sort({ createdAt: -1 });
@@ -369,126 +349,104 @@ app.get("/api/pending-dinein", async (req, res) => {
   }
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// ACCEPT PENDING DINE-IN
-//
-// Flow:
-// 1. Mark pending as accepted
-// 2. Find or create table draft
-// 3. Merge items from pending into draft
-// 4. Auto-fill customer name/mobile if draft fields are blank
-// 5. Emit tableDraftUpdated so manager UI refreshes immediately
-// 6. Emit pendingDineInAccepted so pending section removes the card
-// ══════════════════════════════════════════════════════════════════════════════
 app.post("/api/pending-dinein/:id/accept", async (req, res) => {
   try {
-    const id = req.params.id;
-    console.log(`✅ Accept pending dine-in: ${id}`);
-
+    const id      = req.params.id;
     const pending = await PendingDineIn.findById(id);
-    if (!pending) {
-      console.warn("PendingDineIn not found:", id);
+    if (!pending)
       return res.status(404).json({ success: false, error: "Pending request not found" });
-    }
 
     const tableNumber = String(pending.tableNumber || "").trim();
-    if (!tableNumber) {
-      return res.status(400).json({ success: false, error: "Table number missing on pending request" });
+    if (!tableNumber)
+      return res.status(400).json({ success: false, error: "Table number missing" });
+
+    // Already processed — re-emit so UI syncs
+    if (pending.status !== "pending") {
+      const draft = await TableDraft.findOne({ tableNumber });
+      if (draft) {
+        const obj = draft.toObject(); obj._id = obj._id.toString();
+        io.emit("tableDraftUpdated",     obj);
+        io.emit("pendingDineInAccepted", { id: id.toString(), tableNumber });
+        return res.json({ success: true, draft: obj });
+      }
+      return res.json({ success: true, draft: null });
     }
 
-    const alreadyDone = pending.status !== "pending";
+    // Mark accepted to prevent double-processing
+    await PendingDineIn.findByIdAndUpdate(id, { status: "accepted" });
 
-    if (!alreadyDone) {
-      await PendingDineIn.findByIdAndUpdate(id, { status: "accepted" });
-    }
+    // Merge incoming items into existing draft items
+    const existingDraft = await TableDraft.findOne({ tableNumber });
+    const baseItems = (existingDraft?.items || []).map((i) => ({
+      name: i.name || "", variant: i.variant || "",
+      price: Number(i.price || 0), qty: Number(i.qty || 0), category: i.category || ""
+    }));
 
-    let existingDraft = await TableDraft.findOne({ tableNumber });
+    (pending.items || []).forEach((inc) => {
+      if (!inc.name || !inc.qty) return;
+      const idx = baseItems.findIndex(
+        (x) => x.name === inc.name && (x.variant || "") === (inc.variant || "")
+      );
+      if (idx >= 0) baseItems[idx].qty += Number(inc.qty || 1);
+      else baseItems.push({
+        name: inc.name, variant: inc.variant || "",
+        price: Number(inc.price || 0), qty: Number(inc.qty || 1),
+        category: inc.category || ""
+      });
+    });
 
-    let finalItems;
-    if (alreadyDone) {
-      finalItems = existingDraft ? existingDraft.items : [];
-    } else {
-      // Merge incoming items into existing draft items
-      const baseItems = (existingDraft?.items || []).map((i) => ({
-        name: i.name || "", variant: i.variant || "",
-        price: Number(i.price || 0), qty: Number(i.qty || 0), category: i.category || ""
-      }));
+    const finalTotal = calcTotal(baseItems);
 
-      (pending.items || []).forEach((inc) => {
-        if (!inc.name || !inc.qty) return;
-        const idx = baseItems.findIndex(
-          (x) => x.name === inc.name && (x.variant || "") === (inc.variant || "")
-        );
-        if (idx >= 0) {
-          baseItems[idx].qty += Number(inc.qty || 1);
-        } else {
-          baseItems.push({
-            name: inc.name, variant: inc.variant || "",
-            price: Number(inc.price || 0), qty: Number(inc.qty || 1),
-            category: inc.category || ""
-          });
+    // Use findOneAndUpdate with upsert to avoid the pre-save hook entirely
+    // This is the safest pattern — no hook, no next(), no mongoose version issues
+    const draft = await TableDraft.findOneAndUpdate(
+      { tableNumber },
+      {
+        $set: {
+          status:    "draft",
+          items:     baseItems,
+          total:     finalTotal,
+          updatedAt: new Date(),
+          // Auto-fill customer details only if the draft fields are currently blank
+          ...(existingDraft?.customerName ? {} : { customerName: pending.customerName || "" }),
+          ...(existingDraft?.mobile       ? {} : { mobile:       pending.mobile       || "" })
+        },
+        $setOnInsert: {
+          tableNumber,
+          customerName: pending.customerName || "",
+          mobile:       pending.mobile       || "",
+          guestCount:   pending.guestCount   || 1,
+          createdAt:    new Date()
         }
-      });
+      },
+      { new: true, upsert: true }
+    );
 
-      finalItems = baseItems;
-    }
-
-    const finalTotal = calcTotal(finalItems);
-
-    let draft;
-    if (existingDraft) {
-      existingDraft.items     = finalItems;
-      existingDraft.total     = finalTotal;
-      existingDraft.status    = "draft";
-      existingDraft.updatedAt = new Date();
-      // Auto-fill customer details from customer portal if the draft fields are blank
-      if (!existingDraft.customerName && pending.customerName) existingDraft.customerName = pending.customerName;
-      if (!existingDraft.mobile && pending.mobile) existingDraft.mobile = pending.mobile;
-      draft = await existingDraft.save();
-    } else {
-      draft = await TableDraft.create({
-        tableNumber,
-        customerName: pending.customerName || "",
-        mobile:       pending.mobile       || "",
-        guestCount:   pending.guestCount   || 1,
-        status:       "draft",
-        items:        finalItems,
-        total:        finalTotal,
-        createdAt:    new Date(),
-        updatedAt:    new Date()
-      });
-    }
-
-    console.log(`✅ Table ${tableNumber}: ${finalItems.length} items, ₹${finalTotal}`);
-
-    const draftObj  = draft.toObject ? draft.toObject() : draft;
-    draftObj._id    = draftObj._id.toString();
+    const draftObj = draft.toObject ? draft.toObject() : draft;
+    draftObj._id   = draftObj._id.toString();
 
     io.emit("tableDraftUpdated",     draftObj);
     io.emit("pendingDineInAccepted", { id: id.toString(), tableNumber });
 
+    console.log(`✅ Table ${tableNumber} accepted: ${baseItems.length} items ₹${finalTotal}`);
     res.json({ success: true, draft: draftObj });
   } catch (err) {
-    console.error("Accept pending dine-in error:", err.message, "code:", err.code);
-    res.status(500).json({
-      success: false,
-      error:   "Could not accept request",
-      detail:  err.message
-    });
+    console.error("Accept error:", err.message);
+    res.status(500).json({ success: false, error: "Could not accept", detail: err.message });
   }
 });
 
 app.post("/api/pending-dinein/:id/reject", async (req, res) => {
   try {
-    const id      = req.params.id;
     const pending = await PendingDineIn.findByIdAndUpdate(
-      id, { status: "rejected" }, { new: true }
+      req.params.id, { status: "rejected" }, { new: true }
     );
-    if (!pending) return res.status(404).json({ success: false, error: "Pending request not found" });
-    io.emit("pendingDineInRejected", { id: id.toString(), tableNumber: pending.tableNumber });
+    if (!pending)
+      return res.status(404).json({ success: false, error: "Not found" });
+    io.emit("pendingDineInRejected", { id: req.params.id, tableNumber: pending.tableNumber });
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ success: false, error: "Could not reject request" });
+    res.status(500).json({ success: false, error: "Could not reject" });
   }
 });
 
@@ -501,26 +459,36 @@ app.get("/api/table-orders", async (req, res) => {
   }
 });
 
+// NOTE: This specific route must come BEFORE the :tableNumber param route
 app.post("/api/table-orders/save-draft", async (req, res) => {
   try {
     const p = sanitizeTableDraftPayload(req.body);
     if (!p.tableNumber)
       return res.status(400).json({ success: false, error: "tableNumber is required" });
 
-    const existing = await TableDraft.findOne({ tableNumber: p.tableNumber });
-    let draft;
-    if (existing) {
-      Object.assign(existing, p, { updatedAt: new Date() });
-      draft = await existing.save();
-    } else {
-      draft = await TableDraft.create({ ...p, createdAt: new Date(), updatedAt: new Date() });
-    }
+    // Use findOneAndUpdate with upsert — avoids pre-save hook and is race-condition safe
+    const draft = await TableDraft.findOneAndUpdate(
+      { tableNumber: p.tableNumber },
+      {
+        $set: {
+          customerName: p.customerName,
+          mobile:       p.mobile,
+          guestCount:   p.guestCount,
+          status:       p.status,
+          items:        p.items,
+          total:        p.total,
+          updatedAt:    new Date()
+        },
+        $setOnInsert: { createdAt: new Date() }
+      },
+      { new: true, upsert: true }
+    );
 
     io.emit("tableDraftUpdated", draft);
     res.json({ success: true, draft });
   } catch (err) {
     console.error("Save draft error:", err);
-    res.status(500).json({ success: false, error: "Could not save table draft" });
+    res.status(500).json({ success: false, error: "Could not save table draft", detail: err.message });
   }
 });
 
@@ -537,54 +505,48 @@ app.post("/api/table-orders/clear", async (req, res) => {
   }
 });
 
-// ── FINALIZE: This is the ONLY place where a dine-in order enters Order History.
-//    When manager clicks Save & Print, items are finalized, table draft is cleared,
-//    and the order is saved with status=delivered, source=manager-pos so the
-//    Orders tab shows it in history (not live).
+// Finalize: THIS is the only place a dine-in order enters Order History.
 app.post("/api/table-orders/finalize", async (req, res) => {
   try {
     const p = sanitizeTableDraftPayload(req.body);
     if (!p.tableNumber)
       return res.status(400).json({ success: false, error: "tableNumber is required" });
     if (!p.items.length)
-      return res.status(400).json({ success: false, error: "No items in table draft" });
+      return res.status(400).json({ success: false, error: "No items in draft" });
 
     const order = new Order({
-      orderType:          "dinein",
-      customerName:       p.customerName || "",
-      registrationNumber: "",
-      mobile:             p.mobile       || "",
-      tableNumber:        p.tableNumber,
-      address:            "", location: null,
+      orderType:       "dinein",
+      customerName:    p.customerName || "",
+      mobile:          p.mobile       || "",
+      tableNumber:     p.tableNumber,
       items: p.items.map((i) => ({
         name: i.name, variant: i.variant || "",
         price: Number(i.price || 0), qty: Number(i.qty || 0)
       })),
-      total:          p.total || calcTotal(p.items),
-      paymentMethod:  "PAYLATERDINEIN",
+      total:           p.total || calcTotal(p.items),
+      paymentMethod:   "PAYLATERDINEIN",
       paymentVerified: false,
-      specialRequest: "", requestTags: [],
-      isDraft: false, source: "manager-pos", status: "delivered"
+      isDraft:         false,
+      source:          "manager-pos",
+      status:          "delivered"
     });
     await order.save();
 
-    // Emit so Orders tab and dashboard refresh
     io.emit("newOrder", order);
-
-    // Add to print queue for thermal printer
     printQueue.push(order);
 
     await TableDraft.findOneAndDelete({ tableNumber: p.tableNumber });
     io.emit("tableDraftCleared",   { tableNumber: p.tableNumber });
     io.emit("tableOrderFinalized", { tableNumber: p.tableNumber, order });
+
     res.json({ success: true, order });
   } catch (err) {
     console.error("Finalize error:", err);
-    res.status(500).json({ success: false, error: "Could not finalize table draft", detail: err.message });
+    res.status(500).json({ success: false, error: "Could not finalize", detail: err.message });
   }
 });
 
-// Parameterised route — MUST come after save-draft / clear / finalize
+// Parameterised route — MUST be after save-draft / clear / finalize
 app.get("/api/table-orders/:tableNumber", async (req, res) => {
   try {
     const draft = await TableDraft.findOne({ tableNumber: String(req.params.tableNumber).trim() });
@@ -595,11 +557,11 @@ app.get("/api/table-orders/:tableNumber", async (req, res) => {
   }
 });
 
-// ─── DASHBOARD ───────────────────────────────────────────────────────────────
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
 app.get("/api/dashboard/sales", async (req, res) => {
   try {
     const period = req.query.period || "day";
-    const date   = req.query.date || new Date().toISOString().slice(0, 10);
+    const date   = req.query.date   || new Date().toISOString().slice(0, 10);
     let start, end;
     if (period === "day") {
       ({ start, end } = getISTDateBounds(date));
@@ -639,10 +601,14 @@ app.get("/api/dashboard/peakhour", async (req, res) => {
 app.get("/api/dashboard/topdish", async (req, res) => {
   try {
     const { start } = getISTDateBounds(req.query.from || req.query.date || new Date().toISOString().slice(0, 10));
-    const end       = req.query.to ? getISTDateBounds(req.query.to).end : getISTDateBounds(req.query.from || req.query.date || new Date().toISOString().slice(0, 10)).end;
-    const orders    = await Order.find({ createdAt: { $gte: start, $lte: end }, status: { $ne: "deleted" } });
+    const end = req.query.to
+      ? getISTDateBounds(req.query.to).end
+      : getISTDateBounds(req.query.from || req.query.date || new Date().toISOString().slice(0, 10)).end;
+    const orders = await Order.find({ createdAt: { $gte: start, $lte: end }, status: { $ne: "deleted" } });
     const map = {};
-    orders.forEach((o) => (o.items || []).forEach((i) => { const n = i.name || "?"; map[n] = (map[n] || 0) + (i.qty || 0); }));
+    orders.forEach((o) => (o.items || []).forEach((i) => {
+      const n = i.name || "?"; map[n] = (map[n] || 0) + (i.qty || 0);
+    }));
     const top = Object.entries(map).sort((a, b) => b[1] - a[1])[0];
     res.json(top ? { _id: top[0], count: top[1] } : null);
   } catch (err) {
@@ -653,7 +619,9 @@ app.get("/api/dashboard/topdish", async (req, res) => {
 app.get("/api/dashboard/repeatcustomers", async (req, res) => {
   try {
     const { start } = getISTDateBounds(req.query.from || req.query.date || new Date().toISOString().slice(0, 10));
-    const end       = req.query.to ? getISTDateBounds(req.query.to).end : getISTDateBounds(req.query.from || req.query.date || new Date().toISOString().slice(0, 10)).end;
+    const end = req.query.to
+      ? getISTDateBounds(req.query.to).end
+      : getISTDateBounds(req.query.from || req.query.date || new Date().toISOString().slice(0, 10)).end;
     const nameFilter = req.query.name ? { customerName: req.query.name } : {};
     const orders = await Order.find({ createdAt: { $gte: start, $lte: end }, status: { $ne: "deleted" }, ...nameFilter });
     const stats = {};
@@ -676,12 +644,12 @@ app.get("/api/next-print-ticket", (req, res) => {
     `Order ID: ${o._id}`,
     `Type   : ${o.orderType}`
   ];
-  if (o.customerName)       lines.push(`Name   : ${o.customerName}`);
-  if (o.registrationNumber) lines.push(`Reg No : ${o.registrationNumber}`);
-  if (o.mobile)             lines.push(`Mobile : ${o.mobile}`);
-  if (o.tableNumber)        lines.push(`Table  : ${o.tableNumber}`);
-  if (o.address)            lines.push(`Addr   : ${o.address}`);
-  if (o.specialRequest)     lines.push(`Note   : ${o.specialRequest}`);
+  if (o.customerName)        lines.push(`Name   : ${o.customerName}`);
+  if (o.registrationNumber)  lines.push(`Reg No : ${o.registrationNumber}`);
+  if (o.mobile)              lines.push(`Mobile : ${o.mobile}`);
+  if (o.tableNumber)         lines.push(`Table  : ${o.tableNumber}`);
+  if (o.address)             lines.push(`Addr   : ${o.address}`);
+  if (o.specialRequest)      lines.push(`Note   : ${o.specialRequest}`);
   if (o.requestTags?.length) lines.push(`Tags   : ${o.requestTags.join(", ")}`);
   lines.push(`Payment: ${o.paymentMethod || "COD"}${o.paymentVerified ? " (VERIFIED)" : " (PENDING)"}`);
   lines.push("--------------------------");
@@ -693,7 +661,7 @@ app.get("/api/next-print-ticket", (req, res) => {
   res.type("text/plain").send(lines.join("\n"));
 });
 
-// ─── SOCKET / HEALTH / START ──────────────────────────────────────────────────
+// ─── SOCKET / HEALTH ──────────────────────────────────────────────────────────
 io.on("connection", (socket) => {
   console.log("🟢 Client connected:", socket.id);
   socket.emit("connected", { status: "connected" });
