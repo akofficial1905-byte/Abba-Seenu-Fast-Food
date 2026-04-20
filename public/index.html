@@ -200,30 +200,6 @@ select,input,textarea{
   margin-bottom:6px;
 }
 
-/* ── Page-2 quick service bar ─────────────────────────────────────── */
-.p2-service-bar{
-  display:flex;
-  gap:8px;
-  margin-bottom:14px;
-}
-.p2-svc-btn{
-  flex:1;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  padding:10px 8px;
-  border-radius:14px;
-  border:1px solid rgba(245,197,24,.45);
-  background:#08152e;
-  color:var(--accent-soft2);
-  font-size:.78rem;
-  font-weight:600;
-  cursor:pointer;
-}
-.p2-svc-btn:active{opacity:.75}
-.p2-svc-icon{font-size:16px;line-height:1}
-
 /* ── Recommendation box ───────────────────────────────────────────── */
 #recBox{
   position:fixed;
@@ -678,7 +654,7 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
 #pendingBox .pending-icon{
   font-size:2.4rem;
   margin-bottom:10px;
-  animation: pendingPulse 1.6s ease-in-out infinite;
+  animation:pendingPulse 1.6s ease-in-out infinite;
 }
 @keyframes pendingPulse{
   0%,100%{opacity:1;transform:scale(1);}
@@ -798,7 +774,7 @@ textarea#address, textarea#specialRequest, textarea#pageAddress{
     <button class="help-btn" id="callManagerBtn" type="button">👨‍💼 Call Manager</button>
     <button class="help-btn chat" id="chatFab" type="button">💬 Open Chat</button>
   </div>
-  <div class="help-note">Use Help for waiter, manager, or quick chat support.</div>
+  <div class="help-note">Please fill your details first so we know who to assist.</div>
 </div>
 
 <div id="chatPanel">
@@ -996,18 +972,18 @@ let customerLocation = null;
 let pendingOrderPayload = null;
 let selectedRequestTags = [];
 let submitting = false;
-let recDismissed = false;
 
 /* ═══════════════════════════════════════════════════════════════════
    RECOMMENDATION BOX
+   ✕ only hides momentarily — box reappears fresh on every cart add.
+   Always shows at least 3 items (padded from menu when API returns fewer).
 ═══════════════════════════════════════════════════════════════════ */
 recClose.addEventListener("click", () => {
   recBox.classList.remove("visible");
-  recDismissed = true;
+  /* No permanent dismiss flag — box comes back on next add */
 });
 
 async function fetchRecommendations(cartItems) {
-  if (recDismissed) return;
   try {
     const res = await fetch("/api/recommendations", {
       method: "POST",
@@ -1015,19 +991,37 @@ async function fetchRecommendations(cartItems) {
       body: JSON.stringify({ items: cartItems })
     });
     const data = await res.json();
-    renderRecommendations(data.suggestions || []);
+    renderRecommendations(data.suggestions || [], cartItems);
   } catch (e) {
-    console.warn("Recommendations unavailable", e);
+    /* API unreachable — show fallback suggestions anyway */
+    renderRecommendations([], cartItems);
   }
 }
 
-function renderRecommendations(suggestions) {
-  if (!suggestions.length || recDismissed) {
-    recBox.classList.remove("visible");
-    return;
+function renderRecommendations(suggestions, cartItems) {
+  const cartNames = (cartItems || []).map(i => i.name);
+
+  /* Pool = every menu item not already in cart */
+  const pool = [];
+  Object.values(menu).forEach(cat => cat.forEach(it => {
+    if (!cartNames.includes(it.name)) pool.push(it);
+  }));
+
+  /* Pad to at least 3 suggestions */
+  const padded = [...suggestions];
+  const usedNames = new Set(padded.map(s => s.name));
+  for (const it of pool) {
+    if (padded.length >= 3) break;
+    if (!usedNames.has(it.name)) {
+      padded.push({ name: it.name, score: 0, reason: "Popular choice" });
+      usedNames.add(it.name);
+    }
   }
+
+  if (!padded.length) { recBox.classList.remove("visible"); return; }
+
   recList.innerHTML = "";
-  suggestions.forEach(item => {
+  padded.forEach(item => {
     const div = document.createElement("div");
     div.className = "rec-item";
     const isHot = item.score > 0.6;
@@ -1048,10 +1042,7 @@ function addSuggestedItem(name) {
   Object.values(menu).forEach(cat => cat.forEach(it => {
     if (it.name === name) found = it;
   }));
-  if (found) {
-    addToCart(found.name, found.price || 0, "", "");
-    toast("Added " + found.name);
-  }
+  if (found) addToCart(found.name, found.price || 0, "", "");
 }
 
 function escapeHtml(str) {
@@ -1095,7 +1086,7 @@ function toast(msg) {
   const t = document.getElementById("toast");
   t.innerText = msg;
   t.style.display = "block";
-  setTimeout(() => t.style.display = "none", 1400);
+  setTimeout(() => t.style.display = "none", 1800);
 }
 
 function updateCart() {
@@ -1140,7 +1131,7 @@ function addToCart(name, price, variant = "", category = "") {
   else cart.push({ name, price: Number(price) || 0, qty: 1, variant, category });
   updateCart();
   toast("Added to cart");
-  if (!recDismissed) fetchRecommendations(cart);
+  fetchRecommendations(cart);
 }
 window.addToCart = addToCart;
 
@@ -1292,25 +1283,12 @@ function build() {
     </div>
   </section>`;
 
-  /* ── Page 1: Customer Details (with waiter/manager buttons) ─ */
+  /* ── Page 1: Customer Details ─ NO waiter/manager buttons here ── */
   book.innerHTML += `
   <section class="page center">
     <div style="width:100%;max-width:360px;text-align:left;">
       <h2 style="margin-bottom:2px;">Your details</h2>
       <p style="font-size:0.78rem;color:var(--muted);margin-bottom:10px;">Share your details so we can serve you better.</p>
-
-      <!-- Quick Service Buttons -->
-      <div class="p2-service-bar">
-        <button type="button" class="p2-svc-btn" onclick="sendServiceRequestPage('waiter')">
-          <span class="p2-svc-icon">🔔</span>
-          <span>Call Waiter</span>
-        </button>
-        <button type="button" class="p2-svc-btn" onclick="sendServiceRequestPage('manager')">
-          <span class="p2-svc-icon">👨‍💼</span>
-          <span>Call Manager</span>
-        </button>
-      </div>
-
       <input id="pageName" placeholder="Customer Name" oninput="nameInput.value=this.value" value="">
       <input id="pageMobile" placeholder="Mobile Number" oninput="mobileInput.value=this.value" value="">
       <input id="pageRegno" placeholder="Registration / Room No. (optional)" oninput="regInput.value=this.value" value="">
@@ -1459,17 +1437,38 @@ document.addEventListener("click", (e) => {
 
 /* ═══════════════════════════════════════════════════════════════════
    SERVICE REQUESTS
+   RULE: name + mobile are COMPULSORY before waiter/manager is called.
+   If missing → show toast + auto-navigate to page 2 (details form).
+   Only from the Help FAB — NO waiter/manager buttons anywhere else.
 ═══════════════════════════════════════════════════════════════════ */
 async function sendServiceRequest(requestType) {
+  /* Read from cart fields first, fall back to page-2 fields */
+  const customerName =
+    nameInput.value.trim() ||
+    document.getElementById("pageName")?.value?.trim() || "";
+  const mobile =
+    mobileInput.value.trim() ||
+    document.getElementById("pageMobile")?.value?.trim() || "";
+
+  /* Block if either field is empty — send customer to fill details */
+  if (!customerName || !mobile) {
+    helpPanel.classList.remove("open");
+    toast("⚠️ Please fill your name & mobile first");
+    go(1); /* go to details page */
+    return;
+  }
+
   const orderType  = orderTypeSel.value || document.getElementById("pageOrderType")?.value || "";
   const tableValue = tableNumberSel.value || document.getElementById("pageTableNumber")?.value || "";
+
   const payload = {
     requestType,
-    customerName: nameInput.value.trim() || document.getElementById("pageName")?.value?.trim() || "",
-    mobile:       mobileInput.value.trim() || document.getElementById("pageMobile")?.value?.trim() || "",
-    orderType:    orderType || "",
-    tableNumber:  normalizeTableNumber(tableValue) || ""
+    customerName,
+    mobile,
+    orderType:   orderType || "",
+    tableNumber: normalizeTableNumber(tableValue) || ""
   };
+
   try {
     const res = await fetch("/api/service-request", {
       method: "POST",
@@ -1478,44 +1477,16 @@ async function sendServiceRequest(requestType) {
     });
     const data = await res.json().catch(() => ({}));
     if (res.ok && data.success) {
-      toast(requestType === "manager" ? "Manager called ✔" : "Waiter called ✔");
+      toast(requestType === "manager" ? "👨‍💼 Manager called ✔" : "🔔 Waiter called ✔");
       helpPanel.classList.remove("open");
     } else {
-      toast("Could not send request");
+      toast("Could not send request — please try again");
     }
   } catch (e) {
     console.error(e);
-    toast("Could not send request");
+    toast("Could not send request — please try again");
   }
 }
-
-/* Called from Page 2 quick-service buttons */
-window.sendServiceRequestPage = async function(requestType) {
-  const pageName   = document.getElementById("pageName");
-  const pageMobile = document.getElementById("pageMobile");
-  const pageTable  = document.getElementById("pageTableNumber");
-  const pageOrder  = document.getElementById("pageOrderType");
-  const payload = {
-    requestType,
-    customerName: pageName?.value?.trim() || nameInput.value.trim() || "",
-    mobile:       pageMobile?.value?.trim() || mobileInput.value.trim() || "",
-    orderType:    pageOrder?.value || orderTypeSel.value || "",
-    tableNumber:  normalizeTableNumber(pageTable?.value || tableNumberSel.value || "")
-  };
-  try {
-    const res = await fetch("/api/service-request", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json().catch(() => ({}));
-    toast(res.ok && data.success
-      ? (requestType === "manager" ? "Manager has been called ✔" : "Waiter has been called ✔")
-      : "Could not send — please try again");
-  } catch (e) {
-    toast("Could not send — please try again");
-  }
-};
 
 callWaiterBtn.onclick  = () => sendServiceRequest("waiter");
 callManagerBtn.onclick = () => sendServiceRequest("manager");
@@ -1553,23 +1524,25 @@ function syncPageDetails() {
   const pageOrderType   = document.getElementById("pageOrderType");
   const pageTableNumber = document.getElementById("pageTableNumber");
   const pageAddress     = document.getElementById("pageAddress");
-  if (pageName)        nameInput.value        = pageName.value;
-  if (pageMobile)      mobileInput.value      = pageMobile.value;
-  if (pageRegno)       regInput.value         = pageRegno.value;
-  if (pageOrderType)   orderTypeSel.value     = pageOrderType.value;
-  if (pageTableNumber) tableNumberSel.value   = pageTableNumber.value;
-  if (pageAddress)     addressInput.value     = pageAddress.value;
+  if (pageName)        nameInput.value      = pageName.value;
+  if (pageMobile)      mobileInput.value    = pageMobile.value;
+  if (pageRegno)       regInput.value       = pageRegno.value;
+  if (pageOrderType)   orderTypeSel.value   = pageOrderType.value;
+  if (pageTableNumber) tableNumberSel.value = pageTableNumber.value;
+  if (pageAddress)     addressInput.value   = pageAddress.value;
   updateOrderTypeUI();
 }
 window.syncPageDetails = syncPageDetails;
 
 function goNextFromDetails() {
   syncPageDetails();
-  if (!nameInput.value.trim()) return toast("Enter customer name");
+  if (!nameInput.value.trim())   return toast("Enter customer name");
   if (!mobileInput.value.trim()) return toast("Enter mobile number");
-  if (!orderTypeSel.value) return toast("Select order type");
-  if (orderTypeSel.value === "dinein" && !normalizeTableNumber(tableNumberSel.value)) return toast("Select table number");
-  if (orderTypeSel.value === "delivery" && !addressInput.value.trim()) return toast("Enter delivery address");
+  if (!orderTypeSel.value)       return toast("Select order type");
+  if (orderTypeSel.value === "dinein" && !normalizeTableNumber(tableNumberSel.value))
+    return toast("Select table number");
+  if (orderTypeSel.value === "delivery" && !addressInput.value.trim())
+    return toast("Enter delivery address");
   go(2);
 }
 window.goNextFromDetails = goNextFromDetails;
@@ -1787,9 +1760,9 @@ placeOrderBtn.onclick = async () => {
     mobile:             mobileInput.value.trim(),
     registrationNumber: regInput.value.trim(),
     orderType,
-    tableNumber:   orderType === "dinein"    ? normalizedTableNumber  : "",
-    address:       orderType === "delivery"  ? addressInput.value.trim() : "",
-    location:      orderType === "delivery"  ? customerLocation        : null,
+    tableNumber:   orderType === "dinein"   ? normalizedTableNumber     : "",
+    address:       orderType === "delivery" ? addressInput.value.trim() : "",
+    location:      orderType === "delivery" ? customerLocation          : null,
     paymentMethod,
     paymentVerified: paymentMethod === "UPI",
     specialRequest:  buildSpecialRequestText(),
