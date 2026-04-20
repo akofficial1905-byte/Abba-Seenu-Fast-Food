@@ -155,6 +155,20 @@
       border-color:#22c55e;
     }
 
+    /* Deliver button - blue */
+    .mini-btn-deliver {
+      background:#3b82f6;
+      color:#fff;
+      border-color:#3b82f6;
+    }
+
+    /* Print button - purple */
+    .mini-btn-print {
+      background:#8b5cf6;
+      color:#fff;
+      border-color:#8b5cf6;
+    }
+
     .mini-btn[disabled] {
       opacity:.6;
       cursor:not-allowed;
@@ -253,6 +267,13 @@
         align-items:stretch !important;
       }
     }
+
+    /* Print styles */
+    @media print {
+      body * { visibility: hidden; }
+      #printFrame, #printFrame * { visibility: visible; }
+      #printFrame { position: fixed; inset: 0; }
+    }
   </style>
 </head>
 <body class="bg-gradient-to-b from-slate-900 via-gray-900 to-black text-gray-100 min-h-screen">
@@ -338,6 +359,12 @@
             Live Orders = Takeaway &amp; Delivery only. Dine-in bills appear in Order History only after manager clicks <b>Save &amp; Print</b>.
           </div>
         </div>
+      </div>
+
+      <!-- Legend for action buttons -->
+      <div class="flex flex-wrap gap-2 mb-3 text-[11px]">
+        <span class="px-2 py-1 rounded-full bg-blue-600/20 border border-blue-500/40 text-blue-300 font-semibold">🗺️ Deliver = Open Google Maps route to customer</span>
+        <span class="px-2 py-1 rounded-full bg-purple-600/20 border border-purple-500/40 text-purple-300 font-semibold">🖨️ Print = Print order receipt</span>
       </div>
 
       <div class="grid md:grid-cols-2 gap-4 manager-grid">
@@ -891,22 +918,17 @@
     const historyList = document.getElementById("historyList");
     datePicker.value = getLocalToday();
 
-    // ── FILTERING RULES ───────────────────────────────────────────────────────
-    // Live Orders:  takeaway/delivery that are NOT delivered
-    // Order History: takeaway/delivery delivered  OR  dine-in from manager-pos (finalized)
     function isLiveOrder(o) {
       if (!o) return false;
-      if (o.orderType === "dinein") return false;          // dine-in never shows in live
+      if (o.orderType === "dinein") return false;
       return o.status !== "delivered" && o.status !== "deleted";
     }
 
     function isHistoryOrder(o) {
       if (!o) return false;
       if (o.orderType === "dinein") {
-        // Only finalized dine-in bills (source = manager-pos, status = delivered)
         return o.source === "manager-pos" && o.status === "delivered";
       }
-      // takeaway/delivery: show in history when delivered
       return o.status === "delivered";
     }
 
@@ -918,6 +940,94 @@
       return `<div class="order-card-meta text-gray-300 mt-1">📍 ${escapeHtml(o.address || "—")}</div>`;
     }
 
+    // ── DELIVER: Open Google Maps with route to customer location ────────────
+    function openDeliveryMap(o) {
+      // Priority: GPS lat/lng → address text → toast error
+      if (o.location && o.location.lat && o.location.lng) {
+        const dest = `${o.location.lat},${o.location.lng}`;
+        const url  = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}&travelmode=driving`;
+        window.open(url, "_blank");
+      } else if (o.address && o.address.trim()) {
+        const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.address.trim())}`;
+        window.open(url, "_blank");
+      } else {
+        toast("No delivery location found for this order.");
+      }
+    }
+
+    // ── PRINT: Open print window for a single order ──────────────────────────
+    function printOrderReceipt(o) {
+      const itemsText = (o.items || [])
+        .map(i => `  ${i.name}${i.variant ? ` (${i.variant})` : ""}  x${i.qty}  ₹${(Number(i.price)||0) * (Number(i.qty)||1)}`)
+        .join("\n");
+
+      const lines = [
+        "================================",
+        "  ABBA SEENUUU... FAST FOODS",
+        "================================",
+        `Date   : ${o.createdAt ? new Date(o.createdAt).toLocaleString("en-IN") : new Date().toLocaleString("en-IN")}`,
+        `Order  : ${String(o._id || "").slice(-8).toUpperCase() || "—"}`,
+        `Type   : ${(o.orderType || "").toUpperCase()}`,
+        "--------------------------------",
+        `Name   : ${o.customerName || "—"}`,
+        `Mobile : ${o.mobile || "—"}`,
+        o.tableNumber ? `Table  : ${o.tableNumber}` : null,
+        o.address     ? `Address: ${o.address}`     : null,
+        o.registrationNumber ? `Reg No : ${o.registrationNumber}` : null,
+        "--------------------------------",
+        "ITEMS:",
+        itemsText || "  (no items)",
+        "--------------------------------",
+        `TOTAL  : ₹${Number(o.total || 0)}`,
+        o.paymentMethod ? `Payment: ${o.paymentMethod}` : null,
+        o.specialRequest ? `Note   : ${o.specialRequest}` : null,
+        "================================",
+        "       Thank you! Come again!",
+        "================================",
+      ].filter(l => l !== null).join("\n");
+
+      const win = window.open("", "_blank", "width=400,height=600");
+      if (!win) { toast("Popup blocked — please allow popups to print."); return; }
+      win.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Order Receipt</title>
+            <style>
+              body {
+                font-family: 'Courier New', monospace;
+                font-size: 13px;
+                padding: 20px;
+                background: #fff;
+                color: #111;
+              }
+              pre {
+                white-space: pre-wrap;
+                word-break: break-word;
+              }
+              @media print {
+                body { padding: 0; }
+                button { display: none; }
+              }
+            </style>
+          </head>
+          <body>
+            <pre>${lines.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</pre>
+            <br>
+            <button onclick="window.print()" style="padding:8px 20px;background:#f59e0b;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:13px;">
+              🖨️ Print
+            </button>
+            <button onclick="window.close()" style="padding:8px 20px;background:#e5e7eb;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:13px;margin-left:8px;">
+              Close
+            </button>
+            <script>setTimeout(()=>window.print(),400)<\/script>
+          </body>
+        </html>
+      `);
+      win.document.close();
+    }
+
+    // ── BUILD ORDER CARD ──────────────────────────────────────────────────────
     function buildOrderCard(o) {
       const card = document.createElement("div");
       card.className = "border border-slate-700 rounded-xl p-3 bg-slate-900/60";
@@ -931,21 +1041,59 @@
         .map(i => `${i.name}${i.variant ? ` (${i.variant})` : ""} x${i.qty}`)
         .join(", ");
 
-      const statusButtons = o.orderType === "dinein" ? "" : `
-        <div class="flex flex-wrap gap-2 text-[11px]">
-          <button data-action="status" data-status="delivered" class="px-2 py-1 rounded-full border border-slate-600 text-gray-200">Delivered</button>
-          <button data-action="payment" class="px-2 py-1 rounded-full border border-emerald-500 text-emerald-300">Paid</button>
-        </div>`;
+      const isLive = isLiveOrder(o);
+
+      // Action buttons — only for takeaway/delivery
+      let statusButtons = "";
+      if (o.orderType !== "dinein") {
+        // Deliver button: show for delivery orders (both live and history)
+        const deliverBtn = o.orderType === "delivery"
+          ? `<button data-action="deliver" class="mini-btn mini-btn-deliver">🗺️ Deliver</button>`
+          : "";
+
+        // Print button: always shown
+        const printBtn = `<button data-action="print" class="mini-btn mini-btn-print">🖨️ Print</button>`;
+
+        // Status / paid buttons: only in live orders
+        const liveActions = isLive ? `
+          <button data-action="status" data-status="delivered" class="mini-btn">Delivered</button>
+          <button data-action="payment" class="mini-btn ${o.paymentVerified ? 'mini-btn-success' : ''}">
+            ${o.paymentVerified ? "✔ Paid" : "Paid"}
+          </button>
+        ` : "";
+
+        statusButtons = `
+          <div class="flex flex-wrap gap-2 text-[11px] mt-2">
+            ${liveActions}
+            ${deliverBtn}
+            ${printBtn}
+          </div>`;
+      }
 
       const dineinMeta = o.orderType === "dinein"
         ? `<div class="text-[11px] text-amber-300 mt-2">✅ Finalized dine-in bill</div>` : "";
 
+      // Show payment status badge on card
+      const paymentBadge = o.orderType !== "dinein" && o.paymentVerified
+        ? `<span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-900/50 text-emerald-300 border border-emerald-700">PAID</span>`
+        : "";
+
+      // Show location indicator for delivery
+      const hasGPS  = o.location && o.location.lat && o.location.lng;
+      const gpsTag  = o.orderType === "delivery"
+        ? `<span class="ml-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${hasGPS ? "bg-blue-900/50 text-blue-300 border border-blue-700" : "bg-slate-700 text-gray-400 border border-slate-600"}">
+            ${hasGPS ? "📍 GPS" : "📍 Addr only"}
+           </span>`
+        : "";
+
       card.innerHTML = `
         <div class="flex justify-between items-start mb-2 gap-2">
           <div>
-            <div class="flex items-center mb-1 flex-wrap">
+            <div class="flex items-center mb-1 flex-wrap gap-1">
               <span class="order-type-badge ${typeClass}">${escapeHtml(o.orderType || "")}</span>
               <span class="order-card-title">${escapeHtml(o.customerName || "No name")} • ₹${Number(o.total || 0)}</span>
+              ${paymentBadge}
+              ${gpsTag}
             </div>
             <div class="order-card-meta text-gray-400">
               ${o.mobile ? `📞 ${escapeHtml(o.mobile)}` : ""}${o.tableNumber ? ` • Table ${escapeHtml(o.tableNumber)}` : ""}
@@ -957,10 +1105,13 @@
             ${o.createdAt ? new Date(o.createdAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}) : ""}
           </div>
         </div>
-        <div class="order-card-items text-gray-100 mb-2">${escapeHtml(itemsText || "No items")}</div>
+        <div class="order-card-items text-gray-100 mb-1">${escapeHtml(itemsText || "No items")}</div>
+        ${o.specialRequest ? `<div class="text-[11px] text-amber-200 mb-1">📝 ${escapeHtml(o.specialRequest)}</div>` : ""}
         ${statusButtons}`;
 
+      // Wire up buttons
       if (o.orderType !== "dinein") {
+        // Status button (mark as delivered)
         card.querySelectorAll("button[data-action='status']").forEach(btn => {
           btn.onclick = async () => {
             try {
@@ -972,6 +1123,8 @@
             } catch(e) { console.error(e); }
           };
         });
+
+        // Payment verified button
         const paidBtn = card.querySelector("button[data-action='payment']");
         if (paidBtn) {
           paidBtn.onclick = async () => {
@@ -984,7 +1137,20 @@
             } catch(e) { console.error(e); }
           };
         }
+
+        // Deliver button → Google Maps
+        const deliverBtn = card.querySelector("button[data-action='deliver']");
+        if (deliverBtn) {
+          deliverBtn.onclick = () => openDeliveryMap(o);
+        }
+
+        // Print button → receipt
+        const printBtn = card.querySelector("button[data-action='print']");
+        if (printBtn) {
+          printBtn.onclick = () => printOrderReceipt(o);
+        }
       }
+
       return card;
     }
 
@@ -1101,7 +1267,6 @@
       await renderDashboard();
     };
 
-    // ── SOCKET: new order (takeaway/delivery only relevant for orders tab)
     socket.on("newOrder", async (orderData) => {
       if (!orderData) return;
       await fetchOrders(datePicker.value);
@@ -1249,9 +1414,6 @@
       });
     }
 
-    // ── ACCEPT pending dine-in ─────────────────────────────────────────────
-    // On success: apply draft from server response, auto-fill customer details,
-    // switch to Tables tab, select the table.
     async function acceptPendingDineIn(requestId) {
       const req = pendingDineInRequests.find(r => getPendingRequestId(r) === requestId);
       if (!req || !requestId) return;
@@ -1280,18 +1442,14 @@
         const data = await res.json();
 
         if (data.success && data.draft) {
-          // Apply the draft returned by server — includes merged items + auto-filled customer details
           tableOrders[tableNo] = normalizeTablePayload(data.draft, tableNo);
         } else {
           await loadSingleTableDraft(tableNo);
         }
 
         removePendingRequestById(requestId);
-
-        // Switch to tables tab and select the updated table
         setActiveTab("tables");
         selectTable(tableNo);
-
         toast(`✅ Accepted! Items added to Table ${tableNo}`);
       } catch(e) {
         console.error("Accept error:", e);
@@ -1636,7 +1794,6 @@
       } catch(e) { console.error(e); }
     }
 
-    // ── SAVE & PRINT: finalize the bill, move to Order History, clear draft ──
     saveAndPrintTableBillBtn.onclick = async () => {
       syncSelectedTableMeta();
       const table = tableOrders[selectedTable];
@@ -1693,7 +1850,6 @@
       toast(`Table ${selectedTable} finalized ✅ Bill printed — order added to History`);
     };
 
-    // ── SOCKET: table draft updated (from another manager tab or after accept) ──
     socket.on("tableDraftUpdated", (payload) => {
       if (!payload) return;
       const tableNo = Number(payload?.tableNumber || 0);
@@ -1703,7 +1859,6 @@
       renderTablesList();
 
       if (selectedTable === tableNo) {
-        // Update inputs — this is the key auto-fill: customer name/mobile from portal
         tableCustomerName.value   = tableOrders[tableNo].customerName;
         tableCustomerMobile.value = tableOrders[tableNo].mobile;
         tableGuestCount.value     = tableOrders[tableNo].guestCount || 1;
@@ -1729,7 +1884,6 @@
       await renderDashboard();
     });
 
-    // pendingDineInAccepted: draft update is handled by tableDraftUpdated above
     socket.on("pendingDineInAccepted", (payload) => {
       const id = payload?.id || payload;
       removePendingRequestById(id);
