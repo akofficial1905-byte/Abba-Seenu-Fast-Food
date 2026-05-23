@@ -10,9 +10,7 @@
   <script src="/socket.io/socket.io.js"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     :root {
       --primary-bg: #F8F7F3;
@@ -25,11 +23,11 @@
       --text-dark: #2C3E50;
       --text-light: #7F8C8D;
       --border-color: #E8E7E3;
-      --chart-color-1: #FF8C42;
-      --chart-color-2: #3498DB;
-      --chart-color-3: #2ECC71;
-      --chart-color-4: #9B59B6;
-      --chart-color-5: #F39C12;
+      --chart-1: #FF8C42;
+      --chart-2: #3498DB;
+      --chart-3: #2ECC71;
+      --chart-4: #9B59B6;
+      --chart-5: #F39C12;
     }
 
     body {
@@ -39,2270 +37,1564 @@
       overflow-x: hidden;
     }
 
-    /* Scrollbar Styling */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--tertiary-bg);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--light-blue);
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--dark-blue);
-    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--tertiary-bg); }
+    ::-webkit-scrollbar-thumb { background: var(--light-blue); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--dark-blue); }
 
-    /* Header */
     header {
       background: linear-gradient(135deg, var(--dark-blue) 0%, var(--light-blue) 100%);
       padding: 1.5rem;
       border-bottom: 3px solid var(--accent-orange);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
+    header h1 { color: white; font-size: 1.8rem; font-weight: 700; margin: 0; }
+    header p  { color: rgba(255,255,255,0.85); font-size: 0.85rem; margin: 0.5rem 0 0; }
 
-    header h1 {
-      color: white;
-      font-size: 1.8rem;
-      font-weight: 700;
-      margin: 0;
-      letter-spacing: -0.5px;
-    }
-
-    header p {
-      color: rgba(255, 255, 255, 0.85);
-      font-size: 0.85rem;
-      margin: 0.5rem 0 0 0;
-    }
-
-    /* Tabs Navigation */
     .tabs-container {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 2rem;
-      overflow-x: auto;
-      padding-bottom: 0.5rem;
+      display: flex; gap: 0.5rem; margin-bottom: 2rem;
+      overflow-x: auto; padding-bottom: 0.5rem;
       border-bottom: 2px solid var(--border-color);
     }
-
     .tab-btn {
-      padding: 0.8rem 1.4rem;
-      background: white;
-      border: 2px solid var(--border-color);
-      color: var(--text-light);
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      white-space: nowrap;
-      position: relative;
+      padding: 0.8rem 1.4rem; background: white;
+      border: 2px solid var(--border-color); color: var(--text-light);
+      border-radius: 8px; font-weight: 600; font-size: 0.9rem;
+      cursor: pointer; transition: all 0.3s; white-space: nowrap;
     }
-
-    .tab-btn:hover {
-      border-color: var(--light-blue);
-      color: var(--light-blue);
-    }
-
+    .tab-btn:hover { border-color: var(--light-blue); color: var(--light-blue); }
     .tab-btn.active {
-      background: var(--dark-blue);
-      color: white;
+      background: var(--dark-blue); color: white;
       border-color: var(--dark-blue);
-      box-shadow: 0 4px 12px rgba(31, 58, 95, 0.2);
+      box-shadow: 0 4px 12px rgba(31,58,95,0.2);
     }
-
     .tab-btn .badge {
-      display: inline-block;
-      background: var(--accent-orange);
-      color: white;
-      border-radius: 999px;
-      padding: 0.2rem 0.6rem;
-      font-size: 0.7rem;
-      font-weight: 700;
-      margin-left: 0.5rem;
+      display: inline-block; background: var(--accent-orange); color: white;
+      border-radius: 999px; padding: 0.2rem 0.6rem;
+      font-size: 0.7rem; font-weight: 700; margin-left: 0.5rem;
     }
 
-    /* Cards */
     .card {
-      background: var(--secondary-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      transition: all 0.3s ease;
+      background: var(--secondary-bg); border: 1px solid var(--border-color);
+      border-radius: 12px; padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: box-shadow 0.3s;
     }
+    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
 
-    .card:hover {
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Buttons */
     .btn {
-      padding: 0.8rem 1.6rem;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      -webkit-user-select: none;
-      user-select: none;
-      font-family: inherit;
+      padding: 0.8rem 1.6rem; border: none; border-radius: 8px;
+      font-weight: 600; font-size: 0.95rem; cursor: pointer;
+      transition: all 0.3s; display: inline-flex; align-items: center;
+      gap: 0.5rem; user-select: none; font-family: inherit;
     }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary { background: var(--dark-blue); color: white; min-height: 44px; min-width: 44px; }
+    .btn-primary:hover:not(:disabled) { background: var(--light-blue); box-shadow: 0 4px 12px rgba(31,58,95,0.3); }
+    .btn-secondary { background: white; color: var(--dark-blue); border: 2px solid var(--dark-blue); }
+    .btn-secondary:hover { background: var(--tertiary-bg); }
+    .btn-success { background: var(--accent-green); color: white; }
+    .btn-success:hover { opacity: 0.9; }
+    .btn-danger { background: #E74C3C; color: white; }
+    .btn-danger:hover { opacity: 0.9; }
+    .btn-warning { background: #F39C12; color: white; }
+    .btn-warning:hover { opacity: 0.9; }
+    .btn-sm { padding: 0.5rem 1rem; font-size: 0.85rem; min-height: 36px; }
 
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-primary {
-      background: var(--dark-blue);
-      color: white;
-      min-height: 44px;
-      min-width: 44px;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      background: var(--light-blue);
-      box-shadow: 0 4px 12px rgba(31, 58, 95, 0.3);
-    }
-
-    .btn-primary:active:not(:disabled) {
-      transform: scale(0.98);
-    }
-
-    .btn-secondary {
-      background: white;
-      color: var(--dark-blue);
-      border: 2px solid var(--dark-blue);
-    }
-
-    .btn-secondary:hover {
-      background: var(--tertiary-bg);
-    }
-
-    .btn-success {
-      background: var(--accent-green);
-      color: white;
-    }
-
-    .btn-success:hover {
-      opacity: 0.9;
-    }
-
-    .btn-danger {
-      background: #E74C3C;
-      color: white;
-    }
-
-    .btn-danger:hover {
-      opacity: 0.9;
-    }
-
-    .btn-sm {
-      padding: 0.5rem 1rem;
-      font-size: 0.85rem;
-      min-height: 36px;
-    }
-
-    /* KPI Cards */
     .kpi-card {
-      background: var(--secondary-bg);
-      border-left: 4px solid var(--dark-blue);
-      border-radius: 8px;
-      padding: 1.5rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      background: var(--secondary-bg); border-left: 4px solid var(--dark-blue);
+      border-radius: 8px; padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
+    .kpi-label { font-size: 0.8rem; color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+    .kpi-value { font-size: 2rem; font-weight: 700; color: var(--text-dark); }
+    .kpi-subtext { font-size: 0.8rem; color: var(--text-light); margin-top: 0.5rem; }
 
-    .kpi-label {
-      font-size: 0.8rem;
-      color: var(--text-light);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 0.5rem;
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-dark); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-input, .form-select {
+      width: 100%; padding: 0.8rem; border: 2px solid var(--border-color);
+      border-radius: 8px; font-size: 1rem; background: white;
+      color: var(--text-dark); transition: all 0.3s; font-family: inherit;
+      -webkit-appearance: none; appearance: none;
     }
-
-    .kpi-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--text-dark);
+    .form-input:focus, .form-select:focus {
+      outline: none; border-color: var(--dark-blue);
+      box-shadow: 0 0 0 3px rgba(31,58,95,0.1);
     }
+    .form-input::placeholder { color: var(--text-light); }
 
-    .kpi-subtext {
-      font-size: 0.8rem;
-      color: var(--text-light);
-      margin-top: 0.5rem;
-    }
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    table thead { background: var(--tertiary-bg); border-bottom: 2px solid var(--border-color); }
+    table th { padding: 1rem; text-align: left; font-weight: 600; color: var(--text-dark); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+    table td { padding: 1rem; border-bottom: 1px solid var(--border-color); }
+    table tbody tr:hover { background: var(--tertiary-bg); }
 
-    /* Form Elements */
-    .form-group {
-      margin-bottom: 1rem;
-    }
-
-    .form-label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text-dark);
-      margin-bottom: 0.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .form-input,
-    .form-select {
-      width: 100%;
-      padding: 0.8rem;
-      border: 2px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 1rem;
-      background: white;
-      color: var(--text-dark);
-      transition: all 0.3s ease;
-      font-family: inherit;
-      -webkit-appearance: none;
-      appearance: none;
-    }
-
-    .form-input:focus,
-    .form-select:focus {
-      outline: none;
-      border-color: var(--dark-blue);
-      box-shadow: 0 0 0 3px rgba(31, 58, 95, 0.1);
-    }
-
-    .form-input::placeholder {
-      color: var(--text-light);
-    }
-
-    /* Tables */
-    .table-responsive {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
-    }
-
-    table thead {
-      background: var(--tertiary-bg);
-      border-bottom: 2px solid var(--border-color);
-    }
-
-    table th {
-      padding: 1rem;
-      text-align: left;
-      font-weight: 600;
-      color: var(--text-dark);
-      text-transform: uppercase;
-      font-size: 0.8rem;
-      letter-spacing: 0.5px;
-    }
-
-    table td {
-      padding: 1rem;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    table tbody tr:hover {
-      background: var(--tertiary-bg);
-    }
-
-    /* Badge */
     .badge {
-      display: inline-block;
-      padding: 0.4rem 0.8rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
+      display: inline-block; padding: 0.4rem 0.8rem; border-radius: 6px;
+      font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
     }
+    .badge-success  { background: #D4EDDA; color: #155724; }
+    .badge-warning  { background: #FFF3CD; color: #856404; }
+    .badge-danger   { background: #F8D7DA; color: #721C24; }
+    .badge-info     { background: #D1ECF1; color: #0C5460; }
+    .badge-incoming { background: #FFF3E0; color: #E65100; }
 
-    .badge-success {
-      background: #D4EDDA;
-      color: #155724;
-    }
-
-    .badge-warning {
-      background: #FFF3CD;
-      color: #856404;
-    }
-
-    .badge-danger {
-      background: #F8D7DA;
-      color: #721C24;
-    }
-
-    .badge-info {
-      background: #D1ECF1;
-      color: #0C5460;
-    }
-
-    /* Modal */
     .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55); z-index: 1000;
+      align-items: center; justify-content: center;
     }
-
-    .modal.active {
-      display: flex;
-    }
-
+    .modal.active { display: flex; }
     .modal-content {
-      background: white;
-      border-radius: 12px;
-      padding: 2rem;
-      max-width: 90vw;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      background: white; border-radius: 12px; padding: 2rem;
+      max-width: 90vw; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      animation: slideIn 0.25s ease;
     }
 
-    /* Stats Grid */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
 
-    /* Orders Card */
     .order-item {
-      background: white;
-      border-left: 4px solid var(--accent-orange);
-      border-radius: 8px;
-      padding: 1.2rem;
-      margin-bottom: 1rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      background: white; border-left: 4px solid var(--accent-orange);
+      border-radius: 8px; padding: 1.2rem; margin-bottom: 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: box-shadow 0.2s;
+    }
+    .order-item:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+    .order-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.8rem; }
+    .order-type-badge { display: inline-block; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+    .order-type-dinein    { background: #E8F4F8; color: #0277BD; }
+    .order-type-takeaway  { background: #E8F5E9; color: #2E7D32; }
+    .order-type-delivery  { background: #FFF3E0; color: #E65100; }
+
+    /* KOT label */
+    .kot-label {
+      display: inline-block; background: #1F3A5F; color: white;
+      font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem;
+      border-radius: 4px; letter-spacing: 0.5px; vertical-align: middle;
+      margin-left: 0.4rem;
     }
 
-    .order-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      margin-bottom: 0.8rem;
-    }
+    .table-selector { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.8rem; margin-bottom: 1.5rem; }
+    .table-btn { padding: 1rem; background: white; border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s; }
+    .table-btn:hover { border-color: var(--light-blue); }
+    .table-btn.active { background: var(--dark-blue); color: white; border-color: var(--dark-blue); }
+    .table-btn-number { font-size: 1.4rem; font-weight: 700; }
+    .table-btn-status { font-size: 0.7rem; margin-top: 0.4rem; opacity: 0.7; }
 
-    .order-type-badge {
-      display: inline-block;
-      padding: 0.4rem 0.8rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
+    .menu-item { background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; text-align: center; cursor: pointer; transition: all 0.3s; }
+    .menu-item:hover { border-color: var(--dark-blue); box-shadow: 0 4px 12px rgba(31,58,95,0.2); }
+    .menu-item-name  { font-weight: 600; color: var(--text-dark); margin-bottom: 0.5rem; font-size: 0.95rem; }
+    .menu-item-price { color: var(--accent-orange); font-weight: 700; font-size: 1.1rem; }
 
-    .order-type-dinein {
-      background: #E8F4F8;
-      color: #0277BD;
-    }
+    .chart-container { position: relative; height: 300px; margin-bottom: 2rem; }
 
-    .order-type-takeaway {
-      background: #E8F5E9;
-      color: #2E7D32;
-    }
+    .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+    .switch input { display: none; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; transition: 0.4s; border-radius: 26px; }
+    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; transition: 0.4s; border-radius: 50%; }
+    .switch input:checked + .slider { background: var(--accent-green); }
+    .switch input:checked + .slider:before { transform: translateX(24px); }
 
-    .order-type-delivery {
-      background: #FFF3E0;
-      color: #E65100;
-    }
-
-    /* Table POS */
-    .table-selector {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 0.8rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .table-btn {
-      padding: 1rem;
-      background: white;
-      border: 2px solid var(--border-color);
-      border-radius: 8px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.3s ease;
-    }
-
-    .table-btn:hover {
-      border-color: var(--light-blue);
-    }
-
-    .table-btn.active {
-      background: var(--dark-blue);
-      color: white;
-      border-color: var(--dark-blue);
-    }
-
-    .table-btn-number {
-      font-size: 1.4rem;
-      font-weight: 700;
-    }
-
-    .table-btn-status {
-      font-size: 0.7rem;
-      margin-top: 0.4rem;
-      opacity: 0.7;
-    }
-
-    /* Menu Grid */
-    .menu-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 1rem;
-    }
-
-    .menu-item {
-      background: white;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 1rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .menu-item:hover {
-      border-color: var(--dark-blue);
-      box-shadow: 0 4px 12px rgba(31, 58, 95, 0.2);
-    }
-
-    .menu-item-name {
-      font-weight: 600;
-      color: var(--text-dark);
-      margin-bottom: 0.5rem;
-      font-size: 0.95rem;
-    }
-
-    .menu-item-price {
-      color: var(--accent-orange);
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
-
-    /* Insights */
-    .insight-container {
-      background: var(--secondary-bg);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .insight-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 1rem;
-    }
-
-    /* Login Modal */
+    /* Login overlay */
     #loginOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      position: fixed; inset: 0;
       background: linear-gradient(135deg, var(--dark-blue) 0%, var(--light-blue) 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
+      display: flex; align-items: center; justify-content: center; z-index: 10000;
     }
+    .login-card { background: white; border-radius: 12px; padding: 2.5rem; width: 90%; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: slideIn 0.3s ease; }
+    .login-title { font-size: 1.8rem; font-weight: 700; color: var(--dark-blue); text-align: center; margin: 0 0 0.5rem; }
+    .login-subtitle { font-size: 0.9rem; color: var(--text-light); text-align: center; margin: 0 0 1.5rem; }
+    .login-error { color: #721C24; font-size: 0.85rem; margin-top: 1rem; text-align: center; display: none; padding: 1rem; background: #F8D7DA; border-radius: 8px; border: 1px solid #F5C6CB; line-height: 1.5; }
 
-    .login-card {
-      background: white;
-      border-radius: 12px;
-      padding: 2.5rem;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-      animation: slideIn 0.3s ease;
-    }
-
-    .login-title {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--dark-blue);
-      text-align: center;
-      margin: 0 0 0.5rem 0;
-    }
-
-    .login-subtitle {
-      font-size: 0.9rem;
-      color: var(--text-light);
-      text-align: center;
-      margin: 0 0 1.5rem 0;
-    }
-
-    #loginForm {
-      width: 100%;
-    }
-
-    .login-error {
-      color: #721C24;
-      font-size: 0.85rem;
-      margin-top: 1rem;
-      text-align: center;
-      display: none;
-      padding: 1rem;
-      background: #F8D7DA;
-      border-radius: 8px;
-      border: 1px solid #F5C6CB;
-      line-height: 1.5;
-    }
-
-    @media (max-width: 480px) {
-      #loginOverlay {
-        padding: 1rem;
-      }
-
-      .login-card {
-        padding: 1.5rem;
-        max-width: 100%;
-        border-radius: 16px;
-      }
-
-      .login-title {
-        font-size: 1.5rem;
-      }
-
-      .login-subtitle {
-        font-size: 0.85rem;
-      }
-
-      .form-input,
-      .form-select,
-      .btn {
-        font-size: 16px; /* Prevents automatic zoom on iOS */
-        min-height: 48px;
-        padding: 0.8rem;
-      }
-
-      #loginBtn {
-        min-height: 56px;
-        font-size: 1.1rem;
-      }
-
-      .form-label {
-        font-size: 0.8rem;
-      }
-    }
-
-    /* Toggle Switch */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 26px;
-    }
-
-    .switch input {
+    /* Autocomplete dropdown */
+    .autocomplete-wrap { position: relative; }
+    .autocomplete-list {
+      position: absolute; top: 100%; left: 0; right: 0; z-index: 999;
+      background: white; border: 2px solid var(--dark-blue); border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15); max-height: 220px; overflow-y: auto;
       display: none;
     }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: 0.4s;
-      border-radius: 26px;
+    .autocomplete-list.open { display: block; }
+    .autocomplete-item {
+      padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid var(--border-color);
+      transition: background 0.15s;
     }
+    .autocomplete-item:hover { background: var(--tertiary-bg); }
+    .autocomplete-item:last-child { border-bottom: none; }
+    .autocomplete-name   { font-weight: 600; font-size: 0.9rem; }
+    .autocomplete-mobile { font-size: 0.8rem; color: var(--text-light); }
 
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 20px;
-      width: 20px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
+    /* Order search results */
+    #orderSearchResults {
+      background: white; border: 2px solid var(--border-color); border-radius: 8px;
+      margin-top: 1rem; display: none;
     }
+    #orderSearchResults.open { display: block; }
 
-    .switch input:checked + .slider {
-      background-color: var(--accent-green);
+    /* Edit order modal items */
+    .edit-item-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.6rem; border-bottom: 1px solid var(--border-color);
     }
+    .edit-item-row:last-child { border-bottom: none; }
 
-    .switch input:checked + .slider:before {
-      transform: translateX(24px);
-    }
+    .insight-container { background: var(--secondary-bg); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .insight-title { font-size: 1.1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 1rem; }
 
-    /* Chart Container */
-    .chart-container {
-      position: relative;
-      height: 300px;
-      margin-bottom: 2rem;
-    }
+    .ai-suggestion { background: linear-gradient(135deg, #FFF9E6 0%, #FFF3E0 100%); border-left: 4px solid var(--accent-orange); border-radius: 8px; padding: 1.2rem; margin-bottom: 1.5rem; }
+    .ai-suggestion-title { font-weight: 700; color: var(--accent-orange); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+    .ai-suggestion-item { font-size: 0.9rem; color: var(--text-dark); margin-bottom: 0.5rem; padding-left: 1.5rem; position: relative; }
+    .ai-suggestion-item:before { content: "→"; position: absolute; left: 0; color: var(--accent-orange); font-weight: 700; }
 
-    /* Responsive */
-    @media (max-width: 1024px) {
-      .stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      }
-    }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 
     @media (max-width: 768px) {
-      header h1 {
-        font-size: 1.4rem;
-      }
-
-      header {
-        padding: 1rem;
-      }
-
-      .card {
-        padding: 1rem;
-      }
-
-      .menu-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 0.8rem;
-      }
-
-      .table-selector {
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      }
-
-      .stats-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .tab-btn {
-        padding: 0.6rem 1rem;
-        font-size: 0.8rem;
-      }
+      header h1 { font-size: 1.4rem; }
+      header { padding: 1rem; }
+      .card { padding: 1rem; }
+      .menu-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.8rem; }
+      .table-selector { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); }
+      .stats-grid { grid-template-columns: 1fr; }
+      .tab-btn { padding: 0.6rem 1rem; font-size: 0.8rem; }
+      .form-input, .form-select, .btn { font-size: 16px; }
     }
-
-    /* Animations */
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .card {
-      animation: slideIn 0.3s ease;
-    }
-
-    /* AI Suggestions Box */
-    .ai-suggestion {
-      background: linear-gradient(135deg, #FFF9E6 0%, #FFF3E0 100%);
-      border-left: 4px solid var(--accent-orange);
-      border-radius: 8px;
-      padding: 1.2rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .ai-suggestion-title {
-      font-weight: 700;
-      color: var(--accent-orange);
-      margin-bottom: 0.8rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .ai-suggestion-item {
-      font-size: 0.9rem;
-      color: var(--text-dark);
-      margin-bottom: 0.5rem;
-      padding-left: 1.5rem;
-      position: relative;
-    }
-
-    .ai-suggestion-item:before {
-      content: "→";
-      position: absolute;
-      left: 0;
-      color: var(--accent-orange);
-      font-weight: 700;
+    @media (max-width: 480px) {
+      .login-card { padding: 1.5rem; }
+      .login-title { font-size: 1.5rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Login Modal -->
-  <div id="loginOverlay" style="display: flex;">
-    <div class="login-card">
-      <div style="text-align: center; margin-bottom: 1.5rem;">
-        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔐</div>
-        <h2 class="login-title">Manager Login</h2>
-        <p class="login-subtitle">Abba SEENUUU... FAST FOODS</p>
+<!-- ─── LOGIN OVERLAY ─────────────────────────────────────────────────────── -->
+<div id="loginOverlay" style="display:flex;">
+  <div class="login-card">
+    <div style="text-align:center;margin-bottom:1.5rem;">
+      <div style="font-size:3rem;margin-bottom:0.5rem;">🔐</div>
+      <h2 class="login-title">Manager Login</h2>
+      <p class="login-subtitle">Abba SEENUUU... FAST FOODS</p>
+    </div>
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label" for="loginUser">Username</label>
+        <input id="loginUser" type="text" class="form-input" placeholder="Enter username" required autocomplete="username" />
       </div>
-
-      <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="form-group">
-          <label class="form-label" for="loginUser">Username</label>
-          <input id="loginUser" type="text" class="form-input" placeholder="Enter your username" required autocomplete="username" />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label" for="loginPass">Password</label>
-          <input id="loginPass" type="password" class="form-input" placeholder="Enter your password" required autocomplete="current-password" />
-        </div>
-
-        <button type="submit" id="loginBtn" class="btn btn-primary" style="width: 100%; cursor: pointer; min-height: 48px; font-size: 1rem;">
-          Login
-        </button>
-      </form>
-      
-      <div id="loginError" class="login-error"></div>
-      <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); text-align: center;">
-        <p style="font-size: 0.8rem; color: var(--text-light); margin: 0;">Demo Credentials:</p>
-        <p style="font-size: 0.8rem; color: var(--text-light); margin: 0.3rem 0 0 0;">Username: manager | Password: password</p>
+      <div class="form-group">
+        <label class="form-label" for="loginPass">Password</label>
+        <input id="loginPass" type="password" class="form-input" placeholder="Enter password" required autocomplete="current-password" />
       </div>
+      <button type="submit" id="loginBtn" class="btn btn-primary" style="width:100%;min-height:48px;font-size:1rem;cursor:pointer;">
+        Login
+      </button>
+    </form>
+    <div id="loginError" class="login-error"></div>
+    <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border-color);text-align:center;">
+      <p style="font-size:0.8rem;color:var(--text-light);margin:0;">Default: admin / abbaseenu2025</p>
     </div>
   </div>
+</div>
 
-  <!-- Main App -->
-  <div id="managerApp" style="display: none;">
-    <!-- Header -->
-    <header class="flex justify-between items-start">
-      <div>
-        <h1>🍔 Abba SEENUUU... FAST FOODS</h1>
-        <p>Manager Portal — Live Orders, Analytics & POS</p>
+<!-- ─── MAIN APP ──────────────────────────────────────────────────────────── -->
+<div id="managerApp" style="display:none;">
+  <header class="flex justify-between items-start">
+    <div>
+      <h1>🍔 Abba SEENUUU... FAST FOODS</h1>
+      <p>Manager Portal — Live Orders, Analytics &amp; POS</p>
+    </div>
+    <div class="flex gap-3 items-center text-white">
+      <div class="flex items-center gap-2">
+        <span id="restStatusLabel">Restaurant: ON</span>
+        <label class="switch">
+          <input type="checkbox" id="restStatusToggle" checked />
+          <span class="slider"></span>
+        </label>
       </div>
-      <div class="flex gap-3 items-center text-white">
-        <div class="flex items-center gap-2">
-          <span id="restStatusLabel">Restaurant: ON</span>
-          <label class="switch">
-            <input type="checkbox" id="restStatusToggle" checked />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <button id="openChangeLogin" class="btn" style="background: var(--accent-orange); color: white;">Change Login</button>
-      </div>
-    </header>
+      <button id="openChangeLogin" class="btn" style="background:var(--accent-orange);color:white;">Change Login</button>
+    </div>
+  </header>
 
-    <!-- Main Container -->
-    <div class="p-6 max-w-7xl mx-auto">
-      <!-- Navigation Tabs -->
-      <div class="tabs-container">
-        <button id="tabOrders" class="tab-btn active">📦 Live Orders <span id="ordersNotificationBadge" class="badge" style="display: none;">0</span></button>
-        <button id="tabDashboard" class="tab-btn">📊 Dashboard</button>
-        <button id="tabAnalytics" class="tab-btn">📈 Analytics</button>
-        <button id="tabTables" class="tab-btn">🍽️ Dine-In POS <span id="pendingTabBadge" class="badge" style="display: none;">0</span></button>
-        <button id="tabInventory" class="tab-btn">📦 Inventory</button>
-      </div>
+  <div class="p-6 max-w-7xl mx-auto">
+    <!-- Tabs -->
+    <div class="tabs-container">
+      <button id="tabOrders"    class="tab-btn active">📦 Live Orders <span id="ordersNotificationBadge" class="badge" style="display:none;">0</span></button>
+      <button id="tabDashboard" class="tab-btn">📊 Dashboard</button>
+      <button id="tabAnalytics" class="tab-btn">📈 Analytics</button>
+      <button id="tabTables"    class="tab-btn">🍽️ Dine-In POS <span id="pendingTabBadge" class="badge" style="display:none;">0</span></button>
+      <button id="tabInventory" class="tab-btn">📦 Inventory</button>
+    </div>
 
-      <!-- ═════════════════════════════════════════════════ ORDERS TAB -->
-      <div id="ordersTab" class="tab-content">
-        <!-- Service Requests Section -->
-        <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--accent-orange);">
-          <div class="flex justify-between items-center mb-4">
-            <div>
-              <h2 style="font-size: 1.1rem; font-weight: 700; margin: 0;">🔔 Live Service Requests</h2>
-              <p style="font-size: 0.85rem; color: var(--text-light); margin: 0.5rem 0 0 0;">Customer calls from waiter/manager buttons</p>
-            </div>
-            <button id="clearServiceRequestsBtn" class="btn btn-secondary btn-sm">Clear All</button>
-          </div>
-          <div id="serviceRequestList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;"></div>
-        </div>
-
-        <!-- Orders Date Selector -->
-        <div class="card" style="margin-bottom: 2rem;">
-          <div class="flex items-center gap-3 flex-wrap">
-            <label class="form-label" style="margin: 0;">Filter by Date:</label>
-            <input id="datePicker" type="date" class="form-input" style="max-width: 180px;" />
-            <span style="font-size: 0.85rem; color: var(--text-light);">Live Orders = Takeaway & Delivery only. Dine-in bills appear in Order History after saving.</span>
-          </div>
-        </div>
-
-        <!-- Live & History Orders Grid -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <!-- ═══ ORDERS TAB ═════════════════════════════════════════════════════ -->
+    <div id="ordersTab" class="tab-content">
+      <!-- Service Requests -->
+      <div class="card" style="margin-bottom:2rem;border-left:4px solid var(--accent-orange);">
+        <div class="flex justify-between items-center mb-4">
           <div>
-            <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-              <span style="display: inline-block; width: 12px; height: 12px; background: var(--accent-green); border-radius: 50%; animation: pulse 2s infinite;"></span>
-              Live Orders (Takeaway & Delivery)
-            </h3>
-            <div id="ordersList" style="display: flex; flex-direction: column; gap: 1rem; max-height: 70vh; overflow-y: auto;"></div>
+            <h2 style="font-size:1.1rem;font-weight:700;margin:0;">🔔 Live Service Requests</h2>
+            <p style="font-size:0.85rem;color:var(--text-light);margin:0.5rem 0 0;">Customer calls from waiter/manager buttons</p>
           </div>
+          <button id="clearServiceRequestsBtn" class="btn btn-secondary btn-sm">Clear All</button>
+        </div>
+        <div id="serviceRequestList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;"></div>
+      </div>
 
+      <!-- Date filter -->
+      <div class="card" style="margin-bottom:2rem;">
+        <div class="flex items-center gap-3 flex-wrap">
+          <label class="form-label" style="margin:0;">Filter by Date:</label>
+          <input id="datePicker" type="date" class="form-input" style="max-width:180px;" />
+          <span style="font-size:0.85rem;color:var(--text-light);">Live = Takeaway &amp; Delivery. Dine-in bills appear after saving in POS.</span>
+        </div>
+      </div>
+
+      <!-- Live + History -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
+        <div>
+          <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+            <span style="display:inline-block;width:12px;height:12px;background:var(--accent-green);border-radius:50%;animation:pulse 2s infinite;"></span>
+            Live Orders (Takeaway &amp; Delivery)
+          </h3>
+          <div id="ordersList" style="display:flex;flex-direction:column;gap:1rem;max-height:70vh;overflow-y:auto;"></div>
+        </div>
+        <div>
+          <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;">✅ Order History</h3>
+          <div id="historyList" style="display:flex;flex-direction:column;gap:1rem;max-height:70vh;overflow-y:auto;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ DASHBOARD TAB ═══════════════════════════════════════════════════ -->
+    <div id="dashboardTab" class="tab-content" style="display:none;">
+      <!-- Order search -->
+      <div class="card" style="margin-bottom:2rem;border-left:4px solid var(--light-blue);">
+        <h3 style="font-size:1rem;font-weight:700;margin:0 0 1rem;">🔍 Search Any Order</h3>
+        <div class="flex gap-2 flex-wrap">
+          <input id="orderSearchInput" type="text" class="form-input" style="max-width:320px;"
+            placeholder="Order ID, customer name, mobile, table..." />
+          <button class="btn btn-primary btn-sm" onclick="searchOrders()">Search</button>
+          <button class="btn btn-secondary btn-sm" onclick="clearOrderSearch()">Clear</button>
+        </div>
+        <div id="orderSearchResults"></div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="stats-grid">
+        <div class="kpi-card" style="border-left-color:var(--accent-orange);">
+          <div class="kpi-label">Today's Revenue</div>
+          <div class="kpi-value" id="kpi-revenue">₹0</div>
+          <div class="kpi-subtext">All orders today</div>
+        </div>
+        <div class="kpi-card" style="border-left-color:var(--accent-green);">
+          <div class="kpi-label">Total Orders</div>
+          <div class="kpi-value" id="kpi-orders">0</div>
+          <div class="kpi-subtext">Across all types</div>
+        </div>
+        <div class="kpi-card" style="border-left-color:#3498DB;">
+          <div class="kpi-label">Average Order Value</div>
+          <div class="kpi-value" id="kpi-avg-value">₹0</div>
+          <div class="kpi-subtext">Per order</div>
+        </div>
+        <div class="kpi-card" style="border-left-color:#9B59B6;">
+          <div class="kpi-label">Peak Hour</div>
+          <div class="kpi-value" id="kpi-peak">--</div>
+          <div class="kpi-subtext">Most orders</div>
+        </div>
+      </div>
+
+      <!-- Period & Charts -->
+      <div class="card" style="margin-bottom:2rem;">
+        <div class="flex items-center gap-3 mb-4 flex-wrap">
+          <label class="form-label" style="margin:0;">Summary for:</label>
+          <input id="dashboardDate" type="date" class="form-input" style="max-width:180px;" />
+          <select id="dashboardPeriod" class="form-select" style="max-width:140px;">
+            <option value="day">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="renderDashboard()">Refresh</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
           <div>
-            <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">✅ Order History</h3>
-            <div id="historyList" style="display: flex; flex-direction: column; gap: 1rem; max-height: 70vh; overflow-y: auto;"></div>
+            <h4 style="font-weight:700;margin-bottom:1rem;">Sales by Order Type</h4>
+            <div class="chart-container"><canvas id="orderTypeChart"></canvas></div>
+          </div>
+          <div>
+            <h4 style="font-weight:700;margin-bottom:1rem;">Hourly Distribution</h4>
+            <div class="chart-container"><canvas id="hourlyChart"></canvas></div>
           </div>
         </div>
       </div>
 
-      <!-- ═════════════════════════════════════════════════ DASHBOARD TAB -->
-      <div id="dashboardTab" class="tab-content" style="display: none;">
-        <!-- KPI Cards -->
-        <div class="stats-grid">
-          <div class="kpi-card" style="border-left-color: var(--accent-orange);">
-            <div class="kpi-label">Today's Revenue</div>
-            <div class="kpi-value" id="kpi-revenue">₹0</div>
-            <div class="kpi-subtext">+0% from yesterday</div>
-          </div>
+      <!-- AI Suggestions -->
+      <div class="ai-suggestion">
+        <div class="ai-suggestion-title">✨ AI Recommendations</div>
+        <div id="aiSuggestions"></div>
+      </div>
+    </div>
 
-          <div class="kpi-card" style="border-left-color: var(--accent-green);">
-            <div class="kpi-label">Total Orders</div>
-            <div class="kpi-value" id="kpi-orders">0</div>
-            <div class="kpi-subtext">Across all types</div>
-          </div>
-
-          <div class="kpi-card" style="border-left-color: #3498DB;">
-            <div class="kpi-label">Average Order Value</div>
-            <div class="kpi-value" id="kpi-avg-value">₹0</div>
-            <div class="kpi-subtext">Per order</div>
-          </div>
-
-          <div class="kpi-card" style="border-left-color: #9B59B6;">
-            <div class="kpi-label">Peak Hours</div>
-            <div class="kpi-value" id="kpi-peak">--</div>
-            <div class="kpi-subtext">Most orders</div>
-          </div>
-        </div>
-
-        <!-- Period Selector & Charts -->
-        <div class="card" style="margin-bottom: 2rem;">
-          <div class="flex items-center gap-3 mb-4 flex-wrap">
-            <label class="form-label" style="margin: 0;">Summary for:</label>
-            <input id="dashboardDate" type="date" class="form-input" style="max-width: 180px;" />
-            <select id="dashboardPeriod" class="form-select" style="max-width: 120px;">
-              <option value="today">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
+    <!-- ═══ ANALYTICS TAB ═══════════════════════════════════════════════════ -->
+    <div id="analyticsTab" class="tab-content" style="display:none;">
+      <!-- Items-wise report -->
+      <div class="card" style="margin-bottom:2rem;">
+        <h3 class="insight-title">📊 Items-Wise Sales Report</h3>
+        <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+          <div style="flex:1;min-width:150px;"><label class="form-label">From:</label><input id="itemsFromDate" type="date" class="form-input" /></div>
+          <div style="flex:1;min-width:150px;"><label class="form-label">To:</label><input id="itemsToDate" type="date" class="form-input" /></div>
+          <div style="flex:1;min-width:150px;">
+            <label class="form-label">Period:</label>
+            <select id="itemsPeriod" class="form-select">
+              <option value="day">Daily</option>
+              <option value="week">Weekly</option>
+              <option value="month">Monthly</option>
             </select>
           </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-            <div>
-              <h4 style="font-weight: 700; margin-bottom: 1rem;">Sales by Order Type</h4>
-              <div class="chart-container">
-                <canvas id="orderTypeChart"></canvas>
-              </div>
-            </div>
-
-            <div>
-              <h4 style="font-weight: 700; margin-bottom: 1rem;">Hourly Distribution</h4>
-              <div class="chart-container">
-                <canvas id="hourlyChart"></canvas>
-              </div>
-            </div>
-          </div>
+          <div style="align-self:flex-end;"><button class="btn btn-primary btn-sm" onclick="generateItemsReport()">Generate</button></div>
         </div>
-
-        <!-- AI Suggestions -->
-        <div class="ai-suggestion">
-          <div class="ai-suggestion-title">✨ AI Recommendations</div>
-          <div id="aiSuggestions"></div>
+        <div class="table-responsive">
+          <table id="itemsReportTable">
+            <thead><tr><th>Item</th><th>Qty Sold</th><th>Revenue</th><th>Avg Price</th><th>% of Total</th></tr></thead>
+            <tbody id="itemsReportBody"><tr><td colspan="5" style="text-align:center;color:var(--text-light);">No data</td></tr></tbody>
+          </table>
         </div>
+        <div class="chart-container" style="margin-top:1.5rem;"><canvas id="itemsSalesChart"></canvas></div>
       </div>
 
-      <!-- ═════════════════════════════════════════════════ ANALYTICS TAB -->
-      <div id="analyticsTab" class="tab-content" style="display: none;">
-        <!-- Items Wise Report -->
-        <div class="card" style="margin-bottom: 2rem;">
-          <h3 class="insight-title">📊 Items-Wise Sales Report</h3>
-          <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 150px;">
-              <label class="form-label">From Date:</label>
-              <input id="itemsFromDate" type="date" class="form-input" />
-            </div>
-            <div style="flex: 1; min-width: 150px;">
-              <label class="form-label">To Date:</label>
-              <input id="itemsToDate" type="date" class="form-input" />
-            </div>
-            <div style="flex: 1; min-width: 150px;">
-              <label class="form-label">Period:</label>
-              <select id="itemsPeriod" class="form-select">
-                <option value="day">Daily</option>
-                <option value="week">Weekly</option>
-                <option value="month">Monthly</option>
-              </select>
-            </div>
-            <div style="align-self: flex-end;">
-              <button class="btn btn-primary btn-sm" onclick="generateItemsReport()">Generate Report</button>
-            </div>
-          </div>
+      <!-- Category report -->
+      <div class="card" style="margin-bottom:2rem;">
+        <h3 class="insight-title">🏷️ Category-Wise Sales</h3>
+        <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+          <div style="flex:1;min-width:150px;"><label class="form-label">From:</label><input id="categoryFromDate" type="date" class="form-input" /></div>
+          <div style="flex:1;min-width:150px;"><label class="form-label">To:</label><input id="categoryToDate" type="date" class="form-input" /></div>
+          <div style="align-self:flex-end;"><button class="btn btn-primary btn-sm" onclick="generateCategoryReport()">Generate</button></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
           <div class="table-responsive">
-            <table id="itemsReportTable">
-              <thead>
-                <tr>
-                  <th>Item Name</th>
-                  <th>Quantity Sold</th>
-                  <th>Total Revenue</th>
-                  <th>Avg. Price</th>
-                  <th>% of Total Sales</th>
-                </tr>
-              </thead>
-              <tbody id="itemsReportBody">
-                <tr><td colspan="5" style="text-align: center; color: var(--text-light);">No data available</td></tr>
-              </tbody>
-            </table>
+            <table><thead><tr><th>Category</th><th>Orders</th><th>Revenue</th><th>%</th></tr></thead>
+            <tbody id="categoryReportBody"><tr><td colspan="4" style="text-align:center;color:var(--text-light);">No data</td></tr></tbody></table>
           </div>
-          <div class="chart-container" style="margin-top: 1.5rem;">
-            <canvas id="itemsSalesChart"></canvas>
-          </div>
-        </div>
-
-        <!-- Section-Wise Report -->
-        <div class="card" style="margin-bottom: 2rem;">
-          <h3 class="insight-title">🏷️ Category-Wise Sales Report</h3>
-          <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 150px;">
-              <label class="form-label">From Date:</label>
-              <input id="categoryFromDate" type="date" class="form-input" />
-            </div>
-            <div style="flex: 1; min-width: 150px;">
-              <label class="form-label">To Date:</label>
-              <input id="categoryToDate" type="date" class="form-input" />
-            </div>
-            <div style="align-self: flex-end;">
-              <button class="btn btn-primary btn-sm" onclick="generateCategoryReport()">Generate Report</button>
-            </div>
-          </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-            <div class="table-responsive">
-              <table id="categoryReportTable">
-                <thead>
-                  <tr>
-                    <th>Category</th>
-                    <th>Orders</th>
-                    <th>Revenue</th>
-                    <th>% of Total</th>
-                  </tr>
-                </thead>
-                <tbody id="categoryReportBody">
-                  <tr><td colspan="4" style="text-align: center; color: var(--text-light);">No data available</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div>
-              <div class="chart-container">
-                <canvas id="categorySalesChart"></canvas>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Comparison Analytics -->
-        <div class="card" style="margin-bottom: 2rem;">
-          <h3 class="insight-title">📊 Period Comparison</h3>
-          <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 150px;">
-              <label class="form-label">Period 1 Date:</label>
-              <input id="comparisonDate1" type="date" class="form-input" />
-            </div>
-            <div style="flex: 1; min-width: 150px;">
-              <label class="form-label">Period 2 Date:</label>
-              <input id="comparisonDate2" type="date" class="form-input" />
-            </div>
-            <div style="flex: 1; min-width: 150px;">
-              <label class="form-label">Compare By:</label>
-              <select id="comparisonType" class="form-select">
-                <option value="day">Single Day</option>
-                <option value="week">Week</option>
-                <option value="month">Month</option>
-              </select>
-            </div>
-            <div style="align-self: flex-end;">
-              <button class="btn btn-primary btn-sm" onclick="generateComparison()">Compare</button>
-            </div>
-          </div>
-          <div id="comparisonResult"></div>
-        </div>
-
-        <!-- Top Products -->
-        <div class="card">
-          <h3 class="insight-title">⭐ Top 10 Best Sellers</h3>
-          <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 150px;">
-              <label class="form-label">From Date:</label>
-              <input id="topItemsFromDate" type="date" class="form-input" />
-            </div>
-            <div style="flex: 1; min-width: 150px;">
-              <label class="form-label">To Date:</label>
-              <input id="topItemsToDate" type="date" class="form-input" />
-            </div>
-            <div style="align-self: flex-end;">
-              <button class="btn btn-primary btn-sm" onclick="generateTopItems()">Generate</button>
-            </div>
-          </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-            <div class="table-responsive">
-              <table id="topItemsTable">
-                <thead>
-                  <tr>
-                    <th>Rank</th>
-                    <th>Item</th>
-                    <th>Orders</th>
-                    <th>Revenue</th>
-                  </tr>
-                </thead>
-                <tbody id="topItemsBody">
-                  <tr><td colspan="4" style="text-align: center; color: var(--text-light);">No data available</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div>
-              <div class="chart-container">
-                <canvas id="topItemsChart"></canvas>
-              </div>
-            </div>
-          </div>
+          <div class="chart-container"><canvas id="categorySalesChart"></canvas></div>
         </div>
       </div>
 
-      <!-- ═════════════════════════════════════════════════ TABLES/POS TAB -->
-      <div id="tablesTab" class="tab-content" style="display: none;">
-        <!-- Pending Orders Section -->
-        <div id="pendingSection" class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--accent-orange); display: none;">
-          <div class="flex justify-between items-center mb-4">
-            <div>
-              <h2 style="font-size: 1.1rem; font-weight: 700; margin: 0;">🔔 Pending Dine-In Orders</h2>
-              <p style="font-size: 0.85rem; color: var(--text-light); margin: 0.5rem 0 0 0;">Customer orders waiting for approval</p>
-            </div>
+      <!-- Comparison -->
+      <div class="card" style="margin-bottom:2rem;">
+        <h3 class="insight-title">📊 Period Comparison</h3>
+        <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+          <div style="flex:1;min-width:150px;"><label class="form-label">Period 1:</label><input id="comparisonDate1" type="date" class="form-input" /></div>
+          <div style="flex:1;min-width:150px;"><label class="form-label">Period 2:</label><input id="comparisonDate2" type="date" class="form-input" /></div>
+          <div style="flex:1;min-width:150px;"><label class="form-label">Compare By:</label>
+            <select id="comparisonType" class="form-select"><option value="day">Day</option><option value="week">Week</option><option value="month">Month</option></select>
           </div>
-          <div id="pendingDineInList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;"></div>
+          <div style="align-self:flex-end;"><button class="btn btn-primary btn-sm" onclick="generateComparison()">Compare</button></div>
         </div>
-
-        <!-- Table POS Main Section -->
-        <div class="card">
-          <div class="flex justify-between items-center mb-6">
-            <div>
-              <h2 style="font-size: 1.1rem; font-weight: 700;">Tables / Dine-In POS</h2>
-              <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.3rem;">Manage table orders and finalize bills</p>
-            </div>
-            <div class="flex gap-2 flex-wrap">
-              <button id="saveTableDraftBtn" class="btn btn-secondary btn-sm">💾 Save Draft</button>
-              <button id="saveAndPrintTableBillBtn" class="btn btn-primary btn-sm">🖨️ Save & Print</button>
-              <button id="clearTableBtn" class="btn btn-danger btn-sm">🗑️ Clear</button>
-            </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 200px 1fr; gap: 2rem;">
-            <!-- Left: Table Selector -->
-            <div>
-              <h4 style="font-weight: 700; margin-bottom: 1rem; font-size: 0.9rem; text-transform: uppercase;">Available Tables</h4>
-              <div class="table-selector" id="tablesList"></div>
-            </div>
-
-            <!-- Right: Table Details & Menu -->
-            <div>
-              <!-- Table Info -->
-              <div class="card" style="margin-bottom: 1.5rem;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                  <div>
-                    <label class="form-label">Selected Table</label>
-                    <h3 id="selectedTableTitle" style="font-size: 1.8rem; font-weight: 700; margin: 0;">Table 1</h3>
-                  </div>
-                  <span id="selectedTableBadge" class="badge badge-success">Available</span>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                  <div class="form-group" style="margin: 0;">
-                    <label class="form-label">Customer Name</label>
-                    <input id="tableCustomerName" type="text" class="form-input" />
-                  </div>
-                  <div class="form-group" style="margin: 0;">
-                    <label class="form-label">Mobile</label>
-                    <input id="tableCustomerMobile" type="text" class="form-input" />
-                  </div>
-                  <div class="form-group" style="margin: 0;">
-                    <label class="form-label">Guests</label>
-                    <input id="tableGuestCount" type="number" class="form-input" min="1" value="1" />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Menu Search & Add -->
-              <div class="card" style="margin-bottom: 1.5rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                  <div>
-                    <h4 style="font-weight: 700; margin: 0;">Add Dishes</h4>
-                    <p style="font-size: 0.8rem; color: var(--text-light); margin: 0.3rem 0 0 0;">Search and add items to table</p>
-                  </div>
-                  <input id="tableMenuSearch" type="text" class="form-input" placeholder="Search..." style="max-width: 200px;" />
-                </div>
-                <div class="menu-grid" id="tableMenuList"></div>
-              </div>
-
-              <!-- Current Draft -->
-              <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                  <div>
-                    <h4 style="font-weight: 700; margin: 0;">Current Draft</h4>
-                    <p style="font-size: 0.8rem; color: var(--text-light); margin: 0.3rem 0 0 0;">All items in this order</p>
-                  </div>
-                  <div style="text-align: right;">
-                    <span style="display: block; font-size: 0.8rem; color: var(--text-light);">Draft Total:</span>
-                    <span id="tableDraftTotal" style="font-size: 1.8rem; font-weight: 700; color: var(--dark-blue);">₹0</span>
-                  </div>
-                </div>
-                <div id="tableDraftItems" style="display: flex; flex-direction: column; gap: 0.8rem; max-height: 400px; overflow-y: auto;"></div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div id="comparisonResult"></div>
       </div>
 
-      <!-- ═════════════════════════════════════════════════ INVENTORY TAB -->
-      <div id="inventoryTab" class="tab-content" style="display: none;">
-        <div class="card">
-          <div class="flex justify-between items-center mb-4">
-            <div>
-              <h2 style="font-size: 1.1rem; font-weight: 700;">📦 Inventory & Menu Availability</h2>
-              <p style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.3rem;">Manage item availability</p>
-            </div>
-            <div class="flex gap-2">
-              <button id="saveInventoryBtn" class="btn btn-primary btn-sm">💾 Save Changes</button>
-              <button id="toggleAllInventory" class="btn btn-secondary btn-sm">Toggle All</button>
-            </div>
-          </div>
-
-          <div id="inventoryStatus" style="display: none; padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem; background: #D4EDDA; color: #155724; font-size: 0.9rem;"></div>
-
+      <!-- Top products -->
+      <div class="card">
+        <h3 class="insight-title">⭐ Top 10 Best Sellers</h3>
+        <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+          <div style="flex:1;min-width:150px;"><label class="form-label">From:</label><input id="topItemsFromDate" type="date" class="form-input" /></div>
+          <div style="flex:1;min-width:150px;"><label class="form-label">To:</label><input id="topItemsToDate" type="date" class="form-input" /></div>
+          <div style="align-self:flex-end;"><button class="btn btn-primary btn-sm" onclick="generateTopItems()">Generate</button></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
           <div class="table-responsive">
-            <table id="inventoryTable">
-              <thead>
-                <tr>
-                  <th>Category</th>
-                  <th>Item Name</th>
-                  <th>Variants / Price</th>
-                  <th>Available</th>
-                </tr>
-              </thead>
-              <tbody id="inventoryTableBody">
-              </tbody>
-            </table>
+            <table><thead><tr><th>Rank</th><th>Item</th><th>Orders</th><th>Revenue</th></tr></thead>
+            <tbody id="topItemsBody"><tr><td colspan="4" style="text-align:center;color:var(--text-light);">No data</td></tr></tbody></table>
           </div>
+          <div class="chart-container"><canvas id="topItemsChart"></canvas></div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Change Login Modal -->
-  <div id="changeLoginModal" class="modal">
-    <div class="modal-content" style="max-width: 450px;">
-      <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Change Manager Login</h2>
-      <p style="color: var(--text-light); margin-bottom: 1.5rem;">Update your manager portal credentials</p>
-
-      <div class="form-group">
-        <label class="form-label">Current Username</label>
-        <input id="curUser" type="text" class="form-input" />
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Current Password</label>
-        <input id="curPass" type="password" class="form-input" />
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">New Username</label>
-        <input id="newUser" type="text" class="form-input" />
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">New Password</label>
-        <input id="newPass" type="password" class="form-input" />
-      </div>
-
-      <div id="changeLoginMsg" style="display: none; padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem;"></div>
-
-      <div class="flex gap-2">
-        <button id="saveLoginChange" class="btn btn-primary" style="flex: 1;">Save Changes</button>
-        <button id="cancelLoginChange" class="btn btn-secondary" style="flex: 1;">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // ═══════════════════════════════════════════════════════════════════
-    // Initialize Socket.io
-    // ═══════════════════════════════════════════════════════════════════
-    let socket = null;
-
-    function initializeSocket() {
-      if (socket) return;
-      
-      try {
-        socket = io();
-        socket.on("connect", () => {
-          console.log("✅ Socket connected:", socket.id);
-        });
-        socket.on("connect_error", (err) => {
-          console.error("❌ Socket connect error:", err);
-        });
-        socket.on("disconnect", (reason) => {
-          console.log("⚠️ Socket disconnected:", reason);
-        });
-      } catch (e) {
-        console.warn("⚠️ Socket.io not available:", e);
-      }
-    }
-
-    // Initialize socket when app loads
-    if (window.location.hostname !== 'localhost' || window.location.port) {
-      // Only initialize if server is running
-      setTimeout(() => {
-        if (!socket) {
-          initializeSocket();
-        }
-      }, 1000);
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // Helper Functions
-    // ═══════════════════════════════════════════════════════════════════
-    function escapeHtml(str) {
-      return String(str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    }
-
-    function getLocalToday() {
-      const d = new Date();
-      const off = d.getTimezoneOffset();
-      const ist = new Date(d.getTime() + (330 + off) * 60000);
-      return ist.toISOString().slice(0, 10);
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // Login Section
-    // ═══════════════════════════════════════════════════════════════════
-    const loginOverlay = document.getElementById("loginOverlay");
-    const managerApp = document.getElementById("managerApp");
-    const loginBtn = document.getElementById("loginBtn");
-    const loginUser = document.getElementById("loginUser");
-    const loginPass = document.getElementById("loginPass");
-    const loginError = document.getElementById("loginError");
-    const loginForm = document.getElementById("loginForm");
-
-    function handleLogin(event) {
-      event.preventDefault();
-      performLogin();
-    }
-
-    async function performLogin() {
-      const username = loginUser.value.trim();
-      const password = loginPass.value.trim();
-      loginError.style.display = "none";
-
-      if (!username || !password) {
-        loginError.innerHTML = "❌ <strong>Please enter both username and password.</strong>";
-        loginError.style.display = "block";
-        return;
-      }
-
-      // Disable button and show loading state
-      loginBtn.disabled = true;
-      const originalText = loginBtn.innerHTML;
-      loginBtn.innerHTML = "🔄 Logging in...";
-
-      console.log("🔐 Attempting login with username:", username);
-
-      try {
-        const res = await fetch("/api/manager/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
-        });
-
-        console.log("📡 Login response status:", res.status);
-
-        const data = await res.json().catch(() => {
-          console.error("Failed to parse JSON response");
-          return {};
-        });
-
-        console.log("📡 Login response data:", data);
-
-        if (res.ok && data.success) {
-          console.log("✅ Login successful!");
-          loginError.style.display = "none";
-          loginOverlay.style.display = "none";
-          managerApp.style.display = "block";
-          loginBtn.disabled = false;
-          loginBtn.innerHTML = originalText;
-          
-          // Small delay before initialization for better UX
-          setTimeout(() => {
-            initializeManagerApp();
-          }, 300);
-        } else {
-          console.error("❌ Login failed:", data);
-          loginError.innerHTML = `❌ <strong>${data.message || "Login failed. Please check your credentials."}</strong>`;
-          loginError.style.display = "block";
-          loginBtn.disabled = false;
-          loginBtn.innerHTML = originalText;
-        }
-      } catch (e) {
-        console.error("❌ Login exception:", e);
-        loginError.innerHTML = `❌ <strong>Connection error:</strong> ${e.message || "Failed to connect to server. Make sure the server is running."}`;
-        loginError.style.display = "block";
-        loginBtn.disabled = false;
-        loginBtn.innerHTML = originalText;
-      }
-    }
-
-    // Allow Enter key to submit
-    loginForm.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        if (!loginBtn.disabled) {
-          performLogin();
-        }
-      }
-    });
-
-    // Focus on username field when page loads
-    window.addEventListener("load", () => {
-      setTimeout(() => {
-        loginUser.focus();
-      }, 500);
-    });
-
-    async function initializeManagerApp() {
-      console.log("🚀 Initializing manager app...");
-      
-      initializeAndSetupSockets();
-      
-      await loadInventory();
-      await loadMenuForTables();
-      await loadAllTableDrafts();
-      await fetchOrders(getLocalToday());
-      await renderDashboard();
-      await loadPendingDineInRequests();
-      renderTablesList();
-      selectTable(1);
-      setActiveTab("orders");
-      
-      console.log("✅ Manager app initialized successfully");
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // Tab Navigation
-    // ═══════════════════════════════════════════════════════════════════
-    const tabButtons = {
-      orders: document.getElementById("tabOrders"),
-      dashboard: document.getElementById("tabDashboard"),
-      analytics: document.getElementById("tabAnalytics"),
-      tables: document.getElementById("tabTables"),
-      inventory: document.getElementById("tabInventory")
-    };
-
-    const tabContents = {
-      orders: document.getElementById("ordersTab"),
-      dashboard: document.getElementById("dashboardTab"),
-      analytics: document.getElementById("analyticsTab"),
-      tables: document.getElementById("tablesTab"),
-      inventory: document.getElementById("inventoryTab")
-    };
-
-    function setActiveTab(tabName) {
-      Object.values(tabButtons).forEach(btn => btn.classList.remove("active"));
-      Object.values(tabContents).forEach(content => content.style.display = "none");
-
-      if (tabButtons[tabName]) {
-        tabButtons[tabName].classList.add("active");
-      }
-      if (tabContents[tabName]) {
-        tabContents[tabName].style.display = "block";
-      }
-    }
-
-    Object.entries(tabButtons).forEach(([name, btn]) => {
-      btn.onclick = () => setActiveTab(name);
-    });
-
-    // ═══════════════════════════════════════════════════════════════════
-    // Change Login Modal
-    // ═══════════════════════════════════════════════════════════════════
-    const changeLoginModal = document.getElementById("changeLoginModal");
-    const openChangeLogin = document.getElementById("openChangeLogin");
-    const saveLoginChange = document.getElementById("saveLoginChange");
-    const cancelLoginChange = document.getElementById("cancelLoginChange");
-
-    openChangeLogin.onclick = () => {
-      changeLoginModal.classList.add("active");
-    };
-
-    cancelLoginChange.onclick = () => {
-      changeLoginModal.classList.remove("active");
-    };
-
-    saveLoginChange.onclick = async () => {
-      const curUser = document.getElementById("curUser").value.trim();
-      const curPass = document.getElementById("curPass").value.trim();
-      const newUser = document.getElementById("newUser").value.trim();
-      const newPass = document.getElementById("newPass").value.trim();
-      const msg = document.getElementById("changeLoginMsg");
-
-      try {
-        const res = await fetch("/api/manager/change-credentials", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ currentUser: curUser, currentPassword: curPass, newUser, newPassword: newPass })
-        });
-
-        const data = await res.json().catch(() => ({}));
-
-        if (data.success) {
-          msg.textContent = "✅ Login updated successfully!";
-          msg.style.background = "#D4EDDA";
-          msg.style.color = "#155724";
-          msg.style.display = "block";
-          setTimeout(() => changeLoginModal.classList.remove("active"), 1500);
-        } else {
-          msg.textContent = data.message || "Could not update login.";
-          msg.style.background = "#F8D7DA";
-          msg.style.color = "#721C24";
-          msg.style.display = "block";
-        }
-      } catch (e) {
-        msg.textContent = "Server error. Please try again.";
-        msg.style.background = "#F8D7DA";
-        msg.style.color = "#721C24";
-        msg.style.display = "block";
-      }
-    };
-
-    // ═══════════════════════════════════════════════════════════════════
-    // Inventory Management
-    // ═══════════════════════════════════════════════════════════════════
-    let menuData = null;
-    let tableMenuFlat = [];
-
-    async function loadInventory() {
-      try {
-        const res = await fetch("/menu.json?_=" + Date.now());
-        menuData = await res.json();
-        const tbody = document.getElementById("inventoryTableBody");
-        let html = "";
-
-        Object.entries(menuData).forEach(([cat, items]) => {
-          items.forEach((item, idx) => {
-            const rowSpan = idx === 0 ? `rowspan="${items.length}"` : "";
-            html += `
-              <tr>
-                ${idx === 0 ? `<td ${rowSpan} style="font-weight: 700;">${escapeHtml(cat)}</td>` : ""}
-                <td>${escapeHtml(item.name)}</td>
-                <td>${Object.entries(item.variants || {}).map(([v, p]) => `${v}: ₹${p}`).join(", ") || `₹${item.price}`}</td>
-                <td>
-                  <label class="switch">
-                    <input type="checkbox" ${item.available !== false ? "checked" : ""} data-cat="${escapeHtml(cat)}" data-name="${escapeHtml(item.name)}" />
-                    <span class="slider"></span>
-                  </label>
-                </td>
-              </tr>`;
-          });
-        });
-
-        tbody.innerHTML = html;
-      } catch (e) {
-        console.error("Error loading inventory:", e);
-      }
-    }
-
-    async function loadMenuForTables() {
-      try {
-        if (!menuData) {
-          const res = await fetch("/menu.json?_=" + Date.now());
-          menuData = await res.json();
-        }
-
-        tableMenuFlat = [];
-        Object.entries(menuData || {}).forEach(([category, items]) => {
-          items.forEach(item => {
-            if (item.variants && Object.keys(item.variants).length) {
-              Object.entries(item.variants).forEach(([variant, price]) => {
-                tableMenuFlat.push({ category, name: item.name, variant, price: Number(price) || 0, available: item.available !== false });
-              });
-            } else {
-              tableMenuFlat.push({ category, name: item.name, variant: "", price: Number(item.price || 0), available: item.available !== false });
-            }
-          });
-        });
-
-        renderTableMenuList();
-      } catch (e) {
-        console.error("Error loading table menu:", e);
-      }
-    }
-
-    const saveInventoryBtn = document.getElementById("saveInventoryBtn");
-    const inventoryStatus = document.getElementById("inventoryStatus");
-
-    saveInventoryBtn.onclick = async () => {
-      if (!menuData) return;
-
-      document.querySelectorAll('#inventoryTableBody input[type="checkbox"]').forEach(sw => {
-        const cat = sw.getAttribute("data-cat");
-        const name = sw.getAttribute("data-name");
-        const item = (menuData[cat] || []).find(i => i.name === name);
-        if (item) item.available = sw.checked;
-      });
-
-      try {
-        await fetch("/update-menu", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(menuData)
-        });
-
-        inventoryStatus.textContent = "✅ Menu updated successfully!";
-        inventoryStatus.style.display = "block";
-        inventoryStatus.style.background = "#D4EDDA";
-        inventoryStatus.style.color = "#155724";
-
-        await loadMenuForTables();
-
-        setTimeout(() => inventoryStatus.style.display = "none", 2000);
-      } catch (e) {
-        inventoryStatus.textContent = "❌ Error saving menu.";
-        inventoryStatus.style.display = "block";
-        inventoryStatus.style.background = "#F8D7DA";
-        inventoryStatus.style.color = "#721C24";
-      }
-    };
-
-    // ═══════════════════════════════════════════════════════════════════
-    // Orders Management
-    // ═══════════════════════════════════════════════════════════════════
-    const datePicker = document.getElementById("datePicker");
-    const ordersList = document.getElementById("ordersList");
-    const historyList = document.getElementById("historyList");
-    datePicker.value = getLocalToday();
-
-    function isLiveOrder(o) {
-      if (!o || o.orderType === "dinein") return false;
-      return o.status !== "delivered" && o.status !== "deleted";
-    }
-
-    function isHistoryOrder(o) {
-      if (!o) return false;
-      if (o.orderType === "dinein") {
-        return o.source === "manager-pos" && o.status === "delivered";
-      }
-      return o.status === "delivered";
-    }
-
-    function buildOrderCard(o) {
-      const card = document.createElement("div");
-      card.className = "order-item";
-
-      const typeClass = o.orderType === "dinein" ? "order-type-dinein" : o.orderType === "takeaway" ? "order-type-takeaway" : "order-type-delivery";
-      const itemsText = (o.items || []).map(i => `${i.name}${i.variant ? ` (${i.variant})` : ""} x${i.qty}`).join(", ");
-      const isLive = isLiveOrder(o);
-
-      let actionButtons = "";
-      if (o.orderType !== "dinein") {
-        const deliverBtn = o.orderType === "delivery" ? `<button class="btn btn-sm btn-secondary" onclick="openDeliveryMap('${o._id}')">🗺️ Deliver</button>` : "";
-        const printBtn = `<button class="btn btn-sm btn-secondary" onclick="printOrderReceipt('${o._id}')">🖨️ Print</button>`;
-
-        const liveActions = isLive ? `
-          <button class="btn btn-sm btn-success" onclick="markOrderDelivered('${o._id}')">✓ Delivered</button>
-          <button class="btn btn-sm btn-secondary" onclick="togglePaymentVerified('${o._id}')">💳 ${o.paymentVerified ? "Verified" : "Mark Paid"}</button>
-        ` : "";
-
-        actionButtons = `<div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">${liveActions}${deliverBtn}${printBtn}</div>`;
-      }
-
-      card.innerHTML = `
-        <div class="order-header">
+    <!-- ═══ TABLES/POS TAB ══════════════════════════════════════════════════ -->
+    <div id="tablesTab" class="tab-content" style="display:none;">
+      <!-- Pending orders -->
+      <div id="pendingSection" class="card" style="margin-bottom:2rem;border-left:4px solid var(--accent-orange);display:none;">
+        <div class="flex justify-between items-center mb-4">
           <div>
-            <span class="order-type-badge ${typeClass}">${escapeHtml(o.orderType || "")}</span>
-            <span style="font-weight: 700; margin-left: 0.5rem;">${escapeHtml(o.customerName || "No name")} • ₹${Number(o.total || 0)}</span>
+            <h2 style="font-size:1.1rem;font-weight:700;margin:0;">🔔 Pending Dine-In Orders</h2>
+            <p style="font-size:0.85rem;color:var(--text-light);margin:0.5rem 0 0;">Customer orders waiting for approval</p>
           </div>
-          <span style="font-size: 0.8rem; color: var(--text-light);">${o.createdAt ? new Date(o.createdAt).toLocaleTimeString("en-IN") : ""}</span>
         </div>
-        <div style="font-size: 0.9rem; color: var(--text-light); margin: 0.5rem 0;">${escapeHtml(itemsText || "No items")}</div>
-        ${o.mobile ? `<div style="font-size: 0.8rem; color: var(--text-light);">📞 ${escapeHtml(o.mobile)}</div>` : ""}
-        ${actionButtons}
+        <div id="pendingDineInList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;"></div>
+      </div>
+
+      <!-- Table POS -->
+      <div class="card">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h2 style="font-size:1.1rem;font-weight:700;">Tables / Dine-In POS</h2>
+            <p style="font-size:0.85rem;color:var(--text-light);margin-top:0.3rem;">Manage table orders and finalize bills</p>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <button id="saveTableDraftBtn" class="btn btn-secondary btn-sm">💾 Save Draft</button>
+            <button id="saveAndPrintTableBillBtn" class="btn btn-primary btn-sm">🖨️ Save &amp; Print</button>
+            <button id="clearTableBtn" class="btn btn-danger btn-sm">🗑️ Clear</button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:200px 1fr;gap:2rem;">
+          <!-- Left: Tables -->
+          <div>
+            <h4 style="font-weight:700;margin-bottom:1rem;font-size:0.9rem;text-transform:uppercase;">Available Tables</h4>
+            <div class="table-selector" id="tablesList"></div>
+          </div>
+
+          <!-- Right: Order details -->
+          <div>
+            <!-- Table info with autocomplete -->
+            <div class="card" style="margin-bottom:1.5rem;">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <label class="form-label">Selected Table</label>
+                  <h3 id="selectedTableTitle" style="font-size:1.8rem;font-weight:700;margin:0;">Table 1</h3>
+                </div>
+                <span id="selectedTableBadge" class="badge badge-success">Available</span>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
+                <!-- Name with autocomplete -->
+                <div class="form-group autocomplete-wrap" style="margin:0;">
+                  <label class="form-label">Customer Name</label>
+                  <input id="tableCustomerName" type="text" class="form-input" autocomplete="off" placeholder="Type to search..." />
+                  <div id="nameAutocomplete" class="autocomplete-list"></div>
+                </div>
+                <!-- Mobile with autocomplete -->
+                <div class="form-group autocomplete-wrap" style="margin:0;">
+                  <label class="form-label">Mobile</label>
+                  <input id="tableCustomerMobile" type="text" class="form-input" autocomplete="off" placeholder="Type to search..." />
+                  <div id="mobileAutocomplete" class="autocomplete-list"></div>
+                </div>
+                <div class="form-group" style="margin:0;">
+                  <label class="form-label">Guests</label>
+                  <input id="tableGuestCount" type="number" class="form-input" min="1" value="1" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Menu search -->
+            <div class="card" style="margin-bottom:1.5rem;">
+              <div class="flex justify-between items-center mb-3">
+                <div>
+                  <h4 style="font-weight:700;margin:0;">Add Dishes</h4>
+                  <p style="font-size:0.8rem;color:var(--text-light);margin:0.3rem 0 0;">Click to add items</p>
+                </div>
+                <input id="tableMenuSearch" type="text" class="form-input" placeholder="Search..." style="max-width:200px;" />
+              </div>
+              <div class="menu-grid" id="tableMenuList"></div>
+            </div>
+
+            <!-- Draft -->
+            <div class="card">
+              <div class="flex justify-between items-center mb-3">
+                <div>
+                  <h4 style="font-weight:700;margin:0;">Current Draft</h4>
+                  <p style="font-size:0.8rem;color:var(--text-light);margin:0.3rem 0 0;">Items in this order</p>
+                </div>
+                <div style="text-align:right;">
+                  <span style="display:block;font-size:0.8rem;color:var(--text-light);">Total:</span>
+                  <span id="tableDraftTotal" style="font-size:1.8rem;font-weight:700;color:var(--dark-blue);">₹0</span>
+                </div>
+              </div>
+              <div id="tableDraftItems" style="display:flex;flex-direction:column;gap:0.8rem;max-height:400px;overflow-y:auto;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ INVENTORY TAB ════════════════════════════════════════════════════ -->
+    <div id="inventoryTab" class="tab-content" style="display:none;">
+      <div class="card">
+        <div class="flex justify-between items-center mb-4">
+          <div>
+            <h2 style="font-size:1.1rem;font-weight:700;">📦 Inventory &amp; Menu Availability</h2>
+            <p style="font-size:0.85rem;color:var(--text-light);margin-top:0.3rem;">Manage item availability</p>
+          </div>
+          <div class="flex gap-2">
+            <button id="saveInventoryBtn" class="btn btn-primary btn-sm">💾 Save Changes</button>
+            <button id="toggleAllInventory" class="btn btn-secondary btn-sm">Toggle All</button>
+          </div>
+        </div>
+        <div id="inventoryStatus" style="display:none;padding:0.8rem;border-radius:8px;margin-bottom:1rem;background:#D4EDDA;color:#155724;font-size:0.9rem;"></div>
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>Category</th><th>Item Name</th><th>Variants / Price</th><th>Available</th></tr></thead>
+            <tbody id="inventoryTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /container -->
+</div><!-- /managerApp -->
+
+<!-- ─── CHANGE LOGIN MODAL ───────────────────────────────────────────────── -->
+<div id="changeLoginModal" class="modal">
+  <div class="modal-content" style="max-width:450px;">
+    <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:0.5rem;">Change Manager Login</h2>
+    <p style="color:var(--text-light);margin-bottom:1.5rem;">Update manager portal credentials</p>
+    <div class="form-group"><label class="form-label">Current Username</label><input id="curUser" type="text" class="form-input" /></div>
+    <div class="form-group"><label class="form-label">Current Password</label><input id="curPass" type="password" class="form-input" /></div>
+    <div class="form-group"><label class="form-label">New Username</label><input id="newUser" type="text" class="form-input" /></div>
+    <div class="form-group"><label class="form-label">New Password</label><input id="newPass" type="password" class="form-input" /></div>
+    <div id="changeLoginMsg" style="display:none;padding:0.8rem;border-radius:8px;margin-bottom:1rem;font-size:0.9rem;"></div>
+    <div class="flex gap-2">
+      <button id="saveLoginChange" class="btn btn-primary" style="flex:1;">Save</button>
+      <button id="cancelLoginChange" class="btn btn-secondary" style="flex:1;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── EDIT ORDER MODAL ──────────────────────────────────────────────────── -->
+<div id="editOrderModal" class="modal">
+  <div class="modal-content" style="max-width:600px;width:95vw;">
+    <div class="flex justify-between items-center mb-4">
+      <h2 style="font-size:1.3rem;font-weight:700;margin:0;">✏️ Edit Order</h2>
+      <button onclick="closeEditModal()" class="btn btn-secondary btn-sm">✕ Close</button>
+    </div>
+    <div id="editOrderBody"></div>
+    <div class="flex gap-2 mt-4">
+      <button id="saveEditOrderBtn" class="btn btn-success" style="flex:1;">💾 Save Changes</button>
+      <button class="btn btn-secondary" style="flex:1;" onclick="closeEditModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── KOT PREVIEW MODAL ─────────────────────────────────────────────────── -->
+<div id="kotModal" class="modal">
+  <div class="modal-content" style="max-width:420px;">
+    <div class="flex justify-between items-center mb-4">
+      <h2 style="font-size:1.2rem;font-weight:700;margin:0;">🖨️ Kitchen Order Ticket (KOT)</h2>
+      <button onclick="document.getElementById('kotModal').classList.remove('active')" class="btn btn-secondary btn-sm">✕</button>
+    </div>
+    <pre id="kotPreviewText" style="background:#F8F7F3;padding:1rem;border-radius:8px;font-size:0.8rem;font-family:monospace;white-space:pre-wrap;max-height:60vh;overflow-y:auto;border:1px solid var(--border-color);"></pre>
+    <div class="flex gap-2 mt-4">
+      <button class="btn btn-primary" style="flex:1;" onclick="printKOT()">🖨️ Print</button>
+      <button class="btn btn-secondary" style="flex:1;" onclick="document.getElementById('kotModal').classList.remove('active')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+  JAVASCRIPT
+══════════════════════════════════════════════════════════════════════════════ -->
+<script>
+// ─── SOCKET ────────────────────────────────────────────────────────────────────
+let socket = null;
+function initializeSocket() {
+  if (socket) return;
+  try {
+    socket = io();
+    socket.on("connect", () => console.log("✅ Socket:", socket.id));
+    socket.on("connect_error", e => console.error("Socket err:", e));
+  } catch (e) { console.warn("Socket.io not available:", e); }
+}
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────────
+function escapeHtml(s) {
+  return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+function getLocalToday() {
+  const d = new Date();
+  const ist = new Date(d.getTime() + (330 + d.getTimezoneOffset()) * 60000);
+  return ist.toISOString().slice(0, 10);
+}
+
+// ─── LOGIN ─────────────────────────────────────────────────────────────────────
+const loginOverlay = document.getElementById("loginOverlay");
+const managerApp   = document.getElementById("managerApp");
+const loginBtn     = document.getElementById("loginBtn");
+const loginError   = document.getElementById("loginError");
+
+function handleLogin(e) { e.preventDefault(); performLogin(); }
+
+async function performLogin() {
+  const username = document.getElementById("loginUser").value.trim();
+  const password = document.getElementById("loginPass").value.trim();
+  loginError.style.display = "none";
+  if (!username || !password) {
+    loginError.innerHTML = "❌ <strong>Enter both username and password.</strong>";
+    loginError.style.display = "block"; return;
+  }
+  loginBtn.disabled = true;
+  const orig = loginBtn.innerHTML;
+  loginBtn.innerHTML = "🔄 Logging in...";
+  try {
+    const res  = await fetch("/api/manager/login", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ username, password }) });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      loginOverlay.style.display = "none";
+      managerApp.style.display   = "block";
+      loginBtn.disabled = false; loginBtn.innerHTML = orig;
+      setTimeout(initializeManagerApp, 300);
+    } else {
+      loginError.innerHTML = `❌ <strong>${data.message || "Invalid credentials."}</strong>`;
+      loginError.style.display = "block";
+      loginBtn.disabled = false; loginBtn.innerHTML = orig;
+    }
+  } catch (e) {
+    loginError.innerHTML = `❌ <strong>Connection error:</strong> ${e.message}`;
+    loginError.style.display = "block";
+    loginBtn.disabled = false; loginBtn.innerHTML = orig;
+  }
+}
+
+document.getElementById("loginForm").addEventListener("keypress", e => {
+  if (e.key === "Enter") { e.preventDefault(); if (!loginBtn.disabled) performLogin(); }
+});
+window.addEventListener("load", () => { setTimeout(() => document.getElementById("loginUser").focus(), 400); });
+
+async function initializeManagerApp() {
+  initializeSocket();
+  setupAllSocketListeners();
+  await loadInventory();
+  await loadMenuForTables();
+  await loadAllTableDrafts();
+  await fetchOrders(getLocalToday());
+  await renderDashboard();
+  await loadPendingDineInRequests();
+  renderTablesList();
+  selectTable(1);
+  setActiveTab("orders");
+}
+
+// ─── TABS ──────────────────────────────────────────────────────────────────────
+const tabButtons  = { orders: document.getElementById("tabOrders"), dashboard: document.getElementById("tabDashboard"), analytics: document.getElementById("tabAnalytics"), tables: document.getElementById("tabTables"), inventory: document.getElementById("tabInventory") };
+const tabContents = { orders: document.getElementById("ordersTab"), dashboard: document.getElementById("dashboardTab"), analytics: document.getElementById("analyticsTab"), tables: document.getElementById("tablesTab"), inventory: document.getElementById("inventoryTab") };
+
+function setActiveTab(name) {
+  Object.values(tabButtons).forEach(b => b.classList.remove("active"));
+  Object.values(tabContents).forEach(c => c.style.display = "none");
+  if (tabButtons[name])  tabButtons[name].classList.add("active");
+  if (tabContents[name]) tabContents[name].style.display = "block";
+}
+Object.entries(tabButtons).forEach(([name, btn]) => { btn.onclick = () => setActiveTab(name); });
+
+// ─── CHANGE LOGIN ──────────────────────────────────────────────────────────────
+document.getElementById("openChangeLogin").onclick  = () => document.getElementById("changeLoginModal").classList.add("active");
+document.getElementById("cancelLoginChange").onclick = () => document.getElementById("changeLoginModal").classList.remove("active");
+document.getElementById("saveLoginChange").onclick = async () => {
+  const msg = document.getElementById("changeLoginMsg");
+  try {
+    const res  = await fetch("/api/manager/change-credentials", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ currentUser: document.getElementById("curUser").value, currentPassword: document.getElementById("curPass").value, newUser: document.getElementById("newUser").value, newPassword: document.getElementById("newPass").value }) });
+    const data = await res.json().catch(() => ({}));
+    if (data.success) {
+      msg.textContent = "✅ Updated!"; msg.style.background = "#D4EDDA"; msg.style.color = "#155724"; msg.style.display = "block";
+      setTimeout(() => document.getElementById("changeLoginModal").classList.remove("active"), 1500);
+    } else {
+      msg.textContent = data.message || "Could not update."; msg.style.background = "#F8D7DA"; msg.style.color = "#721C24"; msg.style.display = "block";
+    }
+  } catch (e) {
+    msg.textContent = "Server error."; msg.style.background = "#F8D7DA"; msg.style.color = "#721C24"; msg.style.display = "block";
+  }
+};
+
+// ─── INVENTORY ─────────────────────────────────────────────────────────────────
+let menuData = null;
+let tableMenuFlat = [];
+
+async function loadInventory() {
+  try {
+    const res = await fetch("/menu.json?_=" + Date.now());
+    menuData = await res.json();
+    const tbody = document.getElementById("inventoryTableBody");
+    let html = "";
+    Object.entries(menuData).forEach(([cat, items]) => {
+      items.forEach((item, idx) => {
+        html += `<tr>
+          ${idx === 0 ? `<td rowspan="${items.length}" style="font-weight:700;">${escapeHtml(cat)}</td>` : ""}
+          <td>${escapeHtml(item.name)}</td>
+          <td>${Object.entries(item.variants || {}).map(([v,p]) => `${v}: ₹${p}`).join(", ") || `₹${item.price}`}</td>
+          <td><label class="switch"><input type="checkbox" ${item.available !== false ? "checked" : ""} data-cat="${escapeHtml(cat)}" data-name="${escapeHtml(item.name)}" /><span class="slider"></span></label></td>
+        </tr>`;
+      });
+    });
+    tbody.innerHTML = html;
+  } catch (e) { console.error("Inventory load error:", e); }
+}
+
+async function loadMenuForTables() {
+  try {
+    if (!menuData) { const res = await fetch("/menu.json?_=" + Date.now()); menuData = await res.json(); }
+    tableMenuFlat = [];
+    Object.entries(menuData || {}).forEach(([category, items]) => {
+      items.forEach(item => {
+        if (item.variants && Object.keys(item.variants).length) {
+          Object.entries(item.variants).forEach(([variant, price]) => {
+            tableMenuFlat.push({ category, name: item.name, variant, price: Number(price) || 0, available: item.available !== false });
+          });
+        } else {
+          tableMenuFlat.push({ category, name: item.name, variant: "", price: Number(item.price || 0), available: item.available !== false });
+        }
+      });
+    });
+    renderTableMenuList();
+  } catch (e) { console.error("Menu load error:", e); }
+}
+
+document.getElementById("saveInventoryBtn").onclick = async () => {
+  if (!menuData) return;
+  document.querySelectorAll('#inventoryTableBody input[type="checkbox"]').forEach(sw => {
+    const cat = sw.getAttribute("data-cat"), name = sw.getAttribute("data-name");
+    const item = (menuData[cat] || []).find(i => i.name === name);
+    if (item) item.available = sw.checked;
+  });
+  try {
+    await fetch("/update-menu", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(menuData) });
+    const s = document.getElementById("inventoryStatus");
+    s.textContent = "✅ Menu updated!"; s.style.background = "#D4EDDA"; s.style.color = "#155724"; s.style.display = "block";
+    await loadMenuForTables();
+    setTimeout(() => s.style.display = "none", 2000);
+  } catch (e) {
+    const s = document.getElementById("inventoryStatus");
+    s.textContent = "❌ Error saving."; s.style.background = "#F8D7DA"; s.style.color = "#721C24"; s.style.display = "block";
+  }
+};
+
+// ─── ORDER HELPERS ─────────────────────────────────────────────────────────────
+const datePicker = document.getElementById("datePicker");
+const ordersList = document.getElementById("ordersList");
+const historyList = document.getElementById("historyList");
+datePicker.value = getLocalToday();
+
+function isLiveOrder(o) { return o && o.orderType !== "dinein" && o.status !== "delivered" && o.status !== "deleted"; }
+function isHistoryOrder(o) {
+  if (!o) return false;
+  if (o.orderType === "dinein") return o.source === "manager-pos" && o.status === "delivered";
+  return o.status === "delivered";
+}
+
+function statusBadgeClass(s) {
+  if (s === "delivered") return "badge-success";
+  if (s === "incoming")  return "badge-incoming";
+  return "badge-warning";
+}
+
+// ─── KOT FUNCTIONS ─────────────────────────────────────────────────────────────
+let currentKOTText = "";
+
+async function openKOT(orderId) {
+  try {
+    const res = await fetch(`/api/orders/${orderId}/kot`);
+    currentKOTText = await res.text();
+    document.getElementById("kotPreviewText").textContent = currentKOTText;
+    document.getElementById("kotModal").classList.add("active");
+  } catch (e) {
+    alert("Could not load KOT: " + e.message);
+  }
+}
+
+function printKOT() {
+  const w = window.open("", "_blank", "width=400,height=600");
+  w.document.write(`<pre style="font-family:monospace;font-size:12px;">${escapeHtml(currentKOTText)}</pre>`);
+  w.document.close();
+  w.print();
+}
+
+// ─── EDIT ORDER MODAL ──────────────────────────────────────────────────────────
+let editingOrderId = null;
+let editingOrderItems = [];
+
+async function openEditModal(orderId) {
+  try {
+    const res = await fetch(`/api/orders/${orderId}`);
+    const o = await res.json();
+    editingOrderId = orderId;
+    editingOrderItems = (o.items || []).map(i => ({ ...i }));
+
+    const body = document.getElementById("editOrderBody");
+    body.innerHTML = `
+      <div style="font-size:0.8rem;color:var(--text-light);margin-bottom:1rem;">Order ID: ${escapeHtml(orderId)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+        <div><label class="form-label">Customer Name</label><input id="editName" type="text" class="form-input" value="${escapeHtml(o.customerName || "")}" /></div>
+        <div><label class="form-label">Mobile</label><input id="editMobile" type="text" class="form-input" value="${escapeHtml(o.mobile || "")}" /></div>
+        <div><label class="form-label">Payment Method</label>
+          <select id="editPayment" class="form-select">
+            ${["COD","UPI","Card","Cash","PAYLATERDINEIN"].map(p => `<option value="${p}" ${o.paymentMethod === p ? "selected" : ""}>${p}</option>`).join("")}
+          </select>
+        </div>
+        <div><label class="form-label">Status</label>
+          <select id="editStatus" class="form-select">
+            ${["incoming","preparing","ready","delivered","cancelled"].map(s => `<option value="${s}" ${o.status === s ? "selected" : ""}>${s}</option>`).join("")}
+          </select>
+        </div>
+        <div style="grid-column:1/-1;display:flex;align-items:center;gap:1rem;">
+          <label class="form-label" style="margin:0;">Payment Verified</label>
+          <label class="switch"><input type="checkbox" id="editPayVerified" ${o.paymentVerified ? "checked" : ""} /><span class="slider"></span></label>
+          <span id="editPayVerifiedLabel" style="font-size:0.85rem;color:var(--text-light);">${o.paymentVerified ? "Verified ✅" : "Pending"}</span>
+        </div>
+      </div>
+      <div>
+        <div class="flex justify-between items-center mb-2">
+          <label class="form-label" style="margin:0;">Items</label>
+          <button class="btn btn-sm btn-secondary" onclick="addEditItem()">+ Add Item</button>
+        </div>
+        <div id="editItemsList"></div>
+        <div style="text-align:right;margin-top:1rem;font-size:1.2rem;font-weight:700;color:var(--dark-blue);">
+          Total: <span id="editTotal">₹${o.total || 0}</span>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("editPayVerified").addEventListener("change", function () {
+      document.getElementById("editPayVerifiedLabel").textContent = this.checked ? "Verified ✅" : "Pending";
+    });
+
+    renderEditItems();
+    document.getElementById("editOrderModal").classList.add("active");
+    document.getElementById("saveEditOrderBtn").onclick = () => saveEditOrder();
+  } catch (e) {
+    alert("Could not load order: " + e.message);
+  }
+}
+
+function renderEditItems() {
+  const list = document.getElementById("editItemsList");
+  if (!list) return;
+  list.innerHTML = "";
+  editingOrderItems.forEach((item, idx) => {
+    const row = document.createElement("div");
+    row.className = "edit-item-row";
+    row.innerHTML = `
+      <input type="text" class="form-input" value="${escapeHtml(item.name)}" style="flex:2;" placeholder="Item name"
+        oninput="editingOrderItems[${idx}].name=this.value;updateEditTotal()" />
+      <input type="text" class="form-input" value="${escapeHtml(item.variant || "")}" style="flex:1;" placeholder="Variant"
+        oninput="editingOrderItems[${idx}].variant=this.value" />
+      <input type="number" class="form-input" value="${item.price}" style="width:80px;" placeholder="Price"
+        oninput="editingOrderItems[${idx}].price=Number(this.value);updateEditTotal()" />
+      <span style="padding:0 0.3rem;font-weight:600;">×</span>
+      <input type="number" class="form-input" value="${item.qty}" style="width:65px;" min="1"
+        oninput="editingOrderItems[${idx}].qty=Number(this.value);updateEditTotal()" />
+      <span style="min-width:70px;font-weight:700;text-align:right;">₹${item.price * item.qty}</span>
+      <button class="btn btn-sm btn-danger" onclick="removeEditItem(${idx})">✕</button>
+    `;
+    list.appendChild(row);
+  });
+  updateEditTotal();
+}
+
+function addEditItem() {
+  editingOrderItems.push({ name: "", variant: "", price: 0, qty: 1 });
+  renderEditItems();
+}
+
+function removeEditItem(idx) {
+  editingOrderItems.splice(idx, 1);
+  renderEditItems();
+}
+
+function updateEditTotal() {
+  const t = editingOrderItems.reduce((s, i) => s + Number(i.price || 0) * Number(i.qty || 0), 0);
+  const el = document.getElementById("editTotal");
+  if (el) el.textContent = "₹" + t;
+}
+
+async function saveEditOrder() {
+  if (!editingOrderId) return;
+  const btn = document.getElementById("saveEditOrderBtn");
+  btn.disabled = true; btn.textContent = "Saving...";
+  try {
+    const payload = {
+      customerName:    document.getElementById("editName").value,
+      mobile:          document.getElementById("editMobile").value,
+      paymentMethod:   document.getElementById("editPayment").value,
+      status:          document.getElementById("editStatus").value,
+      paymentVerified: document.getElementById("editPayVerified").checked,
+      items: editingOrderItems.filter(i => i.name && i.qty > 0)
+    };
+    const res = await fetch(`/api/orders/${editingOrderId}`, {
+      method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeEditModal();
+      await fetchOrders(datePicker.value);
+      renderDashboard();
+    } else {
+      alert("Error: " + (data.error || "Could not save"));
+    }
+  } catch (e) {
+    alert("Save failed: " + e.message);
+  }
+  btn.disabled = false; btn.textContent = "💾 Save Changes";
+}
+
+function closeEditModal() {
+  document.getElementById("editOrderModal").classList.remove("active");
+  editingOrderId = null; editingOrderItems = [];
+}
+
+// ─── BUILD ORDER CARD (with KOT + Edit) ────────────────────────────────────────
+function buildOrderCard(o) {
+  const card = document.createElement("div");
+  card.className = "order-item";
+  const typeClass = o.orderType === "dinein" ? "order-type-dinein" : o.orderType === "takeaway" ? "order-type-takeaway" : "order-type-delivery";
+  const itemsText = (o.items || []).map(i => `${i.name}${i.variant ? ` (${i.variant})` : ""} x${i.qty}`).join(", ");
+  const isLive = isLiveOrder(o);
+  const statusCls = statusBadgeClass(o.status);
+
+  let liveActionHtml = "";
+  if (o.orderType !== "dinein" && isLive) {
+    const deliverBtn = o.orderType === "delivery"
+      ? `<button class="btn btn-sm btn-secondary" onclick="openDeliveryMap('${o._id}')">🗺️ Deliver</button>` : "";
+    liveActionHtml = `
+      <button class="btn btn-sm btn-success" onclick="markOrderDelivered('${o._id}')">✓ Delivered</button>
+      <button class="btn btn-sm btn-secondary" onclick="togglePaymentVerified('${o._id}')">💳 ${o.paymentVerified ? "Verified" : "Mark Paid"}</button>
+      ${deliverBtn}`;
+  }
+
+  card.innerHTML = `
+    <div class="order-header">
+      <div>
+        <span class="order-type-badge ${typeClass}">${escapeHtml(o.orderType || "")}</span>
+        <span class="badge ${statusCls}" style="margin-left:0.4rem;">${escapeHtml(o.status || "")}</span>
+        <span class="kot-label">KOT</span>
+      </div>
+      <span style="font-size:0.8rem;color:var(--text-light);">${o.createdAt ? new Date(o.createdAt).toLocaleTimeString("en-IN") : ""}</span>
+    </div>
+    <div style="font-weight:700;margin-bottom:0.4rem;">${escapeHtml(o.customerName || "No name")} — <span style="color:var(--accent-orange);">₹${Number(o.total || 0)}</span></div>
+    <div style="font-size:0.88rem;color:var(--text-light);margin-bottom:0.5rem;">${escapeHtml(itemsText || "No items")}</div>
+    ${o.mobile ? `<div style="font-size:0.8rem;color:var(--text-light);">📞 ${escapeHtml(o.mobile)}</div>` : ""}
+    ${o.specialRequest ? `<div style="font-size:0.8rem;background:#FFF9E6;padding:0.4rem 0.6rem;border-radius:6px;margin-top:0.4rem;">📝 ${escapeHtml(o.specialRequest)}</div>` : ""}
+    ${o.paymentVerified ? `<div style="font-size:0.8rem;color:#155724;margin-top:0.3rem;">💳 Payment verified</div>` : ""}
+    <div style="display:flex;gap:0.5rem;margin-top:0.8rem;flex-wrap:wrap;">
+      ${liveActionHtml}
+      <button class="btn btn-sm" style="background:#FF8C42;color:white;" onclick="openKOT('${o._id}')">🖨️ KOT</button>
+      <button class="btn btn-sm btn-secondary" onclick="openEditModal('${o._id}')">✏️ Edit</button>
+    </div>
+  `;
+  return card;
+}
+
+async function fetchOrders(dateStr) {
+  try {
+    const res = await fetch(`/api/orders?date=${dateStr}`);
+    const orders = await res.json();
+    ordersList.innerHTML = ""; historyList.innerHTML = "";
+    const liveOrders    = orders.filter(isLiveOrder);
+    const historyOrders = orders.filter(isHistoryOrder);
+    if (!liveOrders.length)    ordersList.innerHTML  = `<div style="text-align:center;padding:2rem;color:var(--text-light);">No live orders</div>`;
+    else liveOrders.forEach(o => ordersList.appendChild(buildOrderCard(o)));
+    if (!historyOrders.length) historyList.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-light);">No completed orders</div>`;
+    else historyOrders.forEach(o => historyList.appendChild(buildOrderCard(o)));
+  } catch (e) { console.error("fetchOrders:", e); }
+}
+
+async function openDeliveryMap(orderId) {
+  try {
+    const res = await fetch(`/api/orders/${orderId}`);
+    const o = await res.json();
+    if (o.location?.lat && o.location?.lng) window.open(`https://www.google.com/maps/dir/?api=1&destination=${o.location.lat},${o.location.lng}&travelmode=driving`, "_blank");
+    else if (o.address) window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.address)}`, "_blank");
+  } catch (e) { alert("Could not open map."); }
+}
+
+async function markOrderDelivered(orderId) {
+  try {
+    await fetch(`/api/orders/${orderId}/status`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ status:"delivered" }) });
+    await fetchOrders(datePicker.value);
+  } catch (e) { console.error(e); }
+}
+
+async function togglePaymentVerified(orderId) {
+  try {
+    const res = await fetch(`/api/orders/${orderId}`);
+    const o = await res.json();
+    await fetch(`/api/orders/${orderId}/payment-verified`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ paymentVerified: !o.paymentVerified }) });
+    await fetchOrders(datePicker.value);
+  } catch (e) { console.error(e); }
+}
+
+datePicker.onchange = () => fetchOrders(datePicker.value);
+
+// ─── ORDER SEARCH (dashboard) ──────────────────────────────────────────────────
+async function searchOrders() {
+  const q = document.getElementById("orderSearchInput").value.trim();
+  if (!q) return;
+  const resultsBox = document.getElementById("orderSearchResults");
+  resultsBox.innerHTML = `<div style="padding:1rem;color:var(--text-light);">Searching...</div>`;
+  resultsBox.classList.add("open");
+  try {
+    const res = await fetch(`/api/orders/search?q=${encodeURIComponent(q)}`);
+    const orders = await res.json();
+    if (!orders.length) {
+      resultsBox.innerHTML = `<div style="padding:1rem;color:var(--text-light);">No orders found for "${escapeHtml(q)}"</div>`;
+      return;
+    }
+    resultsBox.innerHTML = `<div style="padding:0.8rem 1rem;font-weight:700;border-bottom:1px solid var(--border-color);">${orders.length} result(s) for "${escapeHtml(q)}"</div>`;
+    orders.forEach(o => {
+      const div = document.createElement("div");
+      div.style.cssText = "padding:0.8rem 1rem;border-bottom:1px solid var(--border-color);";
+      const itemsText = (o.items || []).map(i => `${i.name} x${i.qty}`).join(", ");
+      div.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:start;">
+          <div>
+            <span class="badge ${statusBadgeClass(o.status)}">${escapeHtml(o.status || "")}</span>
+            <span class="order-type-badge order-type-${o.orderType || 'takeaway'}" style="margin-left:0.4rem;">${escapeHtml(o.orderType || "")}</span>
+            <strong style="margin-left:0.5rem;">${escapeHtml(o.customerName || "No name")}</strong> — ₹${o.total || 0}
+          </div>
+          <div style="font-size:0.8rem;color:var(--text-light);">${o.createdAt ? new Date(o.createdAt).toLocaleString("en-IN") : ""}</div>
+        </div>
+        <div style="font-size:0.85rem;color:var(--text-light);margin:0.3rem 0;">${escapeHtml(itemsText)}</div>
+        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+          <button class="btn btn-sm" style="background:var(--accent-orange);color:white;" onclick="openKOT('${o._id}')">🖨️ KOT</button>
+          <button class="btn btn-sm btn-secondary" onclick="openEditModal('${o._id}')">✏️ Edit</button>
+        </div>
       `;
-
-      return card;
-    }
-
-    async function fetchOrders(dateStr) {
-      try {
-        const res = await fetch(`/api/orders?date=${dateStr}`);
-        const orders = await res.json();
-
-        ordersList.innerHTML = "";
-        historyList.innerHTML = "";
-
-        const liveOrders = orders.filter(isLiveOrder);
-        const historyOrders = orders.filter(isHistoryOrder);
-
-        if (!liveOrders.length) {
-          ordersList.innerHTML = `<div style="text-align: center; padding: 2rem; color: var(--text-light);">No live orders</div>`;
-        } else {
-          liveOrders.forEach(o => ordersList.appendChild(buildOrderCard(o)));
-        }
-
-        if (!historyOrders.length) {
-          historyList.innerHTML = `<div style="text-align: center; padding: 2rem; color: var(--text-light);">No completed orders</div>`;
-        } else {
-          historyOrders.forEach(o => historyList.appendChild(buildOrderCard(o)));
-        }
-      } catch (e) {
-        console.error("Error fetching orders:", e);
-      }
-    }
-
-    async function openDeliveryMap(orderId) {
-      try {
-        const res = await fetch(`/api/orders/${orderId}`);
-        const order = await res.json();
-
-        if (order.location && order.location.lat && order.location.lng) {
-          window.open(`https://www.google.com/maps/dir/?api=1&destination=${order.location.lat},${order.location.lng}&travelmode=driving`, "_blank");
-        } else if (order.address) {
-          window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`, "_blank");
-        }
-      } catch (e) {
-        alert("Could not open map. Address not available.");
-      }
-    }
-
-    function printOrderReceipt(orderId) {
-      // Implementation for printing order
-      alert("Print function for order: " + orderId);
-    }
-
-    async function markOrderDelivered(orderId) {
-      try {
-        await fetch(`/api/orders/${orderId}/status`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "delivered" })
-        });
-        await fetchOrders(datePicker.value);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    async function togglePaymentVerified(orderId) {
-      try {
-        const res = await fetch(`/api/orders/${orderId}`);
-        const order = await res.json();
-
-        await fetch(`/api/orders/${orderId}/payment-verified`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ paymentVerified: !order.paymentVerified })
-        });
-        await fetchOrders(datePicker.value);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    datePicker.onchange = () => fetchOrders(datePicker.value);
-
-    // ═══════════════════════════════════════════════════════════════════
-    // Dashboard & Analytics
-    // ═══════════════════════════════════════════════════════════════════
-    const dashboardDate = document.getElementById("dashboardDate");
-    const dashboardPeriod = document.getElementById("dashboardPeriod");
-    dashboardDate.value = getLocalToday();
-
-    let orderTypeChart = null;
-    let hourlyChart = null;
-
-    async function renderDashboard() {
-      try {
-        const d = dashboardDate.value;
-        const period = dashboardPeriod.value;
-
-        // Fetch sales data
-        const res = await fetch(`/api/dashboard/sales?period=${period}&date=${d}`);
-        const stats = await res.json();
-
-        document.getElementById("kpi-revenue").textContent = "₹" + (stats.total || 0);
-        document.getElementById("kpi-orders").textContent = stats.count || 0;
-        document.getElementById("kpi-avg-value").textContent = "₹" + (stats.count > 0 ? Math.round(stats.total / stats.count) : 0);
-
-        // Generate AI Suggestions
-        generateAISuggestions(stats);
-
-        // Render charts (placeholder - implement with Chart.js)
-        renderOrderTypeChart();
-        renderHourlyChart();
-      } catch (e) {
-        console.error("Error rendering dashboard:", e);
-      }
-    }
-
-    function generateAISuggestions(stats) {
-      const suggestions = document.getElementById("aiSuggestions");
-      const items = [];
-
-      if (stats.total < 5000) {
-        items.push("💡 Consider running a promotion to boost sales");
-      }
-
-      if (stats.count > 50) {
-        items.push("⚡ High order volume detected - ensure kitchen staff is optimal");
-      }
-
-      items.push("📊 Check top-selling items and stock accordingly");
-      items.push("🎯 Analyze peak hours to optimize staff scheduling");
-
-      suggestions.innerHTML = items.map(item => `<div class="ai-suggestion-item">${item}</div>`).join("");
-    }
-
-    function renderOrderTypeChart() {
-      const ctx = document.getElementById("orderTypeChart");
-      if (!ctx) return;
-
-      if (orderTypeChart) orderTypeChart.destroy();
-
-      orderTypeChart = new Chart(ctx, {
-        type: "doughnut",
-        data: {
-          labels: ["Dine-in", "Takeaway", "Delivery"],
-          datasets: [{
-            data: [30, 25, 45],
-            backgroundColor: [
-              var(--chart-color-1),
-              var(--chart-color-2),
-              var(--chart-color-3)
-            ]
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: "bottom" }
-          }
-        }
-      });
-    }
-
-    function renderHourlyChart() {
-      const ctx = document.getElementById("hourlyChart");
-      if (!ctx) return;
-
-      if (hourlyChart) hourlyChart.destroy();
-
-      hourlyChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: ["12 PM", "1 PM", "2 PM", "6 PM", "7 PM", "8 PM"],
-          datasets: [{
-            label: "Orders",
-            data: [15, 20, 18, 25, 30, 22],
-            backgroundColor: "var(--chart-color-1)"
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } }
-        }
-      });
-    }
-
-    dashboardDate.onchange = dashboardPeriod.onchange = renderDashboard;
-
-    // ═══════════════════════════════════════════════════════════════════
-    // Analytics Reports
-    // ═══════════════════════════════════════════════════════════════════
-    function generateItemsReport() {
-      alert("Items report generation - implement API call");
-    }
-
-    function generateCategoryReport() {
-      alert("Category report generation - implement API call");
-    }
-
-    function generateComparison() {
-      alert("Comparison generation - implement API call");
-    }
-
-    function generateTopItems() {
-      alert("Top items generation - implement API call");
-    }
-
-    window.generateItemsReport = generateItemsReport;
-    window.generateCategoryReport = generateCategoryReport;
-    window.generateComparison = generateComparison;
-    window.generateTopItems = generateTopItems;
-
-    // ═══════════════════════════════════════════════════════════════════
-    // Service Requests
-    // ═══════════════════════════════════════════════════════════════════
-    const serviceRequestList = document.getElementById("serviceRequestList");
-    const clearServiceRequestsBtn = document.getElementById("clearServiceRequestsBtn");
-    let serviceRequests = [];
-
-    function renderServiceRequests() {
-      serviceRequestList.innerHTML = "";
-      if (!serviceRequests.length) {
-        serviceRequestList.innerHTML = `<div style="text-align: center; padding: 2rem; color: var(--text-light); grid-column: 1 / -1;">No service requests</div>`;
-        return;
-      }
-
-      serviceRequests.forEach(req => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.style.borderLeft = "4px solid var(--accent-orange)";
-        card.innerHTML = `
-          <div style="font-weight: 700; color: var(--accent-orange); margin-bottom: 0.5rem;">${req.requestType === "manager" ? "📞 Call Manager" : "🔔 Call Waiter"}</div>
-          <div style="font-weight: 600;">${escapeHtml(req.customerName || "Unknown")}</div>
-          <div style="font-size: 0.85rem; color: var(--text-light); margin-top: 0.5rem;">
-            📱 ${escapeHtml(req.mobile || "-")}<br>
-            🏷️ ${escapeHtml(req.orderType || "-")}<br>
-            🪑 Table ${escapeHtml(req.tableNumber || "-")}
-          </div>
-        `;
-        serviceRequestList.appendChild(card);
-      });
-    }
-
-    clearServiceRequestsBtn.onclick = () => {
-      serviceRequests = [];
-      renderServiceRequests();
-    };
-
-    // Initialize socket listener for service requests
-    function setupServiceRequestListener() {
-      if (socket) {
-        socket.on("serviceRequest", (req) => {
-          serviceRequests.unshift(req);
-          if (serviceRequests.length > 10) serviceRequests.pop();
-          renderServiceRequests();
-        });
-      }
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // Pending Dine-In Orders
-    // ═══════════════════════════════════════════════════════════════════
-    let pendingDineInRequests = [];
-
-    async function loadPendingDineInRequests() {
-      try {
-        const res = await fetch("/api/pending-dinein");
-        if (res.ok) {
-          pendingDineInRequests = await res.json() || [];
-          updatePendingBadge();
-          renderPendingDineIn();
-        }
-      } catch (e) {
-        console.warn("Could not load pending dine-in:", e);
-      }
-    }
-
-    function updatePendingBadge() {
-      const badge = document.getElementById("pendingTabBadge");
-      if (pendingDineInRequests.length > 0) {
-        badge.textContent = pendingDineInRequests.length;
-        badge.style.display = "inline-block";
-      } else {
-        badge.style.display = "none";
-      }
-    }
-
-    function renderPendingDineIn() {
-      const section = document.getElementById("pendingSection");
-      const list = document.getElementById("pendingDineInList");
-
-      if (!pendingDineInRequests.length) {
-        section.style.display = "none";
-        return;
-      }
-
-      section.style.display = "block";
-      list.innerHTML = "";
-
-      pendingDineInRequests.forEach(req => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.style.borderLeft = "4px solid var(--accent-orange)";
-
-        const itemsText = (req.items || []).map(i => `${i.name} x${i.qty}`).join(", ");
-
-        card.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-            <div>
-              <span class="badge badge-danger">PENDING</span>
-              <h4 style="font-weight: 700; margin: 0.5rem 0 0 0;">Table ${req.tableNumber}</h4>
-              <p style="margin: 0; color: var(--text-light);">👤 ${escapeHtml(req.customerName || "Unknown")}</p>
-              <p style="margin: 0.3rem 0 0 0; font-size: 0.85rem; color: var(--text-light);">📱 ${escapeHtml(req.mobile || "-")}</p>
-            </div>
-            <span style="font-weight: 700; color: var(--accent-orange);">₹${req.total || 0}</span>
-          </div>
-
-          <div style="font-size: 0.9rem; color: var(--text-light); margin-bottom: 1rem;">${escapeHtml(itemsText || "No items")}</div>
-
-          <div style="display: flex; gap: 0.5rem;">
-            <button class="btn btn-sm btn-success" onclick="acceptPendingOrder('${req._id}')">✓ Accept</button>
-            <button class="btn btn-sm btn-danger" onclick="rejectPendingOrder('${req._id}')">✕ Reject</button>
-          </div>
-        `;
-
-        list.appendChild(card);
-      });
-    }
-
-    async function acceptPendingOrder(orderId) {
-      try {
-        const res = await fetch(`/api/pending-dinein/${orderId}/accept`, { method: "POST" });
-        if (res.ok) {
-          pendingDineInRequests = pendingDineInRequests.filter(r => r._id !== orderId);
-          updatePendingBadge();
-          renderPendingDineIn();
-          setActiveTab("tables");
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    async function rejectPendingOrder(orderId) {
-      try {
-        await fetch(`/api/pending-dinein/${orderId}/reject`, { method: "POST" });
-        pendingDineInRequests = pendingDineInRequests.filter(r => r._id !== orderId);
-        updatePendingBadge();
-        renderPendingDineIn();
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    window.acceptPendingOrder = acceptPendingOrder;
-    window.rejectPendingOrder = rejectPendingOrder;
-    window.openDeliveryMap = openDeliveryMap;
-    window.printOrderReceipt = printOrderReceipt;
-    window.markOrderDelivered = markOrderDelivered;
-    window.togglePaymentVerified = togglePaymentVerified;
-
-    // ═══════════════════════════════════════════════════════════════════
-    // Table POS
-    // ═══════════════════════════════════════════════════════════════════
-    const TABLECOUNT = 5;
-    const tablesList = document.getElementById("tablesList");
-    const selectedTableTitle = document.getElementById("selectedTableTitle");
-    const selectedTableBadge = document.getElementById("selectedTableBadge");
-    const tableCustomerName = document.getElementById("tableCustomerName");
-    const tableCustomerMobile = document.getElementById("tableCustomerMobile");
-    const tableGuestCount = document.getElementById("tableGuestCount");
-    const tableMenuSearch = document.getElementById("tableMenuSearch");
-    const tableMenuList = document.getElementById("tableMenuList");
-    const tableDraftItems = document.getElementById("tableDraftItems");
-    const tableDraftTotal = document.getElementById("tableDraftTotal");
-    const saveTableDraftBtn = document.getElementById("saveTableDraftBtn");
-    const saveAndPrintTableBillBtn = document.getElementById("saveAndPrintTableBillBtn");
-    const clearTableBtn = document.getElementById("clearTableBtn");
-
-    const tableOrders = {};
-    for (let i = 1; i <= TABLECOUNT; i++) {
-      tableOrders[i] = { tableNumber: i, customerName: "", mobile: "", guestCount: 1, items: [] };
-    }
-
-    let selectedTable = 1;
-
-    async function loadAllTableDrafts() {
-      try {
-        const res = await fetch("/api/table-orders");
-        if (res.ok) {
-          const drafts = await res.json();
-          drafts.forEach(draft => {
-            tableOrders[draft.tableNumber] = draft;
-          });
-        }
-      } catch (e) {
-        console.warn("Could not load table drafts:", e);
-      }
-    }
-
-    function getTableTotal(tableNo) {
-      return (tableOrders[tableNo]?.items || []).reduce((sum, item) => sum + (item.price * item.qty), 0);
-    }
-
-    function renderTablesList() {
-      tablesList.innerHTML = "";
-      for (let i = 1; i <= TABLECOUNT; i++) {
-        const table = tableOrders[i];
-        const total = getTableTotal(i);
-        const btn = document.createElement("button");
-        btn.className = `table-btn ${selectedTable === i ? "active" : ""}`;
-        btn.innerHTML = `
-          <div class="table-btn-number">🪑 ${i}</div>
-          <div class="table-btn-status">${table.customerName || "Empty"}</div>
-          <div class="table-btn-status">₹${total}</div>
-        `;
-        btn.onclick = () => selectTable(i);
-        tablesList.appendChild(btn);
-      }
-    }
-
-    function selectTable(tableNo) {
-      selectedTable = tableNo;
-      const table = tableOrders[tableNo];
-      selectedTableTitle.textContent = `Table ${tableNo}`;
-      selectedTableBadge.textContent = table.items.length ? "Has Items" : "Available";
-      selectedTableBadge.className = `badge ${table.items.length ? "badge-warning" : "badge-success"}`;
-      tableCustomerName.value = table.customerName;
-      tableCustomerMobile.value = table.mobile;
-      tableGuestCount.value = table.guestCount || 1;
-      renderTablesList();
-      renderTableDraft();
-    }
-
-    function renderTableMenuList() {
-      const q = tableMenuSearch.value.toLowerCase();
-      tableMenuList.innerHTML = "";
-
-      const filtered = tableMenuFlat.filter(item =>
-        `${item.name} ${item.variant} ${item.category}`.toLowerCase().includes(q)
-      );
-
-      if (!filtered.length) {
-        tableMenuList.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-light);">No items found</div>`;
-        return;
-      }
-
-      filtered.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "menu-item";
-        div.innerHTML = `
-          <div class="menu-item-name">${escapeHtml(item.name)}</div>
-          ${item.variant ? `<div style="font-size: 0.8rem; color: var(--text-light);">${escapeHtml(item.variant)}</div>` : ""}
-          <div class="menu-item-price">₹${item.price}</div>
-        `;
-        div.onclick = () => {
-          const table = tableOrders[selectedTable];
-          const existing = table.items.find(x => x.name === item.name && x.variant === item.variant);
-          if (existing) existing.qty += 1;
-          else table.items.push({ name: item.name, variant: item.variant, price: item.price, qty: 1, category: item.category });
-          renderTableDraft();
-          renderTablesList();
-        };
-        tableMenuList.appendChild(div);
-      });
-    }
-
-    function renderTableDraft() {
-      const table = tableOrders[selectedTable];
-      tableDraftItems.innerHTML = "";
-
-      if (!table.items.length) {
-        tableDraftItems.innerHTML = `<div style="text-align: center; padding: 2rem; color: var(--text-light);">No items added yet</div>`;
-        tableDraftTotal.textContent = "₹0";
-        return;
-      }
-
-      table.items.forEach((item, idx) => {
-        const div = document.createElement("div");
-        div.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; background: var(--tertiary-bg); border-radius: 8px;";
-        div.innerHTML = `
-          <div>
-            <div style="font-weight: 600;">${escapeHtml(item.name)}</div>
-            <div style="font-size: 0.8rem; color: var(--text-light);">${escapeHtml(item.variant || "Standard")}</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <button class="btn btn-sm btn-secondary" onclick="changeQty(${idx}, -1)">−</button>
-            <span style="font-weight: 700; min-width: 30px; text-align: center;">${item.qty}</span>
-            <button class="btn btn-sm btn-secondary" onclick="changeQty(${idx}, 1)">+</button>
-            <span style="font-weight: 700; margin-left: 1rem; min-width: 60px; text-align: right;">₹${item.price * item.qty}</span>
-          </div>
-        `;
-        tableDraftItems.appendChild(div);
-      });
-
-      tableDraftTotal.textContent = "₹" + getTableTotal(selectedTable);
-    }
-
-    function changeQty(idx, delta) {
-      const table = tableOrders[selectedTable];
-      table.items[idx].qty += delta;
-      if (table.items[idx].qty <= 0) table.items.splice(idx, 1);
-      renderTableDraft();
-      renderTablesList();
-    }
-
-    tableMenuSearch.oninput = renderTableMenuList;
-    tableCustomerName.oninput = () => {
-      tableOrders[selectedTable].customerName = tableCustomerName.value;
-      renderTablesList();
-    };
-    tableCustomerMobile.oninput = () => {
-      tableOrders[selectedTable].mobile = tableCustomerMobile.value;
-    };
-    tableGuestCount.oninput = () => {
-      tableOrders[selectedTable].guestCount = Number(tableGuestCount.value) || 1;
-    };
-
-    saveTableDraftBtn.onclick = async () => {
-      const table = tableOrders[selectedTable];
-      try {
-        await fetch("/api/table-orders/save-draft", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            tableNumber: selectedTable,
-            customerName: table.customerName,
-            mobile: table.mobile,
-            guestCount: table.guestCount,
-            items: table.items,
-            total: getTableTotal(selectedTable)
-          })
-        });
-        alert("Draft saved for Table " + selectedTable);
-      } catch (e) {
-        console.error(e);
-        alert("Error saving draft");
-      }
-    };
-
-    saveAndPrintTableBillBtn.onclick = async () => {
-      const table = tableOrders[selectedTable];
-
-      if (!table.items.length) {
-        alert("No items in table draft");
-        return;
-      }
-
-      try {
-        const res = await fetch("/api/table-orders/finalize", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            tableNumber: selectedTable,
-            customerName: table.customerName,
-            mobile: table.mobile,
-            guestCount: table.guestCount,
-            items: table.items,
-            total: getTableTotal(selectedTable),
-            orderType: "dinein",
-            status: "delivered"
-          })
-        });
-
-        if (res.ok) {
-          tableOrders[selectedTable] = { tableNumber: selectedTable, customerName: "", mobile: "", guestCount: 1, items: [] };
-          selectTable(selectedTable);
-          await fetchOrders(datePicker.value);
-          alert("✅ Bill saved and order added to history");
-        }
-      } catch (e) {
-        console.error(e);
-        alert("Error finalizing bill");
-      }
-    };
-
-    clearTableBtn.onclick = () => {
-      if (confirm(`Clear Table ${selectedTable}?`)) {
-        tableOrders[selectedTable] = { tableNumber: selectedTable, customerName: "", mobile: "", guestCount: 1, items: [] };
-        selectTable(selectedTable);
-      }
-    };
-
-    // Setup all socket event listeners
-    function setupAllSocketListeners() {
-      if (!socket) return;
-
-      socket.on("newOrder", async () => {
-        console.log("New order received");
-        await fetchOrders(datePicker.value);
-        await renderDashboard();
-      });
-
-      socket.on("orderUpdated", async () => {
-        console.log("Order updated");
-        await fetchOrders(datePicker.value);
-      });
-
-      socket.on("pendingDineIn", (order) => {
-        console.log("Pending dine-in order:", order);
-        pendingDineInRequests.push(order);
-        updatePendingBadge();
-        renderPendingDineIn();
-      });
-
-      socket.on("tableDraftUpdated", (payload) => {
-        if (!payload) return;
-        const tableNo = Number(payload?.tableNumber || 0);
-        if (tableNo >= 1 && tableNo <= TABLECOUNT) {
-          tableOrders[tableNo] = payload;
-          renderTablesList();
-          if (selectedTable === tableNo) selectTable(tableNo);
-        }
-      });
-
-      socket.on("tableDraftCleared", (payload) => {
-        const tableNo = Number(payload?.tableNumber || 0);
-        if (tableNo >= 1 && tableNo <= TABLECOUNT) {
-          tableOrders[tableNo] = { tableNumber: tableNo, customerName: "", mobile: "", guestCount: 1, items: [] };
-          if (selectedTable === tableNo) selectTable(tableNo);
-          else renderTablesList();
-        }
-      });
-
-      socket.on("tableOrderFinalized", async () => {
-        await loadAllTableDrafts();
+      resultsBox.appendChild(div);
+    });
+  } catch (e) {
+    resultsBox.innerHTML = `<div style="padding:1rem;color:#721C24;">Error: ${e.message}</div>`;
+  }
+}
+
+function clearOrderSearch() {
+  document.getElementById("orderSearchInput").value = "";
+  const r = document.getElementById("orderSearchResults");
+  r.innerHTML = ""; r.classList.remove("open");
+}
+
+document.getElementById("orderSearchInput").addEventListener("keypress", e => { if (e.key === "Enter") searchOrders(); });
+
+// ─── DASHBOARD ─────────────────────────────────────────────────────────────────
+const dashboardDate   = document.getElementById("dashboardDate");
+const dashboardPeriod = document.getElementById("dashboardPeriod");
+dashboardDate.value = getLocalToday();
+
+let orderTypeChart = null;
+let hourlyChart    = null;
+
+// !! FIX: Use plain hex strings, NOT CSS var() references in JS arrays !!
+const CHART_COLORS = ["#FF8C42", "#3498DB", "#2ECC71", "#9B59B6", "#F39C12", "#E74C3C", "#1ABC9C"];
+
+async function renderDashboard() {
+  try {
+    const d      = dashboardDate.value;
+    const period = dashboardPeriod.value;
+    const res    = await fetch(`/api/dashboard/sales?period=${period}&date=${d}`);
+    const stats  = await res.json();
+
+    document.getElementById("kpi-revenue").textContent   = "₹" + (stats.total || 0);
+    document.getElementById("kpi-orders").textContent    = stats.count || 0;
+    document.getElementById("kpi-avg-value").textContent = "₹" + (stats.count > 0 ? Math.round(stats.total / stats.count) : 0);
+
+    // Peak hour
+    try {
+      const ph = await (await fetch(`/api/dashboard/peakhour?date=${d}`)).json();
+      const h = Number(ph.hour);
+      const label = !isNaN(h) ? `${h < 12 ? h || 12 : h - 12 || 12}${h < 12 ? "AM" : "PM"} (${ph.count} orders)` : "--";
+      document.getElementById("kpi-peak").textContent = label;
+    } catch (_) {}
+
+    generateAISuggestions(stats);
+    await renderOrderTypeChart(d, period);
+    await renderHourlyChart(d);
+  } catch (e) { console.error("renderDashboard:", e); }
+}
+
+function generateAISuggestions(stats) {
+  const el = document.getElementById("aiSuggestions");
+  const items = [];
+  if ((stats.total || 0) < 5000) items.push("💡 Consider running a promotion to boost sales today.");
+  if ((stats.count || 0) > 50)   items.push("⚡ High order volume — ensure kitchen staff is optimal.");
+  items.push("📊 Check top-selling items and stock accordingly.");
+  items.push("🎯 Analyze peak hours to optimize staff scheduling.");
+  el.innerHTML = items.map(i => `<div class="ai-suggestion-item">${i}</div>`).join("");
+}
+
+async function renderOrderTypeChart(date, period) {
+  const ctx = document.getElementById("orderTypeChart");
+  if (!ctx) return;
+  if (orderTypeChart) { orderTypeChart.destroy(); orderTypeChart = null; }
+
+  // Fetch real order type breakdown
+  let dineCount = 0, takeCount = 0, delivCount = 0;
+  try {
+    const { start, end } = getDateBoundsForChart(date, period);
+    const res = await fetch(`/api/orders?date=${date}`);
+    const orders = await res.json();
+    orders.forEach(o => {
+      if (o.orderType === "dinein")    dineCount++;
+      else if (o.orderType === "takeaway") takeCount++;
+      else if (o.orderType === "delivery") delivCount++;
+    });
+  } catch (_) {}
+
+  orderTypeChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: ["Dine-in", "Takeaway", "Delivery"],
+      datasets: [{ data: [dineCount, takeCount, delivCount], backgroundColor: ["#FF8C42", "#3498DB", "#2ECC71"], borderWidth: 2 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
+  });
+}
+
+async function renderHourlyChart(date) {
+  const ctx = document.getElementById("hourlyChart");
+  if (!ctx) return;
+  if (hourlyChart) { hourlyChart.destroy(); hourlyChart = null; }
+
+  const hourlyData = Array(24).fill(0);
+  try {
+    const res = await fetch(`/api/orders?date=${date}`);
+    const orders = await res.json();
+    orders.forEach(o => { const h = new Date(o.createdAt).getHours(); hourlyData[h]++; });
+  } catch (_) {}
+
+  const labels = hourlyData.map((_, h) => h === 0 ? "12AM" : h < 12 ? `${h}AM` : h === 12 ? "12PM" : `${h-12}PM`);
+
+  hourlyChart = new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets: [{ label: "Orders", data: hourlyData, backgroundColor: "#FF8C42" }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+}
+
+function getDateBoundsForChart(date) { return { start: date, end: date }; }
+
+dashboardDate.onchange = dashboardPeriod.onchange = renderDashboard;
+
+// ─── ANALYTICS STUBS ──────────────────────────────────────────────────────────
+function generateItemsReport()    { alert("Items report — connect to /api/dashboard/topdish for data."); }
+function generateCategoryReport() { alert("Category report — implement with order item category breakdown."); }
+function generateComparison()     { alert("Comparison — fetch two date ranges and diff revenues."); }
+function generateTopItems()       { alert("Top items — fetch from /api/dashboard/topdish with date range."); }
+window.generateItemsReport = generateItemsReport;
+window.generateCategoryReport = generateCategoryReport;
+window.generateComparison = generateComparison;
+window.generateTopItems = generateTopItems;
+
+// ─── SERVICE REQUESTS ──────────────────────────────────────────────────────────
+const serviceRequestList = document.getElementById("serviceRequestList");
+let serviceRequests = [];
+
+function renderServiceRequests() {
+  serviceRequestList.innerHTML = "";
+  if (!serviceRequests.length) {
+    serviceRequestList.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-light);grid-column:1/-1;">No service requests</div>`;
+    return;
+  }
+  serviceRequests.forEach(req => {
+    const card = document.createElement("div");
+    card.className = "card"; card.style.borderLeft = "4px solid var(--accent-orange)";
+    card.innerHTML = `
+      <div style="font-weight:700;color:var(--accent-orange);margin-bottom:0.5rem;">${req.requestType === "manager" ? "📞 Call Manager" : "🔔 Call Waiter"}</div>
+      <div style="font-weight:600;">${escapeHtml(req.customerName || "Unknown")}</div>
+      <div style="font-size:0.85rem;color:var(--text-light);margin-top:0.5rem;">
+        📱 ${escapeHtml(req.mobile || "-")}<br>🏷️ ${escapeHtml(req.orderType || "-")}<br>🪑 Table ${escapeHtml(req.tableNumber || "-")}
+      </div>`;
+    serviceRequestList.appendChild(card);
+  });
+}
+
+document.getElementById("clearServiceRequestsBtn").onclick = () => { serviceRequests = []; renderServiceRequests(); };
+
+// ─── PENDING DINE-IN ───────────────────────────────────────────────────────────
+let pendingDineInRequests = [];
+
+async function loadPendingDineInRequests() {
+  try {
+    const res = await fetch("/api/pending-dinein");
+    if (res.ok) { pendingDineInRequests = await res.json() || []; updatePendingBadge(); renderPendingDineIn(); }
+  } catch (e) { console.warn("Pending load error:", e); }
+}
+
+function updatePendingBadge() {
+  const b = document.getElementById("pendingTabBadge");
+  if (pendingDineInRequests.length) { b.textContent = pendingDineInRequests.length; b.style.display = "inline-block"; }
+  else b.style.display = "none";
+}
+
+function renderPendingDineIn() {
+  const section = document.getElementById("pendingSection");
+  const list    = document.getElementById("pendingDineInList");
+  if (!pendingDineInRequests.length) { section.style.display = "none"; return; }
+  section.style.display = "block"; list.innerHTML = "";
+  pendingDineInRequests.forEach(req => {
+    const card = document.createElement("div");
+    card.className = "card"; card.style.borderLeft = "4px solid var(--accent-orange)";
+    const itemsText = (req.items || []).map(i => `${i.name} x${i.qty}`).join(", ");
+    card.innerHTML = `
+      <div class="flex justify-between items-start mb-3">
+        <div>
+          <span class="badge badge-danger">PENDING</span>
+          <h4 style="font-weight:700;margin:0.5rem 0 0;">Table ${escapeHtml(req.tableNumber)}</h4>
+          <p style="margin:0;color:var(--text-light);">👤 ${escapeHtml(req.customerName || "Unknown")}</p>
+          <p style="margin:0.3rem 0 0;font-size:0.85rem;color:var(--text-light);">📱 ${escapeHtml(req.mobile || "-")}</p>
+        </div>
+        <span style="font-weight:700;color:var(--accent-orange);">₹${req.total || 0}</span>
+      </div>
+      <div style="font-size:0.9rem;color:var(--text-light);margin-bottom:1rem;">${escapeHtml(itemsText || "No items")}</div>
+      <div class="flex gap-2">
+        <button class="btn btn-sm btn-success" onclick="acceptPendingOrder('${req._id}')">✓ Accept</button>
+        <button class="btn btn-sm btn-danger"  onclick="rejectPendingOrder('${req._id}')">✕ Reject</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+async function acceptPendingOrder(id) {
+  try {
+    const res = await fetch(`/api/pending-dinein/${id}/accept`, { method:"POST" });
+    if (res.ok) { pendingDineInRequests = pendingDineInRequests.filter(r => r._id !== id); updatePendingBadge(); renderPendingDineIn(); setActiveTab("tables"); }
+  } catch (e) { console.error(e); }
+}
+
+async function rejectPendingOrder(id) {
+  try {
+    await fetch(`/api/pending-dinein/${id}/reject`, { method:"POST" });
+    pendingDineInRequests = pendingDineInRequests.filter(r => r._id !== id); updatePendingBadge(); renderPendingDineIn();
+  } catch (e) { console.error(e); }
+}
+
+window.acceptPendingOrder = acceptPendingOrder;
+window.rejectPendingOrder = rejectPendingOrder;
+window.openDeliveryMap    = openDeliveryMap;
+window.markOrderDelivered = markOrderDelivered;
+window.togglePaymentVerified = togglePaymentVerified;
+window.openKOT = openKOT;
+window.openEditModal = openEditModal;
+window.closeEditModal = closeEditModal;
+window.addEditItem = addEditItem;
+window.removeEditItem = removeEditItem;
+
+// ─── TABLE POS ─────────────────────────────────────────────────────────────────
+const TABLECOUNT = 5;
+const tablesList            = document.getElementById("tablesList");
+const selectedTableTitle    = document.getElementById("selectedTableTitle");
+const selectedTableBadge    = document.getElementById("selectedTableBadge");
+const tableCustomerName     = document.getElementById("tableCustomerName");
+const tableCustomerMobile   = document.getElementById("tableCustomerMobile");
+const tableGuestCount       = document.getElementById("tableGuestCount");
+const tableMenuSearch       = document.getElementById("tableMenuSearch");
+const tableMenuList         = document.getElementById("tableMenuList");
+const tableDraftItems       = document.getElementById("tableDraftItems");
+const tableDraftTotal       = document.getElementById("tableDraftTotal");
+const nameAutocomplete      = document.getElementById("nameAutocomplete");
+const mobileAutocomplete    = document.getElementById("mobileAutocomplete");
+
+const tableOrders = {};
+for (let i = 1; i <= TABLECOUNT; i++) {
+  tableOrders[i] = { tableNumber: i, customerName: "", mobile: "", guestCount: 1, items: [] };
+}
+let selectedTable = 1;
+let acTimer = null;
+
+async function loadAllTableDrafts() {
+  try {
+    const res = await fetch("/api/table-orders");
+    if (res.ok) { const drafts = await res.json(); drafts.forEach(d => { tableOrders[d.tableNumber] = d; }); }
+  } catch (e) { console.warn("Table drafts load:", e); }
+}
+
+function getTableTotal(n) { return (tableOrders[n]?.items || []).reduce((s,i) => s + i.price * i.qty, 0); }
+
+function renderTablesList() {
+  tablesList.innerHTML = "";
+  for (let i = 1; i <= TABLECOUNT; i++) {
+    const t = tableOrders[i];
+    const total = getTableTotal(i);
+    const btn = document.createElement("button");
+    btn.className = `table-btn ${selectedTable === i ? "active" : ""}`;
+    btn.innerHTML = `<div class="table-btn-number">🪑 ${i}</div><div class="table-btn-status">${escapeHtml(t.customerName || "Empty")}</div><div class="table-btn-status">₹${total}</div>`;
+    btn.onclick = () => selectTable(i);
+    tablesList.appendChild(btn);
+  }
+}
+
+function selectTable(n) {
+  selectedTable = n;
+  const t = tableOrders[n];
+  selectedTableTitle.textContent = `Table ${n}`;
+  selectedTableBadge.textContent = t.items.length ? "Has Items" : "Available";
+  selectedTableBadge.className   = `badge ${t.items.length ? "badge-warning" : "badge-success"}`;
+  tableCustomerName.value   = t.customerName || "";
+  tableCustomerMobile.value = t.mobile || "";
+  tableGuestCount.value     = t.guestCount || 1;
+  closeAutocomplete();
+  renderTablesList();
+  renderTableDraft();
+}
+
+// ─── AUTOCOMPLETE LOGIC ───────────────────────────────────────────────────────
+function closeAutocomplete() {
+  nameAutocomplete.classList.remove("open");
+  mobileAutocomplete.classList.remove("open");
+}
+
+async function fetchCustomerSuggestions(q, targetList, fillField) {
+  if (q.length < 1) { targetList.classList.remove("open"); return; }
+  try {
+    const res = await fetch(`/api/customers/search?q=${encodeURIComponent(q)}`);
+    const list = await res.json();
+    if (!list.length) { targetList.classList.remove("open"); return; }
+    targetList.innerHTML = "";
+    list.forEach(c => {
+      const item = document.createElement("div");
+      item.className = "autocomplete-item";
+      item.innerHTML = `<div class="autocomplete-name">${escapeHtml(c.customerName || "-")}</div><div class="autocomplete-mobile">📱 ${escapeHtml(c.mobile || "-")}</div>`;
+      item.onclick = () => {
+        tableCustomerName.value   = c.customerName || "";
+        tableCustomerMobile.value = c.mobile || "";
+        tableOrders[selectedTable].customerName = c.customerName || "";
+        tableOrders[selectedTable].mobile       = c.mobile || "";
+        closeAutocomplete();
         renderTablesList();
-        selectTable(selectedTable);
-        await fetchOrders(datePicker.value);
-        await renderDashboard();
-      });
+      };
+      targetList.appendChild(item);
+    });
+    targetList.classList.add("open");
+  } catch (e) { console.error("Autocomplete error:", e); }
+}
 
-      socket.on("pendingDineInAccepted", (payload) => {
-        const id = payload?.id || payload;
-        pendingDineInRequests = pendingDineInRequests.filter(r => r._id !== id);
-        updatePendingBadge();
-        renderPendingDineIn();
-      });
+tableCustomerName.addEventListener("input", () => {
+  tableOrders[selectedTable].customerName = tableCustomerName.value;
+  renderTablesList();
+  clearTimeout(acTimer);
+  acTimer = setTimeout(() => fetchCustomerSuggestions(tableCustomerName.value, nameAutocomplete, "name"), 300);
+});
 
-      socket.on("pendingDineInRejected", (payload) => {
-        const id = payload?.id || payload;
-        pendingDineInRequests = pendingDineInRequests.filter(r => r._id !== id);
-        updatePendingBadge();
-        renderPendingDineIn();
-      });
+tableCustomerMobile.addEventListener("input", () => {
+  tableOrders[selectedTable].mobile = tableCustomerMobile.value;
+  clearTimeout(acTimer);
+  acTimer = setTimeout(() => fetchCustomerSuggestions(tableCustomerMobile.value, mobileAutocomplete, "mobile"), 300);
+});
+
+tableGuestCount.oninput  = () => { tableOrders[selectedTable].guestCount = Number(tableGuestCount.value) || 1; };
+
+// Close autocomplete on outside click
+document.addEventListener("click", e => {
+  if (!e.target.closest(".autocomplete-wrap")) closeAutocomplete();
+});
+
+function renderTableMenuList() {
+  const q = tableMenuSearch.value.toLowerCase();
+  tableMenuList.innerHTML = "";
+  const filtered = tableMenuFlat.filter(item => `${item.name} ${item.variant} ${item.category}`.toLowerCase().includes(q));
+  if (!filtered.length) { tableMenuList.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-light);">No items found</div>`; return; }
+  filtered.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "menu-item";
+    div.innerHTML = `<div class="menu-item-name">${escapeHtml(item.name)}</div>${item.variant ? `<div style="font-size:0.8rem;color:var(--text-light);">${escapeHtml(item.variant)}</div>` : ""}<div class="menu-item-price">₹${item.price}</div>`;
+    div.onclick = () => {
+      const t = tableOrders[selectedTable];
+      const ex = t.items.find(x => x.name === item.name && x.variant === item.variant);
+      if (ex) ex.qty += 1;
+      else t.items.push({ name: item.name, variant: item.variant, price: item.price, qty: 1, category: item.category });
+      renderTableDraft(); renderTablesList();
+    };
+    tableMenuList.appendChild(div);
+  });
+}
+
+function renderTableDraft() {
+  const t = tableOrders[selectedTable];
+  tableDraftItems.innerHTML = "";
+  if (!t.items.length) { tableDraftItems.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-light);">No items yet</div>`; tableDraftTotal.textContent = "₹0"; return; }
+  t.items.forEach((item, idx) => {
+    const div = document.createElement("div");
+    div.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:0.8rem;background:var(--tertiary-bg);border-radius:8px;";
+    div.innerHTML = `
+      <div><div style="font-weight:600;">${escapeHtml(item.name)}</div><div style="font-size:0.8rem;color:var(--text-light);">${escapeHtml(item.variant || "Standard")}</div></div>
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        <button class="btn btn-sm btn-secondary" onclick="changeQty(${idx},-1)">−</button>
+        <span style="font-weight:700;min-width:30px;text-align:center;">${item.qty}</span>
+        <button class="btn btn-sm btn-secondary" onclick="changeQty(${idx},1)">+</button>
+        <span style="font-weight:700;margin-left:1rem;min-width:60px;text-align:right;">₹${item.price * item.qty}</span>
+      </div>`;
+    tableDraftItems.appendChild(div);
+  });
+  tableDraftTotal.textContent = "₹" + getTableTotal(selectedTable);
+}
+
+function changeQty(idx, delta) {
+  const t = tableOrders[selectedTable];
+  t.items[idx].qty += delta;
+  if (t.items[idx].qty <= 0) t.items.splice(idx, 1);
+  renderTableDraft(); renderTablesList();
+}
+
+tableMenuSearch.oninput = renderTableMenuList;
+
+document.getElementById("saveTableDraftBtn").onclick = async () => {
+  const t = tableOrders[selectedTable];
+  try {
+    await fetch("/api/table-orders/save-draft", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ tableNumber: selectedTable, customerName: t.customerName, mobile: t.mobile, guestCount: t.guestCount, items: t.items, total: getTableTotal(selectedTable) }) });
+    alert("✅ Draft saved for Table " + selectedTable);
+  } catch (e) { alert("Error saving draft"); }
+};
+
+document.getElementById("saveAndPrintTableBillBtn").onclick = async () => {
+  const t = tableOrders[selectedTable];
+  if (!t.items.length) { alert("No items in draft"); return; }
+  try {
+    const res = await fetch("/api/table-orders/finalize", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ tableNumber: selectedTable, customerName: t.customerName, mobile: t.mobile, guestCount: t.guestCount, items: t.items, total: getTableTotal(selectedTable), orderType: "dinein", status: "delivered" }) });
+    if (res.ok) {
+      const data = await res.json();
+      tableOrders[selectedTable] = { tableNumber: selectedTable, customerName: "", mobile: "", guestCount: 1, items: [] };
+      selectTable(selectedTable);
+      await fetchOrders(datePicker.value);
+      // Auto-open KOT for the finalized order
+      if (data.order?._id) openKOT(data.order._id);
+      else alert("✅ Bill saved and added to history");
     }
+  } catch (e) { alert("Error finalizing bill"); }
+};
 
-    // Call this after socket is initialized
-    function initializeAndSetupSockets() {
-      initializeSocket();
-      setTimeout(() => {
-        setupServiceRequestListener();
-        setupAllSocketListeners();
-      }, 100);
-    }
+document.getElementById("clearTableBtn").onclick = () => {
+  if (confirm(`Clear Table ${selectedTable}?`)) {
+    fetch("/api/table-orders/clear", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ tableNumber: String(selectedTable) }) }).catch(() => {});
+    tableOrders[selectedTable] = { tableNumber: selectedTable, customerName: "", mobile: "", guestCount: 1, items: [] };
+    selectTable(selectedTable);
+  }
+};
 
-    // Initial render
-    renderTablesList();
-    renderTableDraft();
+// ─── SOCKET LISTENERS ──────────────────────────────────────────────────────────
+function setupAllSocketListeners() {
+  if (!socket) return;
+
+  socket.on("serviceRequest", req => {
+    serviceRequests.unshift(req);
+    if (serviceRequests.length > 10) serviceRequests.pop();
     renderServiceRequests();
-    renderPendingDineIn();
-  </script>
+  });
+
+  socket.on("newOrder", async () => { await fetchOrders(datePicker.value); await renderDashboard(); });
+  socket.on("orderUpdated", async () => { await fetchOrders(datePicker.value); });
+
+  socket.on("pendingDineIn", order => {
+    pendingDineInRequests.push(order); updatePendingBadge(); renderPendingDineIn();
+  });
+
+  socket.on("tableDraftUpdated", payload => {
+    if (!payload) return;
+    const n = Number(payload?.tableNumber || 0);
+    if (n >= 1 && n <= TABLECOUNT) { tableOrders[n] = payload; renderTablesList(); if (selectedTable === n) selectTable(n); }
+  });
+
+  socket.on("tableDraftCleared", payload => {
+    const n = Number(payload?.tableNumber || 0);
+    if (n >= 1 && n <= TABLECOUNT) { tableOrders[n] = { tableNumber: n, customerName: "", mobile: "", guestCount: 1, items: [] }; if (selectedTable === n) selectTable(n); else renderTablesList(); }
+  });
+
+  socket.on("tableOrderFinalized", async () => { await loadAllTableDrafts(); renderTablesList(); selectTable(selectedTable); await fetchOrders(datePicker.value); await renderDashboard(); });
+  socket.on("pendingDineInAccepted", payload => { const id = payload?.id || payload; pendingDineInRequests = pendingDineInRequests.filter(r => r._id !== id); updatePendingBadge(); renderPendingDineIn(); });
+  socket.on("pendingDineInRejected", payload => { const id = payload?.id || payload; pendingDineInRequests = pendingDineInRequests.filter(r => r._id !== id); updatePendingBadge(); renderPendingDineIn(); });
+}
+
+// ─── INITIAL RENDER ────────────────────────────────────────────────────────────
+renderTablesList();
+renderTableDraft();
+renderServiceRequests();
+renderPendingDineIn();
+</script>
 </body>
 </html>
