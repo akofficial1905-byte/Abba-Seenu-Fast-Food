@@ -106,12 +106,6 @@ serviceRequestSchema.index({ createdAt: 1 }, { expireAfterSeconds: 604800 });
 const ServiceRequest = mongoose.model("ServiceRequest", serviceRequestSchema);
 
 // ── TableDraft ────────────────────────────────────────────────────────────────
-// THE FIX: Use async pre-save with NO `next` parameter.
-// This is the only pattern that works in Mongoose 5, 6, 7, AND 8.
-// In Mongoose 8, passing `next` as a parameter is unreliable in some environments —
-// the callback may not be injected, so calling it throws "next is not a function".
-// With async functions, Mongoose uses the returned Promise as the completion signal
-// and never injects a `next` callback at all — so there is nothing to break.
 const tableDraftSchema = new mongoose.Schema({
   tableNumber:   { type: String, required: true, unique: true, index: true },
   customerName:  { type: String, default: "" },
@@ -201,6 +195,76 @@ app.get("/api/orders", async (req, res) => {
   }
 });
 
+// ─── NEW: Search orders by ID, customer name, mobile, or table ────────────────
+app.get("/api/orders/search", async (req, res) => {
+  try {
+    const q = String(req.query.q || "").trim();
+    if (!q) return res.json([]);
+
+    // Try ObjectId match first
+    let idMatch = null;
+    if (q.match(/^[a-f\d]{24}$/i)) {
+      idMatch = await Order.findById(q).catch(() => null);
+    }
+
+    const textResults = await Order.find({
+      status: { $ne: "deleted" },
+      $or: [
+        { customerName:  { $regex: q, $options: "i" } },
+        { mobile:        { $regex: q, $options: "i" } },
+        { tableNumber:   { $regex: q, $options: "i" } },
+        { registrationNumber: { $regex: q, $options: "i" } }
+      ]
+    })
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    const results = idMatch
+      ? [idMatch, ...textResults.filter(r => r._id.toString() !== idMatch._id.toString())]
+      : textResults;
+
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: "Could not search orders" });
+  }
+});
+
+// ─── NEW: Customer autocomplete ───────────────────────────────────────────────
+app.get("/api/customers/search", async (req, res) => {
+  try {
+    const q = String(req.query.q || "").trim();
+    if (q.length < 1) return res.json([]);
+
+    // Get distinct customers matching the query by name or mobile
+    const orders = await Order.find({
+      status: { $ne: "deleted" },
+      $or: [
+        { customerName: { $regex: q, $options: "i" } },
+        { mobile:       { $regex: q, $options: "i" } }
+      ]
+    })
+      .select("customerName mobile")
+      .sort({ createdAt: -1 })
+      .limit(100);
+
+    // Deduplicate by name+mobile pair
+    const seen = new Set();
+    const unique = [];
+    for (const o of orders) {
+      const key = `${(o.customerName || "").toLowerCase()}|${o.mobile || ""}`;
+      if (!seen.has(key) && (o.customerName || o.mobile)) {
+        seen.add(key);
+        unique.push({ customerName: o.customerName || "", mobile: o.mobile || "" });
+      }
+      if (unique.length >= 8) break;
+    }
+
+    res.json(unique);
+  } catch (err) {
+    res.status(500).json({ error: "Could not search customers" });
+  }
+});
+
 app.post("/api/orders", async (req, res) => {
   try {
     const {
@@ -268,6 +332,17 @@ app.post("/api/orders", async (req, res) => {
   }
 });
 
+// ─── NEW: GET single order by ID (was missing!) ───────────────────────────────
+app.get("/api/orders/:id", async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ success: false, error: "Not found" });
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Could not fetch order" });
+  }
+});
+
 app.patch("/api/orders/:id/status", async (req, res) => {
   try {
     const order = await Order.findByIdAndUpdate(
@@ -291,6 +366,42 @@ app.patch("/api/orders/:id/payment-verified", async (req, res) => {
     res.json({ success: true, order });
   } catch (err) {
     res.status(500).json({ success: false, error: "Could not update payment" });
+  }
+});
+
+// ─── NEW: Full order edit (items, customer info, status, payment) ─────────────
+app.patch("/api/orders/:id", async (req, res) => {
+  try {
+    const allowed = [
+      "customerName", "mobile", "registrationNumber", "address",
+      "items", "total", "paymentMethod", "paymentVerified",
+      "specialRequest", "requestTags", "status", "tableNumber"
+    ];
+
+    const update = {};
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) update[key] = req.body[key];
+    }
+
+    // Recalculate total if items changed
+    if (update.items) {
+      update.items = update.items.map(i => ({
+        name:    String(i?.name    || ""),
+        variant: String(i?.variant || ""),
+        price:   Number(i?.price   || 0),
+        qty:     Number(i?.qty     || 0)
+      })).filter(i => i.name && i.qty > 0);
+      update.total = calcTotal(update.items);
+    }
+
+    const order = await Order.findByIdAndUpdate(req.params.id, { $set: update }, { new: true });
+    if (!order) return res.status(404).json({ success: false, error: "Not found" });
+
+    io.emit("orderUpdated", order);
+    res.json({ success: true, order });
+  } catch (err) {
+    console.error("Edit order error:", err);
+    res.status(500).json({ success: false, error: "Could not edit order", detail: err.message });
   }
 });
 
@@ -372,63 +483,61 @@ app.post("/api/pending-dinein/:id/accept", async (req, res) => {
       return res.json({ success: true, draft: null });
     }
 
-   // Mark accepted safely
-pending.status = "accepted";
-await pending.save();
+    pending.status = "accepted";
+    await pending.save();
 
-// Get or create draft
-let draft = await TableDraft.findOne({ tableNumber });
+    let draft = await TableDraft.findOne({ tableNumber });
 
-if (!draft) {
-  draft = new TableDraft({
-    tableNumber,
-    customerName: pending.customerName || "",
-    mobile: pending.mobile || "",
-    guestCount: pending.guestCount || 1,
-    items: pending.items || [],
-    status: "draft"
-  });
-} else {
-  const mergedItems = [...(draft.items || [])];
-
-  (pending.items || []).forEach((pItem) => {
-    const existing = mergedItems.find(
-      (i) => i.name === pItem.name && i.variant === pItem.variant
-    );
-
-    if (existing) {
-      existing.qty += Number(pItem.qty || 0);
-    } else {
-      mergedItems.push({
-        name: pItem.name || "",
-        variant: pItem.variant || "",
-        price: Number(pItem.price || 0),
-        qty: Number(pItem.qty || 0),
-        category: pItem.category || ""
+    if (!draft) {
+      draft = new TableDraft({
+        tableNumber,
+        customerName: pending.customerName || "",
+        mobile: pending.mobile || "",
+        guestCount: pending.guestCount || 1,
+        items: pending.items || [],
+        status: "draft"
       });
+    } else {
+      const mergedItems = [...(draft.items || [])];
+
+      (pending.items || []).forEach((pItem) => {
+        const existing = mergedItems.find(
+          (i) => i.name === pItem.name && i.variant === pItem.variant
+        );
+
+        if (existing) {
+          existing.qty += Number(pItem.qty || 0);
+        } else {
+          mergedItems.push({
+            name: pItem.name || "",
+            variant: pItem.variant || "",
+            price: Number(pItem.price || 0),
+            qty: Number(pItem.qty || 0),
+            category: pItem.category || ""
+          });
+        }
+      });
+
+      draft.items = mergedItems;
+
+      if (!draft.customerName) draft.customerName = pending.customerName || "";
+      if (!draft.mobile) draft.mobile = pending.mobile || "";
+
+      draft.status = "draft";
     }
-  });
 
-  draft.items = mergedItems;
+    await draft.save();
 
-  if (!draft.customerName) draft.customerName = pending.customerName || "";
-  if (!draft.mobile) draft.mobile = pending.mobile || "";
+    const obj = draft.toObject();
+    obj._id = obj._id.toString();
 
-  draft.status = "draft";
-}
+    io.emit("tableDraftUpdated", obj);
+    io.emit("pendingDineInAccepted", {
+      id: id.toString(),
+      tableNumber
+    });
 
-await draft.save();
-
-const obj = draft.toObject();
-obj._id = obj._id.toString();
-
-io.emit("tableDraftUpdated", obj);
-io.emit("pendingDineInAccepted", {
-  id: id.toString(),
-  tableNumber
-});
-
-return res.json({ success: true, draft: obj });
+    return res.json({ success: true, draft: obj });
   } catch (err) {
     console.error("Accept error:", err.message);
     res.status(500).json({ success: false, error: "Could not accept", detail: err.message });
@@ -465,7 +574,6 @@ app.post("/api/table-orders/save-draft", async (req, res) => {
     if (!p.tableNumber)
       return res.status(400).json({ success: false, error: "tableNumber is required" });
 
-    // Use findOneAndUpdate with upsert — avoids pre-save hook and is race-condition safe
     const draft = await TableDraft.findOneAndUpdate(
       { tableNumber: p.tableNumber },
       {
@@ -632,33 +740,57 @@ app.get("/api/dashboard/repeatcustomers", async (req, res) => {
   }
 });
 
-// ─── PRINT TICKET ─────────────────────────────────────────────────────────────
+// ─── PRINT TICKET / KOT ───────────────────────────────────────────────────────
 app.get("/api/next-print-ticket", (req, res) => {
   if (!printQueue.length) return res.status(204).send();
   const o = printQueue.shift();
-  const lines = [
-    "ABBA SEENUUU... FAST FOODS",
-    'Taste like "ahh devudaa..."',
-    "--------------------------",
-    `Order ID: ${o._id}`,
-    `Type   : ${o.orderType}`
-  ];
-  if (o.customerName)        lines.push(`Name   : ${o.customerName}`);
-  if (o.registrationNumber)  lines.push(`Reg No : ${o.registrationNumber}`);
-  if (o.mobile)              lines.push(`Mobile : ${o.mobile}`);
-  if (o.tableNumber)         lines.push(`Table  : ${o.tableNumber}`);
-  if (o.address)             lines.push(`Addr   : ${o.address}`);
-  if (o.specialRequest)      lines.push(`Note   : ${o.specialRequest}`);
-  if (o.requestTags?.length) lines.push(`Tags   : ${o.requestTags.join(", ")}`);
-  lines.push(`Payment: ${o.paymentMethod || "COD"}${o.paymentVerified ? " (VERIFIED)" : " (PENDING)"}`);
-  lines.push("--------------------------");
-  (o.items || []).forEach((it) =>
-    lines.push(`${it.name}${it.variant ? ` (${it.variant})` : ""} x${it.qty}  ₹${it.price}`)
-  );
-  lines.push("--------------------------");
-  lines.push(`Total: ₹${o.total}\n\n\n`);
-  res.type("text/plain").send(lines.join("\n"));
+  res.type("text/plain").send(buildKOTText(o));
 });
+
+// ─── NEW: Print KOT for any order by ID ───────────────────────────────────────
+app.get("/api/orders/:id/kot", async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ success: false, error: "Not found" });
+    res.type("text/plain").send(buildKOTText(order));
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Could not generate KOT" });
+  }
+});
+
+function buildKOTText(o) {
+  const lines = [
+    "================================",
+    "   ABBA SEENUUU... FAST FOODS   ",
+    '   Taste like "ahh devudaa..."  ',
+    "================================",
+    `KOT / ORDER TICKET`,
+    `Order ID : ${o._id}`,
+    `Type     : ${(o.orderType || "").toUpperCase()}`,
+    `Time     : ${o.createdAt ? new Date(o.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : ""}`,
+    "--------------------------------"
+  ];
+  if (o.customerName)        lines.push(`Name     : ${o.customerName}`);
+  if (o.registrationNumber)  lines.push(`Reg No   : ${o.registrationNumber}`);
+  if (o.mobile)              lines.push(`Mobile   : ${o.mobile}`);
+  if (o.tableNumber)         lines.push(`Table    : ${o.tableNumber}`);
+  if (o.address)             lines.push(`Address  : ${o.address}`);
+  if (o.specialRequest)      lines.push(`Note     : ${o.specialRequest}`);
+  if (o.requestTags?.length) lines.push(`Tags     : ${o.requestTags.join(", ")}`);
+  lines.push(`Payment  : ${o.paymentMethod || "COD"}${o.paymentVerified ? " ✓ PAID" : " (PENDING)"}`);
+  lines.push("================================");
+  lines.push("           ITEMS");
+  lines.push("================================");
+  (o.items || []).forEach((it) =>
+    lines.push(`  ${it.name}${it.variant ? ` (${it.variant})` : ""}\n  Qty: ${it.qty}   @ ₹${it.price} = ₹${it.price * it.qty}`)
+  );
+  lines.push("================================");
+  lines.push(`  TOTAL : ₹${o.total}`);
+  lines.push("================================");
+  lines.push("\n\n\n");
+  return lines.join("\n");
+}
+
 // ─── AI RECOMMENDATIONS ─────────────────────────────────────────────
 app.post("/api/recommendations", async (req, res) => {
   try {
@@ -668,7 +800,6 @@ app.post("/api/recommendations", async (req, res) => {
       return res.json({ success: true, suggestions: [] });
     }
 
-    // Fetch past orders (limit for performance)
     const orders = await Order.find({}, { items: 1 })
       .sort({ createdAt: -1 })
       .limit(500);
@@ -676,16 +807,12 @@ app.post("/api/recommendations", async (req, res) => {
     const pairCount = {};
     const itemCount = {};
 
-    // Build frequency map
     orders.forEach(order => {
       const names = (order.items || []).map(i => i.name).filter(Boolean);
-
       names.forEach(a => {
         itemCount[a] = (itemCount[a] || 0) + 1;
-
         names.forEach(b => {
           if (a === b) return;
-
           const key = `${a}||${b}`;
           pairCount[key] = (pairCount[key] || 0) + 1;
         });
@@ -693,16 +820,13 @@ app.post("/api/recommendations", async (req, res) => {
     });
 
     const cartNames = cartItems.map(i => i.name);
-
     const suggestionsMap = {};
 
     cartNames.forEach(name => {
       Object.keys(pairCount).forEach(key => {
         const [a, b] = key.split("||");
-
         if (a === name && !cartNames.includes(b)) {
           const confidence = pairCount[key] / (itemCount[a] || 1);
-
           if (!suggestionsMap[b]) suggestionsMap[b] = 0;
           suggestionsMap[b] += confidence;
         }
@@ -715,18 +839,16 @@ app.post("/api/recommendations", async (req, res) => {
       .map(([name, score]) => ({
         name,
         score,
-        reason: score > 0.6
-          ? "🔥 Frequently ordered together"
-          : "⭐ Popular add-on"
+        reason: score > 0.6 ? "🔥 Frequently ordered together" : "⭐ Popular add-on"
       }));
 
     res.json({ success: true, suggestions });
-
   } catch (err) {
     console.error("Recommendation error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
 // ─── SOCKET / HEALTH ──────────────────────────────────────────────────────────
 io.on("connection", (socket) => {
   console.log("🟢 Client connected:", socket.id);
