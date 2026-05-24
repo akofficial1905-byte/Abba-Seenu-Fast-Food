@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Abba SEENUUU... FAST FOODS — Digital Menu</title>
+<title>Sip and bite... FAST FOODS — Digital Menu</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800;900&family=Noto+Sans:wght@400;600;700&family=Yatra+One&display=swap" rel="stylesheet">
 
@@ -931,7 +931,7 @@ textarea { resize: vertical; min-height: 60px; }
 <!-- ─── CHAT PANEL ───────────────────────────────────────────── -->
 <div id="chatPanel">
   <div id="chatHeader">
-    <b>🤖 Abba Assistant</b>
+    <b>🤖 Sip and Bite Assistant</b>
     <button id="chatClose">✕</button>
   </div>
   <div id="faqRow">
@@ -1314,7 +1314,7 @@ function toggleDetailsInCart() {
 ═══════════════════════════════════════════════════════════ */
 function setUpiQr(total) {
   const upiId = "7054699905@ptaxis";
-  const link = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent("Abba SEENUUU FAST FOODS")}&am=${encodeURIComponent(total.toFixed(2))}&cu=INR&tn=${encodeURIComponent("Abba Seenu order")}`;
+  const link = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent("Sip and Bite")}&am=${encodeURIComponent(total.toFixed(2))}&cu=INR&tn=${encodeURIComponent("Abba Seenu order")}`;
   upiQrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" + encodeURIComponent(link);
 }
 
@@ -1403,8 +1403,8 @@ function build() {
         </svg>
       </div>
       <div class="brand-eyebrow">Welcome to</div>
-      <div class="brand-name">ABBA SEENUUU...</div>
-      <div class="brand-sub">FAST FOODS</div>
+      <div class="brand-name">Sip and Bite...</div>
+      <div class="brand-sub"></div>
       <div class="tagline-pill">Taste like <em>"ahh devudaa..."</em> ✨</div>
       <div class="cover-stats">
         <div class="cover-stat"><div class="cover-stat-num">5★</div><div class="cover-stat-label">Rating</div></div>
@@ -1799,7 +1799,7 @@ async function actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel) {
     const data = await res.json();
     if (!data.success) { alert(data.message||"Order failed. Please try again."); return false; }
     if (payload.orderType==="dinein") { closeCart(); showPendingApproval(payload.tableNumber, payload.items, totalAmount); return true; }
-    showSuccessAndReset("Your order has been sent to Abba SEENUUU... FAST FOODS.", paymentMethodLabel==="COD"?"No change? Pay via UPI: 7054699905@ptaxis":"", totalAmount, paymentMethodLabel);
+    showSuccessAndReset("Your order has been sent to Sip and Bite, paymentMethodLabel==="COD"?"No change? Pay via UPI: 7054699905@ptaxis":"", totalAmount, paymentMethodLabel);
     return true;
   } catch(e) { alert("Server error. Please try again."); return false; }
 }
