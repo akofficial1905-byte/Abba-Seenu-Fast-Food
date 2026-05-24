@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Abba SEENUUU... FAST FOODS - Manager Portal</title>
+  <title>Sip and Bite - Manager Portal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -167,7 +167,7 @@
 <div id="loginOverlay">
   <div class="login-card">
     <h2 style="font-size:1.5rem;font-weight:700;color:var(--navy);text-align:center;margin-bottom:.25rem;">Manager Login</h2>
-    <p style="font-size:.85rem;color:var(--muted);text-align:center;margin-bottom:1.25rem;">Abba SEENUUU... FAST FOODS</p>
+    <p style="font-size:.85rem;color:var(--muted);text-align:center;margin-bottom:1.25rem;">Sip and Bite</p>
     <form id="loginForm">
       <div class="form-group"><label class="form-label">Username</label><input id="loginUser" type="text" class="form-input" placeholder="Username" required autocomplete="username"/></div>
       <div class="form-group"><label class="form-label">Password</label><input id="loginPass" type="password" class="form-input" placeholder="Password" required autocomplete="current-password"/></div>
@@ -182,7 +182,7 @@
 
   <header>
     <div>
-      <h1>Abba SEENUUU... FAST FOODS</h1>
+      <h1>Sip and Bite</h1>
       <p>Manager Portal — Orders · Analytics · POS</p>
     </div>
     <div style="display:flex;gap:.5rem;align-items:center;">
@@ -767,7 +767,7 @@ async function openPrint(orderId) {
 function buildReceiptText(o) {
   const lines = [
     '================================',
-    '  ABBA SEENUUU... FAST FOODS  ',
+    '  Sip and Bite  ',
     '================================',
     `Order ID : ${o._id}`,
     `Type     : ${(o.orderType||'').toUpperCase()}`,
@@ -1321,7 +1321,7 @@ async function printTableKOT() {
   await autoSaveDraft();
   const lines = [
     '================================',
-    '  ABBA SEENUUU... FAST FOODS  ',
+    '  Sip and Bite  ',
     '  KOT — KITCHEN ORDER TICKET  ',
     '================================',
     `Table    : ${selectedTable}`,
