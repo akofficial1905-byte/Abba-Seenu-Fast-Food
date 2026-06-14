@@ -255,7 +255,7 @@ textarea{resize:vertical;min-height:58px;}
    SWIGGY/ZOMATO STYLE RECOMMENDATION BOX
 ══════════════════════════════════════════════════════ */
 #recBox{
-  --rec-h: 178px;
+  --rec-h: 200px;
   position:fixed;
   bottom:calc(var(--cart-h) + 12px);
   left:0;right:0;
@@ -321,7 +321,7 @@ textarea{resize:vertical;min-height:58px;}
 .rec-card{
   flex-shrink:0;
   width:208px;
-  height:84px;
+  height:106px;
   background:var(--surface);
   border:1.5px solid var(--border);
   border-radius:14px;
@@ -336,7 +336,7 @@ textarea{resize:vertical;min-height:58px;}
 .rec-card:hover{transform:translateY(-2px);border-color:var(--navy2);box-shadow:0 6px 18px rgba(26,43,66,.15);}
 .rec-card-img,
 .rec-card-placeholder{
-  width:84px;height:84px;
+  width:106px;height:106px;
   flex-shrink:0;
   object-fit:cover;
   display:block;
@@ -350,29 +350,30 @@ textarea{resize:vertical;min-height:58px;}
 .rec-card-body{
   flex:1;
   min-width:0;
-  padding:7px 9px;
+  padding:8px 10px;
   display:flex;
   flex-direction:column;
   justify-content:space-between;
-  gap:2px;
+  gap:4px;
 }
-.rec-card-top{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.rec-card-top{display:flex;flex-direction:column;gap:3px;min-width:0;}
 .rec-card-name{
   font-family:'Plus Jakarta Sans',sans-serif;
-  font-size:.74rem;font-weight:800;color:var(--navy);
-  line-height:1.2;
+  font-size:.78rem;font-weight:800;color:var(--navy);
+  line-height:1.25;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
 }
 .rec-card-price{
-  font-size:.72rem;font-weight:700;color:var(--gold);
+  font-size:.82rem;font-weight:800;color:var(--gold);
+  white-space:nowrap;
 }
 .rec-card-meta{
   display:flex;align-items:center;gap:4px;flex-wrap:wrap;
 }
 .rec-card-badge{
-  font-size:.56rem;font-weight:800;
+  font-size:.58rem;font-weight:800;
   background:var(--blue-lt);color:var(--navy2);
-  border-radius:4px;padding:1px 5px;
+  border-radius:4px;padding:2px 6px;
   letter-spacing:.02em;
   white-space:nowrap;
 }
@@ -383,13 +384,13 @@ textarea{resize:vertical;min-height:58px;}
 }
 .rec-add-btn{
   flex-shrink:0;
-  padding:5px 12px;
+  padding:6px 14px;
   border:none;
   border-radius:8px;
   background:linear-gradient(135deg,var(--navy),var(--navy2));
   color:#fff;
   font-family:'Plus Jakarta Sans',sans-serif;
-  font-size:.7rem;font-weight:800;
+  font-size:.74rem;font-weight:800;
   cursor:pointer;
   transition:transform .12s,opacity .12s;
 }
@@ -488,7 +489,7 @@ textarea{resize:vertical;min-height:58px;}
   .brand-name{font-size:2.2rem;}
   #helpFab{font-size:0;width:46px;height:46px;padding:0;display:grid;place-items:center;}
   #helpFab::before{content:"💬";font-size:20px;}
-  .rec-card{width:125px;}
+  .rec-card{width:225px;height:106px;}
 }
 
 /* Rec box adjusts when recBox is visible */
@@ -507,8 +508,8 @@ body.rec-open #helpFab{bottom:calc(var(--cart-h) + 12px + 260px);}
   #cartBox{max-width:520px;}
   #recBox{left:50%;right:auto;transform:translateX(-50%);width:min(560px,100vw);border-radius:20px 20px 0 0;}
   #recBox.visible{transform:translateX(-50%);}
-  .rec-card{width:155px;}
-  .rec-card-img,.rec-card-placeholder{height:90px;}
+  .rec-card{width:230px;height:110px;}
+  .rec-card-img,.rec-card-placeholder{width:110px;height:110px;}
 }
 @media(min-width:1024px){
   .page{padding-left:calc((100vw - 720px)/2);padding-right:calc((100vw - 720px)/2);}
@@ -1542,14 +1543,20 @@ function renderRecommendations(suggestions, cartItems) {
         ? '<span class="rec-card-badge popular">⭐ Popular</span>'
         : '<span class="rec-card-badge">🍽 Try it</span>';
 
+    // Card markup: top section (name + badge), bottom section (price + Add button)
+    // so the price (from frozen menu.json) and the Add button are always
+    // visible together on a single row, aligned and tappable on mobile.
     card.innerHTML =
       imgHtml +
       '<div class="rec-card-body">' +
-        '<div class="rec-card-name">' + escHtml(it.name) + '</div>' +
-        '<div class="rec-card-meta">' + badgeHtml + '</div>' +
-        '<div class="rec-card-price">' + priceLabel + '</div>' +
-        '<div class="rec-card-reason">' + escHtml(entry.reason) + '</div>' +
-        '<button class="rec-add-btn" data-name="' + escHtml(it.name) + '">+ Add</button>' +
+        '<div class="rec-card-top">' +
+          '<div class="rec-card-name">' + escHtml(it.name) + '</div>' +
+          '<div class="rec-card-meta">' + badgeHtml + '</div>' +
+        '</div>' +
+        '<div class="rec-card-bottom">' +
+          '<div class="rec-card-price">' + priceLabel + '</div>' +
+          '<button class="rec-add-btn" data-name="' + escHtml(it.name) + '">+ Add</button>' +
+        '</div>' +
       '</div>';
 
     // Wire button securely
