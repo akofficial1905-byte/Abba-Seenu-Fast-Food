@@ -541,7 +541,7 @@ body.rec-open #helpFab{bottom:calc(var(--cart-h) + 12px + 260px);}
 <!-- CHAT PANEL -->
 <div id="chatPanel">
   <div id="chatHeader">
-    <b>🤖 Sip and Bite Assistant</b>
+    <b>🤖 Zaika - E - Handi Assistant</b>
     <button id="chatClose">✕</button>
   </div>
   <div id="faqRow">
@@ -1019,7 +1019,7 @@ function toggleDetailsInCart() {
 ═══════════════════════════════════════════════════════════ */
 function setUpiQr(total) {
   const upiId = '7054699905@ptaxis';
-  const link = 'upi://pay?pa=' + encodeURIComponent(upiId) + '&pn=' + encodeURIComponent('Sip and Bite') + '&am=' + encodeURIComponent(total.toFixed(2)) + '&cu=INR&tn=' + encodeURIComponent('Sip and Bite order');
+  const link = 'upi://pay?pa=' + encodeURIComponent(upiId) + '&pn=' + encodeURIComponent('Zaika - E - Handi') + '&am=' + encodeURIComponent(total.toFixed(2)) + '&cu=INR&tn=' + encodeURIComponent('Zaika - E - Handi order');
   upiQrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=' + encodeURIComponent(link);
 }
 
@@ -1127,7 +1127,7 @@ function build() {
         '<div class="logo-inner">🍛</div>' +
       '</div>' +
       '<div class="brand-eyebrow">Welcome to</div>' +
-      '<div class="brand-name">Sip and Bite</div>' +
+      '<div class="brand-name">Zaika - E - Handi</div>' +
       '<div class="brand-sub">FAST FOODS</div>' +
       '<div class="tagline-pill">✨ Taste like <em>"ahh devudaa..."</em></div>' +
       '<div class="cover-stats">' +
@@ -1608,7 +1608,7 @@ chatClose_.onclick = function() { chatPanel.style.display = 'none'; };
 function initChatbot() {
   if (chatMessages.dataset.ready) return;
   chatMessages.dataset.ready = '1';
-  addMsg("Hi! 👋 I'm your Sip and Bite assistant. Ask me about menu suggestions, spicy food, veg options, budget picks, delivery, or payment help.");
+  addMsg("Hi! 👋 I'm your Zaika - E - Handi assistant. Ask me about menu suggestions, spicy food, veg options, budget picks, delivery, or payment help.");
   document.querySelectorAll('.faqBtn').forEach(function(btn) {
     btn.onclick = function() { handleChat(btn.dataset.q); };
   });
@@ -1693,7 +1693,7 @@ async function actuallyPlaceOrder(payload, totalAmount, paymentMethodLabel) {
       return true;
     }
     const note = paymentMethodLabel === 'COD' ? 'No change? Pay via UPI: 7054699905@ptaxis' : '';
-    showSuccessAndReset('Your order has been sent to Sip and Bite', note, totalAmount, paymentMethodLabel);
+    showSuccessAndReset('Your order has been sent to Zaika - E - Handi', note, totalAmount, paymentMethodLabel);
     return true;
   } catch(e) { alert('Server error. Please try again.'); return false; }
 }
